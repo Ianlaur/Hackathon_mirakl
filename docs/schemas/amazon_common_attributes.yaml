@@ -1,0 +1,216 @@
+# Amazon Marketplace — Common attributes
+# Ces attributs s'appliquent à tous les product_types.
+# Un product_type peut "override" le requirement level (par exemple passer
+# un attribut "recommended" à "required") mais ne peut pas changer le type
+# ou les contraintes de base.
+
+version: 1
+marketplace: amazon
+
+# -----------------------------------------------------------------------------
+# FEED METADATA
+# Chaque feed Amazon cible UN SEUL marketplace (donc un seul locale).
+# Le locale s'applique implicitement à tous les attributs marqués `localized: true`
+# dans le feed. Il n'y a pas besoin de répéter le locale sur chaque attribut.
+# -----------------------------------------------------------------------------
+
+feed_metadata:
+  marketplace_id:
+    requirement: required
+    type: enum
+    description: >
+      Amazon marketplace identifier. Determines the locale of the feed
+      and the currency expected in prices.
+    values:
+      A13V1IB3VIYZZH: { country: FR, locale: fr_FR, currency: EUR }
+      APJ6JRA9NG5V4:  { country: IT, locale: it_IT, currency: EUR }
+      A1PA6795UKMFR9: { country: DE, locale: de_DE, currency: EUR }
+
+# -----------------------------------------------------------------------------
+# SEMANTICS OF `localized: true`
+# When an attribute is flagged `localized: true`, its value MUST be expressed
+# in the locale declared by the feed's `marketplace_id`.
+# Example: for marketplace_id = A13V1IB3VIYZZH (FR), `item_name` must be
+# in French, `color` must be "Crème" not "Cream", etc.
+# -----------------------------------------------------------------------------
+
+common_attributes:
+
+  item_name:
+    requirement: required
+    type: string
+    min_length: 1
+    max_length: 200
+    localized: true
+    description: >
+      Product title as displayed to customers.
+      Must be in the language of the target marketplace.
+      No all-caps, no promotional characters (!, ★, etc.).
+
+  brand:
+    requirement: required
+    type: string
+    max_length: 50
+    description: >
+      Brand name of the product. Must be consistent across all listings
+      of the same brand.
+
+  product_description:
+    requirement: required
+    type: string
+    min_length: 1
+    max_length: 2000
+    localized: true
+    description: >
+      Long-form product description. HTML is not allowed.
+      Must be in the language of the target marketplace.
+
+  bullet_points:
+    requirement: required
+    type: array
+    min_items: 3
+    max_items: 5
+    item_type: string
+    item_max_length: 250
+    localized: true
+    description: >
+      Key selling points displayed as bullets on the product page.
+      Between 3 and 5 bullets, each 1 to 250 characters.
+
+  manufacturer:
+    requirement: recommended
+    type: string
+    max_length: 50
+    description: >
+      Name of the manufacturer. Often identical to 'brand' for private-label
+      products.
+
+  part_number:
+    requirement: recommended
+    type: string
+    max_length: 40
+    description: >
+      Manufacturer part number (MPN). Usually the seller's internal SKU.
+
+  item_dimensions:
+    requirement: required
+    type: string
+    max_length: 100
+    description: >
+      Overall external dimensions of the product as free text, including the unit.
+      Conventional format: "L x W x H cm" (e.g., "180 x 100 x 75 cm"),
+      or "Ø<diameter> x H<height> cm" for round items (e.g., "Ø140 x 75 cm").
+      Must include at least two dimensions and the "cm" unit.
+
+  item_weight:
+    requirement: recommended
+    type: object
+    description: >
+      Net weight of the product (without packaging).
+    properties:
+      value:
+        type: number
+        unit: kilograms
+        min: 0.01
+        max: 500
+
+  color:
+    requirement: recommended
+    type: string
+    max_length: 50
+    localized: true
+    description: >
+      Primary color as displayed to customers.
+      Must be localized in the marketplace language.
+
+  material:
+    requirement: optional
+    type: string
+    max_length: 100
+    localized: true
+    description: >
+      Main material(s) composing the product, comma-separated if multiple.
+      Must be localized in the marketplace language.
+
+  number_of_items:
+    requirement: optional
+    type: integer
+    min: 1
+    default: 1
+    description: >
+      Number of individual items included in the package.
+      Default is 1 for most furniture.
+
+  condition:
+    requirement: required
+    type: enum
+    values:
+      - new_new
+      - refurbished_refurbished
+      - used_like_new
+      - used_very_good
+      - used_good
+      - used_acceptable
+    default: new_new
+    description: >
+      Item condition. Most Nordika products will be 'new_new'.
+
+  gtin:
+    requirement: optional
+    type: string
+    pattern: "^[0-9]{8}$|^[0-9]{12,14}$"
+    description: >
+      Global Trade Item Number (EAN/UPC/ISBN), 8, 12, 13 or 14 digits.
+      Strongly recommended for catalog matching. Can be omitted for
+      private-label brands registered in Amazon Brand Registry.
+
+  country_of_origin:
+    requirement: optional
+    type: string
+    pattern: "^[A-Z]{2}$"
+    description: >
+      ISO 3166-1 alpha-2 country code where the product is manufactured.
+      Required in some marketplaces for customs purposes.
+
+  list_price:
+    requirement: optional
+    type: object
+    description: >
+      Manufacturer's suggested retail price (MSRP).
+      Displayed as a crossed-out price next to the actual selling price.
+    properties:
+      value:
+        type: number
+        min: 0.01
+      currency:
+        type: enum
+        values: [EUR, USD, GBP, CHF]
+
+  standard_price:
+    requirement: required
+    type: object
+    description: >
+      Actual selling price (including VAT in EU marketplaces).
+    properties:
+      value:
+        type: number
+        min: 0.01
+      currency:
+        type: enum
+        values: [EUR, USD, GBP, CHF]
+
+  fulfillment_availability:
+    requirement: required
+    type: array
+    min_items: 1
+    description: >
+      Inventory availability per fulfillment channel. For Nordika, the seller
+      handles its own shipping (Fulfillment by Merchant), so the only channel
+      used is DEFAULT.
+    item_properties:
+      fulfillment_channel_code:
+        type: enum
+        values: [DEFAULT]
+      quantity:
+        type: integer
+        min: 0
