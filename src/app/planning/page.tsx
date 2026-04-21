@@ -29,11 +29,26 @@ function isDatabaseUnavailableError(error: unknown) {
   )
 }
 
+function isMissingDelegateError(error: unknown) {
+  if (!(error instanceof TypeError)) {
+    return false
+  }
+
+  return (
+    error.message.includes("Cannot read properties of undefined") &&
+    (error.message.includes("'findMany'") || error.message.includes("'findUnique'"))
+  )
+}
+
 async function fallbackIfTableMissing<T>(query: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await query()
   } catch (error) {
-    if (isMissingTableError(error) || isDatabaseUnavailableError(error)) {
+    if (
+      isMissingTableError(error) ||
+      isDatabaseUnavailableError(error) ||
+      isMissingDelegateError(error)
+    ) {
       return fallback
     }
     throw error

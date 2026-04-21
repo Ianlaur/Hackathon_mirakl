@@ -91,6 +91,7 @@ export default function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   title={isCollapsed ? item.label : undefined}
                   className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${
                     active ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'

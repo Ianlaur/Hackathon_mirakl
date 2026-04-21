@@ -31,20 +31,46 @@ type Order = {
   origin: string
   destination: string
   eta: string
+  carrier: string
+  co2: string
+  stock: string
+}
+
+type InventoryItem = {
+  name: string
+  sku: string
+  qtyLabel: string
+  statusLabel: string
+  status: 'critical' | 'low' | 'ok'
+  levelPct: number
 }
 
 const BASIC_ORDERS: Order[] = [
-  { id: '#ORDER-884', product: '1 Oak Table', status: 'Processing', origin: 'Paris, FR', destination: 'Lyon, FR', eta: 'Nov 22' },
-  { id: '#ORDER-880', product: '2 Dining Chairs', status: 'Delivered', origin: 'Bordeaux, FR', destination: 'Marseille, FR', eta: 'Nov 18' },
-  { id: '#ORDER-876', product: '3 Bar Stools', status: 'In Transit', origin: 'Lyon, FR', destination: 'Nice, FR', eta: 'Nov 21' },
-  { id: '#ORDER-871', product: '1 Bookshelf', status: 'Delivered', origin: 'Paris, FR', destination: 'Toulouse, FR', eta: 'Nov 16' },
+  { id: '#ORDER-884', product: '1 Oak Table', status: 'Processing', origin: 'Annecy, FR', destination: 'Lyon, FR', eta: 'Nov 22', carrier: 'Colissimo Eco', co2: '12 kg', stock: '3 left' },
+  { id: '#ORDER-880', product: '2 Dining Chairs', status: 'Delivered', origin: 'Chambéry, FR', destination: 'Paris, FR', eta: 'Nov 18', carrier: 'Chronopost', co2: '24 kg', stock: 'In Stock' },
+  { id: '#ORDER-876', product: '3 Bar Stools', status: 'In Transit', origin: 'Annecy, FR', destination: 'Nice, FR', eta: 'Nov 21', carrier: 'Colissimo Eco', co2: '18 kg', stock: '5 left' },
+  { id: '#ORDER-871', product: '1 Bookshelf', status: 'Delivered', origin: 'Albertville, FR', destination: 'Toulouse, FR', eta: 'Nov 16', carrier: 'Colis Privé', co2: '8 kg', stock: 'In Stock' },
 ]
 
 const PRO_ORDERS: Order[] = [
-  { id: '#ORDER-883', product: '50 Oak Tables', status: 'Blocked', origin: 'Shanghai, CN', destination: 'Marseille, FR', eta: 'Delayed' },
-  { id: '#ORDER-877', product: '120 Sofas', status: 'In Transit', origin: 'Rotterdam, NL', destination: 'Lyon, FR', eta: 'Nov 20' },
-  { id: '#ORDER-864', product: '30 Dining Sets', status: 'Delivered', origin: 'Shenzhen, CN', destination: 'Frankfurt, DE', eta: 'Nov 14' },
-  { id: '#ORDER-859', product: '80 Bar Stools', status: 'Processing', origin: 'Hamburg, DE', destination: 'Nice, FR', eta: 'Nov 28' },
+  { id: '#ORDER-883', product: '50 Oak Tables', status: 'Blocked', origin: 'Shanghai, CN', destination: 'Marseille, FR', eta: 'Delayed', carrier: 'DHL', co2: '1.8 tons', stock: 'Critical' },
+  { id: '#ORDER-877', product: '120 Sofas', status: 'In Transit', origin: 'Rotterdam, NL', destination: 'Lyon, FR', eta: 'Nov 20', carrier: 'Truck LTL', co2: '85 kg', stock: 'Healthy' },
+  { id: '#ORDER-864', product: '30 Dining Sets', status: 'Delivered', origin: 'Shenzhen, CN', destination: 'Frankfurt, DE', eta: 'Nov 14', carrier: 'Air Freight', co2: '4.2 tons', stock: 'Healthy' },
+  { id: '#ORDER-859', product: '80 Bar Stools', status: 'Processing', origin: 'Hamburg, DE', destination: 'Nice, FR', eta: 'Nov 28', carrier: 'Truck FTL', co2: '320 kg', stock: 'Medium' },
+]
+
+const BASIC_INVENTORY: InventoryItem[] = [
+  { name: 'Oak Tables', sku: 'SKU-OAK-01', qtyLabel: '4 left', statusLabel: 'Low Stock', status: 'low', levelPct: 20 },
+  { name: 'Pine Shelves', sku: 'SKU-PIN-03', qtyLabel: '18 left', statusLabel: 'In Stock', status: 'ok', levelPct: 90 },
+  { name: 'Walnut Chairs', sku: 'SKU-WAL-07', qtyLabel: '2 left', statusLabel: 'Critical', status: 'critical', levelPct: 10 },
+  { name: 'Birch Desks', sku: 'SKU-BIR-02', qtyLabel: '11 left', statusLabel: 'In Stock', status: 'ok', levelPct: 55 },
+]
+
+const PRO_INVENTORY: InventoryItem[] = [
+  { name: 'Oak Tables', sku: 'SKU-OAK-01', qtyLabel: '125 total', statusLabel: 'Critical', status: 'critical', levelPct: 25 },
+  { name: 'Pine Shelves', sku: 'SKU-PIN-03', qtyLabel: '450 total', statusLabel: 'In Stock', status: 'ok', levelPct: 90 },
+  { name: 'Walnut Chairs', sku: 'SKU-WAL-07', qtyLabel: '80 total', statusLabel: 'Rebalancing', status: 'low', levelPct: 35 },
+  { name: 'Birch Desks', sku: 'SKU-BIR-02', qtyLabel: '210 total', statusLabel: 'In Stock', status: 'ok', levelPct: 70 },
 ]
 
 function statusStyle(status: Order['status']) {
@@ -52,6 +78,28 @@ function statusStyle(status: Order['status']) {
   if (status === 'In Transit') return 'border-amber-200 bg-amber-50 text-amber-700'
   if (status === 'Blocked') return 'border-rose-200 bg-rose-50 text-rose-700'
   return 'border-indigo-200 bg-indigo-50 text-indigo-700'
+}
+
+function inventoryTone(status: InventoryItem['status']) {
+  if (status === 'critical') {
+    return {
+      chip: 'border-rose-200 bg-rose-50 text-rose-700',
+      qty: 'text-rose-700',
+      bar: 'bg-rose-500',
+    }
+  }
+  if (status === 'low') {
+    return {
+      chip: 'border-amber-200 bg-amber-50 text-amber-700',
+      qty: 'text-amber-700',
+      bar: 'bg-amber-500',
+    }
+  }
+  return {
+    chip: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    qty: 'text-emerald-700',
+    bar: 'bg-emerald-500',
+  }
 }
 
 export default function DashboardPage() {
@@ -63,6 +111,8 @@ export default function DashboardPage() {
   }, [])
 
   const orders = isPro ? PRO_ORDERS : BASIC_ORDERS
+  const inventory = isPro ? PRO_INVENTORY : BASIC_INVENTORY
+  const alertCount = inventory.filter((item) => item.status !== 'ok').length
   const kpis = isPro
     ? [
         { label: 'Total Revenue', value: '€2.47M', trend: '+12.4% vs last month', icon: DollarSign, trendColor: 'text-emerald-600' },
@@ -134,6 +184,41 @@ export default function DashboardPage() {
           ))}
         </section>
 
+        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Inventory Alerts</h2>
+            <span className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+              {alertCount} alerts
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            {inventory.map((item) => {
+              const tone = inventoryTone(item.status)
+
+              return (
+                <div key={item.sku}>
+                  <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-base font-semibold text-slate-900">
+                      {item.name}{' '}
+                      <span className="text-sm font-medium text-slate-500">{item.sku}</span>
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-base font-semibold ${tone.qty}`}>{item.qtyLabel}</span>
+                      <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tone.chip}`}>
+                        {item.statusLabel}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div className={`h-full ${tone.bar}`} style={{ width: `${item.levelPct}%` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
         {isPro && (
           <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -182,6 +267,9 @@ export default function DashboardPage() {
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Origin → Dest.</th>
                   <th className="px-4 py-3">ETA</th>
+                  <th className="px-4 py-3">Carrier</th>
+                  <th className="px-4 py-3">CO₂</th>
+                  <th className="px-4 py-3">Stock</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -202,6 +290,9 @@ export default function DashboardPage() {
                       <span className="text-slate-400">→</span> {order.destination}
                     </td>
                     <td className={`px-4 py-4 font-semibold ${order.status === 'Blocked' ? 'text-rose-700' : 'text-slate-800'}`}>{order.eta}</td>
+                    <td className="px-4 py-4 text-slate-700">{order.carrier}</td>
+                    <td className="px-4 py-4 font-medium text-emerald-700">{order.co2}</td>
+                    <td className="px-4 py-4 font-semibold text-slate-800">{order.stock}</td>
                   </tr>
                 ))}
               </tbody>
