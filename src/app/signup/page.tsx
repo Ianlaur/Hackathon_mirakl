@@ -103,7 +103,7 @@ export default function SignUpPage() {
               <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              <span className="font-medium">Retour à l'accueil</span>
+              <span className="font-medium">Retour à l&apos;accueil</span>
             </Link>
           </div>
           
@@ -124,7 +124,7 @@ export default function SignUpPage() {
           <div className="flex items-center justify-center gap-3 mb-8">
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${step === 1 ? 'bg-white/20 text-white' : 'bg-white/5 text-white/50'}`}>
               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${step === 1 ? 'bg-white text-indigo-600' : 'bg-white/20'}`}>1</span>
-              <span className="font-medium">Type d'activité</span>
+              <span className="font-medium">Type d&apos;activité</span>
             </div>
             <div className="w-8 h-0.5 bg-white/20"></div>
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${step === 2 ? 'bg-white/20 text-white' : 'bg-white/5 text-white/50'}`}>
@@ -137,7 +137,7 @@ export default function SignUpPage() {
           {step === 1 && (
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 border border-white/20 animate-slideUp">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Quel est votre type d'activité ?
+                Quel est votre type d&apos;activité ?
               </h2>
               <p className="text-gray-500 mb-8">Choisissez le profil qui correspond le mieux à votre activité</p>
 
@@ -256,7 +256,7 @@ export default function SignUpPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="inviteCode" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Code d'invitation
+                    Code d&apos;invitation
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -270,14 +270,14 @@ export default function SignUpPage() {
                       value={formData.inviteCode}
                       onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value })}
                       className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
-                      placeholder="Entrez votre code d'invitation"
+                      placeholder="Entrez votre code d&apos;invitation"
                       required
                     />
                   </div>
                   <p className="mt-2 text-xs text-gray-500">
                     Pas de code ?{' '}
                     <a href="/#waitlist" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                      Rejoignez la liste d'attente
+                      Rejoignez la liste d&apos;attente
                     </a>
                   </p>
                 </div>

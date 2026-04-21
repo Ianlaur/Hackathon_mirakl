@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 import WMSPageClient from './WMSPageClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function WMSPage() {
   const userId = await getCurrentUserId()
 

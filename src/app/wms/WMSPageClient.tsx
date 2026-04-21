@@ -244,7 +244,7 @@ export default function WMSPageClient({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Gestion d'entrepôt
+            Gestion d&apos;entrepôt
             <span className="ml-3 text-sm font-normal px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full">WMS</span>
           </h1>
           <p className="text-gray-500 mt-1">Zones, emplacements et préparation de commandes</p>
@@ -355,7 +355,7 @@ export default function WMSPageClient({
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Zones Overview */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Zones d'entrepôt</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Zones d&apos;entrepôt</h3>
             {zones.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
                 <p>Aucune zone configurée</p>

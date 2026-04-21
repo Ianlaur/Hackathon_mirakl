@@ -734,7 +734,7 @@ function NewProductModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prix d'achat (€)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Prix d&apos;achat (€)</label>
               <input
                 type="number"
                 step="0.01"

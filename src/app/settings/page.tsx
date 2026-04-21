@@ -371,7 +371,7 @@ export default function SettingsPage() {
 
           <div className="flex-1 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l&apos;entreprise</label>
               <input
                 type="text"
                 value={profile.company_name || ''}
@@ -394,7 +394,7 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Adresse de l'entreprise</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Adresse de l&apos;entreprise</label>
           <textarea
             value={profile.company_address || ''}
             onChange={handleChange('company_address')}
@@ -559,7 +559,7 @@ export default function SettingsPage() {
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-gray-900">Gestion de Stock & Entrepôt</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Activez les fonctionnalités de gestion de stock et d'entrepôt (WMS) pour votre activité commerciale.
+              Activez les fonctionnalités de gestion de stock et d&apos;entrepôt (WMS) pour votre activité commerciale.
             </p>
           </div>
         </div>
