@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import {
   ArrowRight,
   Bell,
@@ -95,9 +96,12 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100">
+              <Link
+                href="/app-store"
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+              >
                 <Zap className="h-4 w-4" /> Upgrade to Pro <ArrowRight className="h-4 w-4" />
-              </button>
+              </Link>
 
               <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500">
                 <Search className="h-4 w-4" />
@@ -140,7 +144,11 @@ export default function DashboardPage() {
 
           <section className="mt-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
             <h3 className="text-5xl font-semibold tracking-tight text-slate-700">BASIC</h3>
-            <p className="mt-2 text-lg text-slate-500">Upgrade in App Store →</p>
+            <p className="mt-2 text-lg text-slate-500">
+              <Link href="/app-store" className="font-medium text-indigo-700 hover:text-indigo-600">
+                Upgrade in App Store →
+              </Link>
+            </p>
           </section>
 
           <section className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
