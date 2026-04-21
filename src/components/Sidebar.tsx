@@ -2,121 +2,337 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { useSidebar } from '@/contexts/SidebarContext'
+import { useEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent } from 'react'
+import {
+  Boxes,
+  LayoutDashboard,
+  Bot,
+  Package,
+  Warehouse,
+  Truck,
+  TrendingDown,
+  CalendarDays,
+  Calendar,
+  Store,
+  Settings,
+  Menu,
+  ChevronDown,
+  Workflow,
+} from 'lucide-react'
 
-const navigation = [
-  { href: '/dashboard', label: 'Dashboard', short: 'DB' },
-  { href: '/app-store', label: 'App Store', short: 'AS' },
-  { href: '/copilot', label: 'Copilot', short: 'AI' },
-  { href: '/planning', label: 'Planning', short: 'PL' },
-  { href: '/settings', label: 'Paramètres', short: 'PR' },
-  { href: '/stock', label: 'Stock', short: 'ST' },
-  { href: '/wms', label: 'Entrepôt', short: 'WM' },
-  { href: '/parcels', label: 'Transport', short: 'TR' },
-  { href: '/calendar', label: 'Calendrier', short: 'CA' },
-  { href: '/losses', label: 'Suivi des pertes', short: 'SP' },
+type NavLink = {
+  type: 'link'
+  name: string
+  href: string
+  icon: ComponentType<{ className?: string }>
+}
+
+type NavGroup = {
+  type: 'group'
+  id: string
+  name: string
+  icon: ComponentType<{ className?: string }>
+  items: Array<{
+    name: string
+    href: string
+    icon: ComponentType<{ className?: string }>
+  }>
+}
+
+type NavEntry = NavLink | NavGroup
+
+const navigation: NavEntry[] = [
+  { type: 'link', name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { type: 'link', name: 'Copilot', href: '/copilot', icon: Bot },
+  {
+    type: 'group',
+    id: 'operations',
+    name: 'Opérations',
+    icon: Workflow,
+    items: [
+      { name: 'Planning', href: '/planning', icon: CalendarDays },
+      { name: 'Calendrier', href: '/calendar', icon: Calendar },
+      { name: 'Transport', href: '/parcels', icon: Truck },
+    ],
+  },
+  {
+    type: 'group',
+    id: 'inventory',
+    name: 'Inventaire',
+    icon: Boxes,
+    items: [
+      { name: 'Stock', href: '/stock', icon: Package },
+      { name: 'Entrepôt', href: '/wms', icon: Warehouse },
+      { name: 'Pertes', href: '/losses', icon: TrendingDown },
+    ],
+  },
+  { type: 'link', name: 'App Store', href: '/app-store', icon: Store },
+  { type: 'link', name: 'Paramètres', href: '/settings', icon: Settings },
 ]
+
+function isPathActive(pathname: string, href: string) {
+  if (href === '/') {
+    return pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/dashboard/')
+  }
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { isCollapsed, setIsCollapsed } = useSidebar()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
+  const navigationTimeoutRef = useRef<number | null>(null)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    operations: true,
+    inventory: true,
+  })
+  const isExpanded = true
+
+  const activeGroups = useMemo(() => {
+    return navigation
+      .filter((entry): entry is NavGroup => entry.type === 'group')
+      .reduce<Record<string, boolean>>((acc, group) => {
+        acc[group.id] = group.items.some((item) => isPathActive(pathname, item.href))
+        return acc
+      }, {})
+  }, [pathname])
 
   useEffect(() => {
     setIsMobileOpen(false)
+    setIsNavigating(false)
+    if (navigationTimeoutRef.current !== null) {
+      window.clearTimeout(navigationTimeoutRef.current)
+      navigationTimeoutRef.current = null
+    }
   }, [pathname])
+
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current !== null) {
+        window.clearTimeout(navigationTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    setOpenGroups((prev) => {
+      const next = { ...prev }
+      for (const [groupId, isActive] of Object.entries(activeGroups)) {
+        if (isActive) {
+          next[groupId] = true
+        }
+      }
+      return next
+    })
+  }, [activeGroups])
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }))
+  }
+
+  const handleNavigation = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (isNavigating) {
+      event.preventDefault()
+      return
+    }
+
+    if (isPathActive(pathname, href)) {
+      event.preventDefault()
+      setIsMobileOpen(false)
+      setIsNavigating(false)
+      return
+    }
+
+    setIsMobileOpen(false)
+    setIsNavigating(true)
+    if (navigationTimeoutRef.current !== null) {
+      window.clearTimeout(navigationTimeoutRef.current)
+    }
+    navigationTimeoutRef.current = window.setTimeout(() => {
+      setIsNavigating(false)
+      navigationTimeoutRef.current = null
+    }, 6000)
+  }
 
   return (
     <>
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setIsMobileOpen(true)}
+        className="fixed left-4 top-4 z-50 rounded-xl bg-slate-900 p-2.5 text-slate-300 shadow-xl border border-slate-800 lg:hidden hover:bg-slate-800 transition-colors"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {/* Mobile Overlay */}
       {isMobileOpen && (
         <button
-          aria-label="Close menu overlay"
-          className="fixed inset-0 z-40 bg-slate-950/45 lg:hidden"
+          aria-label="Close menu"
+          className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm lg:hidden transition-opacity"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
-      <button
-        onClick={() => setIsMobileOpen((value) => !value)}
-        className="fixed left-4 top-4 z-50 rounded-xl bg-slate-950 p-2 text-white shadow-lg lg:hidden"
-        aria-label="Open navigation"
-      >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-
+      {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden border-r border-slate-800 bg-slate-950 text-white transition-all duration-300 ${
-          isCollapsed ? 'w-20' : 'w-64'
-        } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        className={`fixed left-0 top-0 z-50 flex h-screen flex-col bg-slate-950 text-white transition-all duration-300 ease-out border-r border-slate-800/60 shadow-2xl overflow-hidden
+          ${isExpanded ? 'w-64' : 'w-20'} 
+          ${isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'}`}
       >
-        <div className="flex h-full flex-col p-4">
-          <div className="mb-8 flex items-center justify-between">
-            {!isCollapsed && (
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Hackathon</p>
-                <p className="mt-1 text-2xl font-semibold tracking-tight">Mirakl</p>
-              </div>
-            )}
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
-              aria-label="Toggle sidebar"
+        <div className="flex h-full flex-col py-6 px-3 overflow-y-auto overflow-x-hidden scrollbar-hide">
+          {/* Logo Section */}
+          <div className="mb-10 flex items-center px-2">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-500/20">
+              M
+            </div>
+            <div
+              className={`ml-3 flex flex-col whitespace-nowrap transition-all duration-300 ${
+                isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 hidden'
+              }`}
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={isCollapsed ? 'M13 5l7 7-7 7M5 5l7 7-7 7' : 'M11 19l-7-7 7-7m8 14l-7-7 7-7'}
-                />
-              </svg>
-            </button>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Hackathon</span>
+              <span className="text-lg font-bold tracking-tight">Mirakl Tower</span>
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-            <p className={`text-xs uppercase tracking-[0.24em] text-slate-500 ${isCollapsed ? 'hidden' : 'block'}`}>
-              Workspace
-            </p>
-            {!isCollapsed && <p className="mt-2 text-sm text-slate-300">Only live routes are shown in this build.</p>}
-          </div>
+          {/* Navigation */}
+          <nav className={`flex-1 space-y-2 ${isNavigating ? 'opacity-75' : ''}`}>
+            {navigation.map((entry) => {
+              if (entry.type === 'link') {
+                const active = isPathActive(pathname, entry.href)
 
-          <nav className="mt-6 space-y-2">
-            {navigation.map((item) => {
-              const active = pathname === item.href
+                return (
+                  <Link
+                    key={entry.href}
+                    href={entry.href}
+                    prefetch={false}
+                    onClick={(event) => handleNavigation(event, entry.href)}
+                    className={`group relative flex items-center rounded-xl px-3 py-3 font-medium transition-all duration-200 ${
+                      active
+                        ? 'bg-blue-600/10 text-blue-500'
+                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-100'
+                    }`}
+                  >
+                    <entry.icon
+                      className={`h-5 w-5 flex-shrink-0 transition-colors ${
+                        active ? 'text-blue-500' : 'text-slate-400 group-hover:text-slate-200'
+                      }`}
+                    />
+                    <span
+                      className={`ml-4 whitespace-nowrap transition-all duration-300 ${
+                        isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 hidden'
+                      }`}
+                    >
+                      {entry.name}
+                    </span>
+
+                    {!isExpanded && (
+                      <div className="absolute left-full ml-4 hidden rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:block group-hover:opacity-100">
+                        {entry.name}
+                      </div>
+                    )}
+
+                    {active && isExpanded && (
+                      <div className="absolute right-3 h-1.5 w-1.5 rounded-full bg-blue-500" />
+                    )}
+                  </Link>
+                )
+              }
+
+              const groupIsActive = activeGroups[entry.id]
+              const groupIsOpen = openGroups[entry.id]
 
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  prefetch={false}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${
-                    active ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                >
-                  <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xs font-semibold">
-                    {item.short}
-                  </span>
-                  {!isCollapsed && <span>{item.label}</span>}
-                </Link>
+                <div key={entry.id} className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(entry.id)}
+                    className={`group relative flex w-full items-center rounded-xl px-3 py-3 text-left font-medium transition-all duration-200 ${
+                      groupIsActive
+                        ? 'bg-blue-600/10 text-blue-500'
+                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-100'
+                    }`}
+                  >
+                    <entry.icon
+                      className={`h-5 w-5 flex-shrink-0 transition-colors ${
+                        groupIsActive ? 'text-blue-500' : 'text-slate-400 group-hover:text-slate-200'
+                      }`}
+                    />
+                    <span
+                      className={`ml-4 whitespace-nowrap transition-all duration-300 ${
+                        isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 hidden'
+                      }`}
+                    >
+                      {entry.name}
+                    </span>
+
+                    {isExpanded && (
+                      <ChevronDown
+                        className={`ml-auto h-4 w-4 transition-transform duration-200 ${
+                          groupIsOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    )}
+
+                    {!isExpanded && (
+                      <div className="absolute left-full ml-4 hidden rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:block group-hover:opacity-100">
+                        {entry.name}
+                      </div>
+                    )}
+
+                    {groupIsActive && isExpanded && (
+                      <div className="absolute right-3 h-1.5 w-1.5 rounded-full bg-blue-500" />
+                    )}
+                  </button>
+
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      isExpanded && groupIsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="ml-6 border-l border-slate-800/80 pl-3">
+                      {entry.items.map((item) => {
+                        const active = isPathActive(pathname, item.href)
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            prefetch={false}
+                            onClick={(event) => handleNavigation(event, item.href)}
+                            className={`group flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                              active
+                                ? 'bg-blue-600/10 font-medium text-blue-400'
+                                : 'text-slate-400 hover:bg-slate-900/70 hover:text-slate-200'
+                            }`}
+                          >
+                            <item.icon className={`h-4 w-4 ${active ? 'text-blue-400' : 'text-slate-500'}`} />
+                            <span>{item.name}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
               )
             })}
           </nav>
 
-          <div className="mt-auto rounded-2xl border border-white/10 bg-gradient-to-br from-blue-600/20 to-cyan-400/10 p-4">
-            {!isCollapsed ? (
-              <>
-                <p className="text-sm font-semibold">Hackathon User</p>
-                <p className="mt-1 text-xs text-slate-300">hackathon@local</p>
-              </>
-            ) : (
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold">
-                H
+          {/* User Profile */}
+          <div className="mt-8 border-t border-slate-800/60 pt-6">
+            <div className="flex items-center px-2">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 text-sm font-bold text-white shadow-md">
+                NS
               </div>
-            )}
+              <div
+                className={`ml-3 flex flex-col whitespace-nowrap transition-all duration-300 ${
+                  isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 hidden'
+                }`}
+              >
+                <span className="text-sm font-semibold">Hackathon</span>
+                <span className="text-xs text-slate-400">User</span>
+              </div>
+            </div>
           </div>
         </div>
       </aside>

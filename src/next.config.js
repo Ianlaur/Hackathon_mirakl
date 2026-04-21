@@ -4,6 +4,11 @@ const nextConfig = {
     domains: ['localhost'],
   },
   transpilePackages: ['react-markdown', 'remark-gfm'],
+  onDemandEntries: {
+    // Keep compiled pages alive longer in dev to reduce chunk eviction/race issues
+    maxInactiveAge: 60 * 60 * 1000,
+    pagesBufferLength: 20,
+  },
 }
 
 module.exports = nextConfig

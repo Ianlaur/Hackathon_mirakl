@@ -1,7 +1,7 @@
 import './globals.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Metadata } from 'next'
 import AppShell from '@/components/AppShell'
-import { SidebarProvider } from '@/contexts/SidebarContext'
 
 export const metadata: Metadata = {
   title: 'Hackathon Mirakl',
@@ -16,9 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SidebarProvider>
-          <AppShell>{children}</AppShell>
-        </SidebarProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   )

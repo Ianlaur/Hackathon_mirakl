@@ -136,7 +136,7 @@ export default function AppStorePage() {
                 </button>
 
                 <Link
-                  href="/dashboard"
+                  href="/"
                   className="inline-flex items-center rounded-2xl border border-white/30 bg-white/10 px-6 py-4 text-lg font-semibold text-white transition hover:bg-white/15"
                 >
                   Ouvrir Dashboard

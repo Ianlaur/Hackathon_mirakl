@@ -1,7 +1,8 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   Bell,
@@ -10,7 +11,6 @@ import {
   Clock3,
   DollarSign,
   Filter,
-  Globe2,
   MapPin,
   Package,
   Search,
@@ -21,8 +21,19 @@ import {
   X,
   Zap,
 } from 'lucide-react'
+import type { Shipment, ShipmentStatus } from '@/types/shipment'
 
 const PRO_PLUGIN_KEY = 'mirakl_global_control_tower_active'
+
+const GlobalShipmentTracker = dynamic(
+  () => import('@/components/map/GlobalShipmentTracker'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[340px] animate-pulse rounded-xl border border-slate-700/60 bg-slate-900" />
+    ),
+  }
+)
 
 type Order = {
   id: string
@@ -73,6 +84,71 @@ const PRO_INVENTORY: InventoryItem[] = [
   { name: 'Birch Desks', sku: 'SKU-BIR-02', qtyLabel: '210 total', statusLabel: 'In Stock', status: 'ok', levelPct: 70 },
 ]
 
+const CITY_COORDINATES: Record<string, [number, number]> = {
+  'Annecy, FR': [6.1294, 45.8992],
+  'Lyon, FR': [4.8357, 45.764],
+  'Chambéry, FR': [5.9178, 45.5646],
+  'Paris, FR': [2.3522, 48.8566],
+  'Nice, FR': [7.262, 43.7102],
+  'Albertville, FR': [6.3928, 45.675],
+  'Toulouse, FR': [1.4442, 43.6047],
+  'Shanghai, CN': [121.4737, 31.2304],
+  'Marseille, FR': [5.3698, 43.2965],
+  'Rotterdam, NL': [4.4792, 51.9244],
+  'Shenzhen, CN': [114.0579, 22.5431],
+  'Frankfurt, DE': [8.6821, 50.1109],
+  'Hamburg, DE': [9.9937, 53.5511],
+}
+
+function toShipmentStatus(status: Order['status']): ShipmentStatus {
+  if (status === 'Blocked') return 'blocked'
+  if (status === 'In Transit') return 'in_transit'
+  if (status === 'Processing') return 'rerouted'
+  return 'on_track'
+}
+
+function toIsoEta(value: string) {
+  if (value.toLowerCase().includes('delayed')) {
+    return new Date(Date.now() + 9 * 24 * 60 * 60 * 1000).toISOString()
+  }
+  const parsed = Date.parse(`${value}, 2026`)
+  if (Number.isNaN(parsed)) return new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+  return new Date(parsed).toISOString()
+}
+
+function parseCo2ToTons(co2: string) {
+  const normalized = co2.toLowerCase().trim()
+  if (normalized.includes('ton')) {
+    const value = Number.parseFloat(normalized.replace(/[^0-9.]/g, ''))
+    return Number.isFinite(value) ? value : 1
+  }
+  const kg = Number.parseFloat(normalized.replace(/[^0-9.]/g, ''))
+  if (!Number.isFinite(kg)) return 1
+  return Number((kg / 1000).toFixed(2))
+}
+
+function orderToShipment(order: Order): Shipment {
+  const fallback: [number, number] = [2.3522, 48.8566]
+
+  return {
+    id: order.id,
+    product: order.product,
+    origin: {
+      name: order.origin,
+      coordinates: CITY_COORDINATES[order.origin] ?? fallback,
+    },
+    destination: {
+      name: order.destination,
+      coordinates: CITY_COORDINATES[order.destination] ?? fallback,
+    },
+    status: toShipmentStatus(order.status),
+    eta: toIsoEta(order.eta),
+    freight: order.carrier,
+    cost: 2200 + order.product.length * 110,
+    co2: parseCo2ToTons(order.co2),
+  }
+}
+
 function statusStyle(status: Order['status']) {
   if (status === 'Delivered') return 'border-emerald-200 bg-emerald-50 text-emerald-700'
   if (status === 'In Transit') return 'border-amber-200 bg-amber-50 text-amber-700'
@@ -105,12 +181,14 @@ function inventoryTone(status: InventoryItem['status']) {
 export default function DashboardPage() {
   const [isPro, setIsPro] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     setIsPro(window.localStorage.getItem(PRO_PLUGIN_KEY) === 'true')
   }, [])
 
   const orders = isPro ? PRO_ORDERS : BASIC_ORDERS
+  const trackerShipments = useMemo(() => orders.map(orderToShipment), [orders])
   const inventory = isPro ? PRO_INVENTORY : BASIC_INVENTORY
   const alertCount = inventory.filter((item) => item.status !== 'ok').length
   const kpis = isPro
@@ -123,6 +201,13 @@ export default function DashboardPage() {
         { label: 'Total Revenue', value: '€8,240', trend: '+6.2% vs last month', icon: DollarSign, trendColor: 'text-emerald-600' },
         { label: 'Total Orders', value: '34', trend: '+4 this week', icon: Package, trendColor: 'text-emerald-600' },
       ]
+
+  useEffect(() => {
+    setSelectedOrderId((current) => {
+      if (current && orders.some((order) => order.id === current)) return current
+      return orders[0]?.id ?? null
+    })
+  }, [orders])
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]">
@@ -221,31 +306,12 @@ export default function DashboardPage() {
 
         {isPro && (
           <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <Globe2 className="h-4 w-4 text-indigo-600" />
-                Global Shipment Tracker
-                <span className="text-emerald-600">● LIVE</span>
-              </div>
-              <div className="text-xs text-slate-500">On Track · In Transit · Blocked</div>
-            </div>
-
-            <div className="h-64 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-              <svg viewBox="0 0 900 320" className="h-full w-full">
-                <rect x="0" y="0" width="900" height="320" fill="#f8fafc" />
-                <path d="M60 70 L170 60 L190 110 L175 165 L120 185 L80 160 L65 120 Z" fill="#dbeafe" />
-                <path d="M320 70 L440 65 L470 110 L430 140 L360 130 Z" fill="#dbeafe" />
-                <path d="M470 60 L680 55 L710 95 L700 160 L620 180 L520 150 L470 110 Z" fill="#dbeafe" />
-                <path d="M730 190 L810 185 L835 240 L800 280 L740 278 L720 235 Z" fill="#dbeafe" />
-                <path d="M190 110 Q320 60 430 100" stroke="#22c55e" strokeDasharray="6 5" strokeWidth="2" fill="none" />
-                <path d="M430 100 Q540 80 620 130" stroke="#f59e0b" strokeDasharray="6 5" strokeWidth="2" fill="none" />
-                <path d="M430 100 Q570 90 670 120" stroke="#6366f1" strokeDasharray="6 5" strokeWidth="2" fill="none" />
-                <circle cx="190" cy="110" r="5" fill="#22c55e" />
-                <circle cx="620" cy="130" r="5" fill="#f59e0b" />
-                <circle cx="470" cy="95" r="5" fill="#ef4444" />
-                <circle cx="670" cy="120" r="5" fill="#f59e0b" />
-              </svg>
-            </div>
+            <GlobalShipmentTracker
+              shipments={trackerShipments}
+              selectedShipmentId={selectedOrderId ?? undefined}
+              onShipmentSelect={(id) => setSelectedOrderId(id)}
+              height={340}
+            />
           </section>
         )}
 
@@ -274,7 +340,16 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
                 {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50/80">
+                  <tr
+                    key={order.id}
+                    onClick={() => setSelectedOrderId(order.id)}
+                    aria-selected={selectedOrderId === order.id}
+                    className={`cursor-pointer transition-colors ${
+                      selectedOrderId === order.id
+                        ? 'bg-indigo-50/70'
+                        : 'hover:bg-slate-50/80'
+                    }`}
+                  >
                     <td className="px-4 py-4 font-semibold text-indigo-700">{order.id}</td>
                     <td className="px-4 py-4 font-medium text-slate-800">{order.product}</td>
                     <td className="px-4 py-4">
