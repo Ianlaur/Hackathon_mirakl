@@ -14,6 +14,7 @@ const navigation = [
   { href: '/wms', label: 'Entrepôt', short: 'WM' },
   { href: '/parcels', label: 'Transport', short: 'TR' },
   { href: '/calendar', label: 'Calendrier', short: 'CA' },
+  { href: '/losses', label: 'Suivi des pertes', short: 'SP' },
 ]
 
 export default function Sidebar() {

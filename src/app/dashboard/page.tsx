@@ -43,6 +43,12 @@ const modules = [
     description: 'Planning interactif pour tâches, livraisons et relances.',
     tone: 'from-violet-600 to-fuchsia-500',
   },
+  {
+    name: 'Suivi des pertes',
+    href: '/losses',
+    description: 'Analyse des pertes par étape, cause, produit et transporteur.',
+    tone: 'from-rose-600 to-amber-500',
+  },
 ]
 
 export default function DashboardPage() {
@@ -93,7 +99,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-6">
         {modules.map((module) => (
           <Link
             key={module.name}
