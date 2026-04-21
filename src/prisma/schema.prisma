@@ -138,6 +138,26 @@ model Parcel {
   @@schema("public")
 }
 
+model CalendarEvent {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  title      String
+  start_at   DateTime
+  end_at     DateTime
+  kind       String
+  impact     String
+  zone       String?
+  notes      String?
+  locked     Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([start_at])
+  @@map("calendar_events")
+  @@schema("public")
+}
+
 model WarehouseZone {
   id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id     String         @db.Uuid

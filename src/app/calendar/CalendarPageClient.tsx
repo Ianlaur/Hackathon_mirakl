@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 
 type EventKind = 'commerce' | 'holiday' | 'leave' | 'logistics' | 'marketing' | 'internal'
 type EventImpact = 'low' | 'medium' | 'high' | 'critical'
@@ -20,6 +20,7 @@ type CalendarEvent = {
 }
 
 type EventForm = Omit<CalendarEvent, 'id' | 'locked'>
+type CalendarEventPatch = Partial<Omit<CalendarEvent, 'id'>>
 
 const eventKinds: Record<EventKind, { label: string; color: string; chip: string; border: string }> = {
   commerce: {
@@ -70,21 +71,34 @@ const impactLabels: Record<EventImpact, { label: string; chip: string }> = {
 const today = new Date()
 const todayKey = toDateKey(today)
 
+const francePublicHolidays2026: CalendarEvent[] = [
+  ['jour-an', "Jour de l'An", '2026-01-01'],
+  ['lundi-paques', 'Lundi de Pâques', '2026-04-06'],
+  ['fete-travail', 'Fête du Travail', '2026-05-01'],
+  ['victoire-1945', 'Victoire 1945', '2026-05-08'],
+  ['ascension', 'Ascension', '2026-05-14'],
+  ['lundi-pentecote', 'Lundi de Pentecôte', '2026-05-25'],
+  ['fete-nationale', 'Fête nationale', '2026-07-14'],
+  ['assomption', 'Assomption', '2026-08-15'],
+  ['toussaint', 'Toussaint', '2026-11-01'],
+  ['armistice', 'Armistice 1918', '2026-11-11'],
+  ['noel', 'Noël', '2026-12-25'],
+].map(([slug, title, date]) => ({
+  id: `holiday-fr-${slug}-2026`,
+  title,
+  startDate: date,
+  endDate: date,
+  startTime: '',
+  endTime: '',
+  kind: 'holiday',
+  impact: 'medium',
+  zone: 'France',
+  notes: 'Jour férié : anticiper les fermetures, retards transporteurs et pics avant/après.',
+  locked: true,
+}))
+
 const initialEvents: CalendarEvent[] = [
-  {
-    id: 'commerce-fr-holidays-2026',
-    title: 'Jours fériés France 2026',
-    startDate: '2026-01-01',
-    endDate: '2026-12-25',
-    startTime: '',
-    endTime: '',
-    kind: 'holiday',
-    impact: 'medium',
-    zone: 'France',
-    notes:
-      'Repères annuels pour anticiper les fermetures, retards transporteurs et pics avant/après jours fériés.',
-    locked: true,
-  },
+  ...francePublicHolidays2026,
   {
     id: 'commerce-winter-sales-2026',
     title: "Soldes d'hiver",
@@ -211,6 +225,15 @@ function toDateKey(date: Date) {
   return `${year}-${month}-${day}`
 }
 
+function formatDateFr(dateKey: string) {
+  const [year, month, day] = dateKey.split('-')
+  return `${day}-${month}-${year}`
+}
+
+function formatDateRangeFr(startDate: string, endDate: string) {
+  return startDate === endDate ? formatDateFr(startDate) : `${formatDateFr(startDate)} - ${formatDateFr(endDate)}`
+}
+
 function parseDateKey(dateKey: string) {
   const [year, month, day] = dateKey.split('-').map(Number)
   return new Date(year, month - 1, day)
@@ -230,6 +253,48 @@ function daysBetween(startDate: string, endDate: string) {
 
 function isDateInRange(dateKey: string, event: CalendarEvent) {
   return dateKey >= event.startDate && dateKey <= event.endDate
+}
+
+async function requestCalendarEvents(url: string, options?: RequestInit) {
+  const response = await fetch(url, options)
+  const data = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    throw new Error(data?.error || 'Erreur calendrier')
+  }
+
+  return data
+}
+
+async function createCalendarEvent(event: CalendarEvent) {
+  return requestCalendarEvents('/api/calendar-events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: event.title,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      kind: event.kind,
+      impact: event.impact,
+      zone: event.zone,
+      notes: event.notes,
+      locked: event.locked || false,
+    }),
+  }) as Promise<CalendarEvent>
+}
+
+async function updateCalendarEvent(id: string, patch: CalendarEventPatch) {
+  return requestCalendarEvents(`/api/calendar-events/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  }) as Promise<CalendarEvent>
+}
+
+async function deleteCalendarEvent(id: string) {
+  return requestCalendarEvents(`/api/calendar-events/${id}`, { method: 'DELETE' })
 }
 
 function monthLabel(date: Date) {
@@ -268,12 +333,57 @@ const emptyForm: EventForm = {
 }
 
 export default function CalendarPageClient() {
+  const titleInputRef = useRef<HTMLInputElement | null>(null)
   const [activeMonth, setActiveMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
   const [selectedDate, setSelectedDate] = useState(todayKey)
   const [selectedEventId, setSelectedEventId] = useState<string | null>('commerce-chinese-new-year-2026')
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null)
+  const [isCreatingFromDate, setIsCreatingFromDate] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [savingIds, setSavingIds] = useState<string[]>([])
+  const [syncError, setSyncError] = useState<string | null>(null)
   const [form, setForm] = useState<EventForm>(emptyForm)
+
+  useEffect(() => {
+    let ignore = false
+
+    const loadEvents = async () => {
+      try {
+        setSyncError(null)
+        const data = (await requestCalendarEvents('/api/calendar-events')) as CalendarEvent[]
+
+        if (ignore) return
+
+        if (data.length > 0) {
+          setEvents(data)
+          setSelectedEventId(data.find((event) => event.title === 'Nouvel An chinois')?.id || data[0].id)
+          setSelectedDate(data.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
+          return
+        }
+
+        const seeded = await Promise.all(initialEvents.map((event) => createCalendarEvent(event)))
+        if (ignore) return
+        setEvents(seeded)
+        setSelectedEventId(seeded.find((event) => event.title === 'Nouvel An chinois')?.id || seeded[0]?.id || null)
+        setSelectedDate(seeded.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
+      } catch (error) {
+        if (!ignore) {
+          setSyncError(error instanceof Error ? error.message : 'Synchronisation calendrier impossible')
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadEvents()
+
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   const monthDays = useMemo(() => buildMonthDays(activeMonth), [activeMonth])
   const selectedEvent = useMemo(
@@ -290,11 +400,11 @@ export default function CalendarPageClient() {
     count: events.filter((event) => event.kind === value).length,
   }))
 
-  const createEvent = (event: FormEvent<HTMLFormElement>) => {
+  const createEvent = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const startDate = form.startDate
     const endDate = form.endDate && form.endDate >= startDate ? form.endDate : startDate
-    const newEvent: CalendarEvent = {
+    const draftEvent: CalendarEvent = {
       id: `evt-${Date.now()}`,
       ...form,
       title: form.title.trim(),
@@ -302,14 +412,25 @@ export default function CalendarPageClient() {
       endDate,
       notes: form.notes.trim(),
     }
-    setEvents((current) => [...current, newEvent])
-    setSelectedDate(newEvent.startDate)
-    setSelectedEventId(newEvent.id)
-    setForm(emptyForm)
+
+    try {
+      setSyncError(null)
+      const newEvent = await createCalendarEvent(draftEvent)
+      setEvents((current) => [...current, newEvent])
+      setSelectedDate(newEvent.startDate)
+      setSelectedEventId(newEvent.id)
+      setForm(emptyForm)
+      setIsCreatingFromDate(false)
+    } catch (error) {
+      setSyncError(error instanceof Error ? error.message : 'Création impossible')
+    }
   }
 
   const updateSelectedEvent = (patch: Partial<CalendarEvent>) => {
     if (!selectedEvent) return
+    const previousEvent = selectedEvent
+    let patchedEvent: CalendarEvent | null = null
+
     setEvents((current) =>
       current.map((event) => {
         if (event.id !== selectedEvent.id) return event
@@ -317,9 +438,27 @@ export default function CalendarPageClient() {
         if (next.endDate < next.startDate) {
           next.endDate = next.startDate
         }
+        patchedEvent = next
         return next
       })
     )
+
+    setSavingIds((current) => Array.from(new Set([...current, selectedEvent.id])))
+    setSyncError(null)
+
+    updateCalendarEvent(selectedEvent.id, patch)
+      .then((savedEvent) => {
+        setEvents((current) => current.map((event) => (event.id === savedEvent.id ? savedEvent : event)))
+      })
+      .catch((error) => {
+        setEvents((current) => current.map((event) => (event.id === previousEvent.id ? previousEvent : event)))
+        setSyncError(error instanceof Error ? error.message : 'Mise à jour impossible')
+      })
+      .finally(() => {
+        if (patchedEvent) {
+          setSavingIds((current) => current.filter((id) => id !== selectedEvent.id))
+        }
+      })
   }
 
   const moveMonth = (offset: number) => {
@@ -331,24 +470,59 @@ export default function CalendarPageClient() {
     setForm((current) => ({ ...current, startDate: dateKey, endDate: dateKey }))
   }
 
+  const startCreateFromDate = (dateKey: string) => {
+    chooseDate(dateKey)
+    setSelectedEventId(null)
+    setIsCreatingFromDate(true)
+    setTimeout(() => titleInputRef.current?.focus(), 0)
+  }
+
   const dropEvent = (dateKey: string) => {
     if (!draggedEventId) return
+    const movedEvent = events.find((event) => event.id === draggedEventId)
+    if (!movedEvent) return
+    const duration = daysBetween(movedEvent.startDate, movedEvent.endDate)
+    const patch = { startDate: dateKey, endDate: addDays(dateKey, duration) }
+
     setEvents((current) =>
       current.map((event) => {
         if (event.id !== draggedEventId) return event
-        const duration = daysBetween(event.startDate, event.endDate)
-        return { ...event, startDate: dateKey, endDate: addDays(dateKey, duration) }
+        return { ...event, ...patch }
       })
     )
     setSelectedDate(dateKey)
     setSelectedEventId(draggedEventId)
     setDraggedEventId(null)
+    setSavingIds((current) => Array.from(new Set([...current, movedEvent.id])))
+    setSyncError(null)
+
+    updateCalendarEvent(movedEvent.id, patch)
+      .then((savedEvent) => {
+        setEvents((current) => current.map((event) => (event.id === savedEvent.id ? savedEvent : event)))
+      })
+      .catch((error) => {
+        setEvents((current) => current.map((event) => (event.id === movedEvent.id ? movedEvent : event)))
+        setSyncError(error instanceof Error ? error.message : 'Déplacement impossible')
+      })
+      .finally(() => {
+        setSavingIds((current) => current.filter((id) => id !== movedEvent.id))
+      })
   }
 
-  const deleteSelectedEvent = () => {
+  const deleteSelectedEvent = async () => {
     if (!selectedEvent) return
-    setEvents((current) => current.filter((event) => event.id !== selectedEvent.id))
+    const eventToDelete = selectedEvent
+    setEvents((current) => current.filter((event) => event.id !== eventToDelete.id))
     setSelectedEventId(null)
+
+    try {
+      setSyncError(null)
+      await deleteCalendarEvent(eventToDelete.id)
+    } catch (error) {
+      setEvents((current) => [...current, eventToDelete])
+      setSelectedEventId(eventToDelete.id)
+      setSyncError(error instanceof Error ? error.message : 'Suppression impossible')
+    }
   }
 
   return (
@@ -362,6 +536,23 @@ export default function CalendarPageClient() {
               Suivez les congés, jours fériés et temps forts commerce qui peuvent impacter vos ventes, stocks et
               livraisons.
             </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {isLoading && (
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  Chargement Supabase...
+                </span>
+              )}
+              {savingIds.length > 0 && (
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                  Sauvegarde en cours
+                </span>
+              )}
+              {syncError && (
+                <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                  {syncError}
+                </span>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
             {counts.map((kind) => (
@@ -430,6 +621,7 @@ export default function CalendarPageClient() {
                   key={day.key}
                   type="button"
                   onClick={() => chooseDate(day.key)}
+                  onDoubleClick={() => startCreateFromDate(day.key)}
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={() => dropEvent(day.key)}
                   className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-blue-50/60 ${
@@ -483,10 +675,16 @@ export default function CalendarPageClient() {
         <aside className="space-y-4">
           <section className="dashboard-card p-5">
             <h2 className="text-lg font-semibold text-slate-950">Nouvel événement</h2>
+            {isCreatingFromDate && (
+              <p className="mt-2 rounded-xl bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">
+                Création pour le {formatDateFr(form.startDate)}
+              </p>
+            )}
             <form onSubmit={createEvent} className="mt-4 space-y-4">
               <label className="block">
                 <span className="text-sm font-medium text-slate-700">Titre</span>
                 <input
+                  ref={titleInputRef}
                   value={form.title}
                   onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 transition focus:ring-2"
@@ -657,7 +855,7 @@ export default function CalendarPageClient() {
           </section>
 
           <section className="dashboard-card p-5">
-            <h2 className="text-lg font-semibold text-slate-950">{selectedDate}</h2>
+            <h2 className="text-lg font-semibold text-slate-950">{formatDateFr(selectedDate)}</h2>
             <div className="mt-3 space-y-2">
               {selectedDateEvents.length > 0 ? (
                 selectedDateEvents.map((event) => {
@@ -673,7 +871,7 @@ export default function CalendarPageClient() {
                         <div className="flex items-center gap-2">
                           <span className={`h-2.5 w-2.5 rounded-full ${kind.color}`} />
                           <span className="text-xs font-semibold text-slate-500">
-                            {event.startDate === event.endDate ? event.startDate : `${event.startDate} - ${event.endDate}`}
+                            {formatDateRangeFr(event.startDate, event.endDate)}
                           </span>
                         </div>
                         <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${impactLabels[event.impact].chip}`}>
