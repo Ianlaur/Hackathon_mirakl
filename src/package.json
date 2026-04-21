@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db execute --file scripts/create-users-view.sql --schema prisma/schema.prisma && prisma db execute --file scripts/create-email-logs.sql --schema prisma/schema.prisma && next build",
+    "build": "prisma generate && next build",
     "db:push": "prisma db push --accept-data-loss",
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
+    "db:prepare": "prisma db execute --file scripts/create-users-view.sql --schema prisma/schema.prisma && prisma db execute --file scripts/create-email-logs.sql --schema prisma/schema.prisma",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
