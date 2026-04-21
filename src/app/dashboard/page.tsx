@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import ActionsPendingWidget from '@/components/ActionsPendingWidget'
 
 const modules = [
   {
@@ -97,6 +98,10 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section>
+        <ActionsPendingWidget />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-6">

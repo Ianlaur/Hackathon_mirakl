@@ -7,6 +7,7 @@ import { useSidebar } from '@/contexts/SidebarContext'
 
 const navigation = [
   { href: '/dashboard', label: 'Dashboard', short: 'DB' },
+  { href: '/actions', label: 'Actions', short: 'AC' },
   { href: '/copilot', label: 'Copilot', short: 'AI' },
   { href: '/planning', label: 'Planning', short: 'PL' },
   { href: '/settings', label: 'Paramètres', short: 'PR' },
