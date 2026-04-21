@@ -1,3 +1,7 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   Blocks,
   Bot,
@@ -11,6 +15,8 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react'
+
+const PRO_PLUGIN_KEY = 'mirakl_global_control_tower_active'
 
 const featurePills = [
   { label: 'Live Shipment Map', icon: Globe },
@@ -50,8 +56,20 @@ const smallPlugins = [
 ]
 
 export default function AppStorePage() {
+  const [activated, setActivated] = useState(false)
+
+  useEffect(() => {
+    setActivated(window.localStorage.getItem(PRO_PLUGIN_KEY) === 'true')
+  }, [])
+
+  const handleTogglePlugin = () => {
+    const next = !activated
+    window.localStorage.setItem(PRO_PLUGIN_KEY, next ? 'true' : 'false')
+    setActivated(next)
+  }
+
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900">Agentic App Store</h1>
@@ -59,9 +77,7 @@ export default function AppStorePage() {
             4 PLUGINS
           </span>
         </div>
-        <p className="mt-3 text-xl text-slate-600">
-          Extend your Mirakl seller experience with AI-powered plugins.
-        </p>
+        <p className="mt-3 text-xl text-slate-600">Extend your Mirakl seller experience with AI-powered plugins.</p>
       </section>
 
       <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[linear-gradient(130deg,#031b43_0%,#032a65_55%,#05367f_100%)] p-6 text-white shadow-xl sm:p-8">
@@ -106,9 +122,26 @@ export default function AppStorePage() {
                 <span className="text-lg text-blue-100/80">12.4k installs</span>
               </div>
 
-              <button className="inline-flex items-center gap-3 rounded-2xl bg-blue-500 px-8 py-4 text-2xl font-semibold text-white shadow-lg shadow-blue-700/40 transition hover:bg-blue-400">
-                <Sparkles className="h-6 w-6" /> Activate — Upgrade to Pro
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleTogglePlugin}
+                  className={`inline-flex items-center gap-3 rounded-2xl px-7 py-4 text-xl font-semibold text-white shadow-lg transition ${
+                    activated
+                      ? 'bg-rose-500 shadow-rose-700/30 hover:bg-rose-400'
+                      : 'bg-blue-500 shadow-blue-700/40 hover:bg-blue-400'
+                  }`}
+                >
+                  {activated ? <CheckCircle2 className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
+                  {activated ? 'Désactiver le plugin' : 'Activer le plugin'}
+                </button>
+
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center rounded-2xl border border-white/30 bg-white/10 px-6 py-4 text-lg font-semibold text-white transition hover:bg-white/15"
+                >
+                  Ouvrir Dashboard
+                </Link>
+              </div>
             </div>
           </div>
         </div>
