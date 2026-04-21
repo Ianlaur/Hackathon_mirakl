@@ -25,6 +25,12 @@ const modules = [
     description: 'Suivi des colis et vision opérationnelle logistique.',
     tone: 'from-amber-500 to-orange-500',
   },
+  {
+    name: 'Calendrier',
+    href: '/calendar',
+    description: 'Planning interactif pour tâches, livraisons et relances.',
+    tone: 'from-violet-600 to-fuchsia-500',
+  },
 ]
 
 export default function DashboardPage() {
@@ -75,7 +81,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-5">
         {modules.map((module) => (
           <Link
             key={module.name}

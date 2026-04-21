@@ -11,6 +11,7 @@ const navigation = [
   { href: '/stock', label: 'Stock', short: 'ST' },
   { href: '/wms', label: 'Entrepôt', short: 'WM' },
   { href: '/parcels', label: 'Transport', short: 'TR' },
+  { href: '/calendar', label: 'Calendrier', short: 'CA' },
 ]
 
 export default function Sidebar() {
