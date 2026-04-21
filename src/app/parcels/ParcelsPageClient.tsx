@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import dynamic from 'next/dynamic'
@@ -342,7 +342,7 @@ function LiveTrackingTracker({
   const [expanded, setExpanded] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchTracking = async () => {
+  const fetchTracking = useCallback(async () => {
     if (!trackingCode) return
     
     setLoading(true)
@@ -376,14 +376,14 @@ function LiveTrackingTracker({
     } finally {
       setLoading(false)
     }
-  }
+  }, [carrier, onTrackingUpdate, trackingCode])
 
   // Fetch on mount and when tracking code changes
   useEffect(() => {
     if (trackingCode) {
       fetchTracking()
     }
-  }, [trackingCode, carrier])
+  }, [fetchTracking, trackingCode])
 
   // No tracking number
   if (!trackingCode) {
@@ -661,7 +661,7 @@ export default function ParcelsPageClient() {
     loadWmsZones()
   }, [])
 
-  const loadParcels = async () => {
+  const loadParcels = useCallback(async () => {
     try {
       const params = new URLSearchParams()
       if (search) params.append('search', search)
@@ -676,11 +676,11 @@ export default function ParcelsPageClient() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [search])
 
   useEffect(() => {
     loadParcels()
-  }, [search])
+  }, [loadParcels])
 
   const resetForm = () => {
     setForm({

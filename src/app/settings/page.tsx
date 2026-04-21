@@ -21,6 +21,22 @@ type Profile = {
   has_inventory?: boolean
 }
 
+type CopilotSettings = {
+  apiKey: string
+  apiKeyConfigured: boolean
+  apiKeyHint: string | null
+  preferredModel: string
+  autonomyMode: string
+  merchantCategory: string
+  operatingRegions: string
+  supplierRegions: string
+  supplierNames: string
+  seasonalityTags: string
+  protectedChannels: string
+  watchlistKeywords: string
+  planningNotes: string
+}
+
 const emptyProfile: Profile = {
   name: '',
   email: '',
@@ -37,10 +53,28 @@ const emptyProfile: Profile = {
   has_inventory: false,
 }
 
+const emptyCopilotSettings: CopilotSettings = {
+  apiKey: '',
+  apiKeyConfigured: false,
+  apiKeyHint: null,
+  preferredModel: 'gpt-4.1-mini',
+  autonomyMode: 'approval_required',
+  merchantCategory: '',
+  operatingRegions: '',
+  supplierRegions: '',
+  supplierNames: '',
+  seasonalityTags: '',
+  protectedChannels: '',
+  watchlistKeywords: '',
+  planningNotes: '',
+}
+
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile>(emptyProfile)
+  const [copilotSettings, setCopilotSettings] = useState<CopilotSettings>(emptyCopilotSettings)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [copilotSaving, setCopilotSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -53,30 +87,54 @@ export default function SettingsPage() {
   const [pwSuccess, setPwSuccess] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchSettings = async () => {
       try {
-        const res = await fetch('/api/profile')
-        if (!res.ok) {
+        const [profileRes, copilotRes] = await Promise.all([
+          fetch('/api/profile'),
+          fetch('/api/copilot/config'),
+        ])
+
+        if (!profileRes.ok) {
           throw new Error('Impossible de charger votre profil')
         }
-        const data = await res.json()
+
+        const profileData = await profileRes.json()
         setProfile({
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          bio: data.bio || '',
-          profile_image_url: data.profile_image_url || '',
-          company_name: data.company_name || '',
-          company_address: data.company_address || '',
-          company_siret: data.company_siret || '',
-          company_tva_text: data.company_tva_text || '',
-          company_logo_url: data.company_logo_url || '',
-          beta_features_enabled: data.beta_features_enabled || false,
-          has_inventory: data.has_inventory || false,
+          name: profileData.name || '',
+          email: profileData.email || '',
+          phone: profileData.phone || '',
+          address: profileData.address || '',
+          bio: profileData.bio || '',
+          profile_image_url: profileData.profile_image_url || '',
+          company_name: profileData.company_name || '',
+          company_address: profileData.company_address || '',
+          company_siret: profileData.company_siret || '',
+          company_tva_text: profileData.company_tva_text || '',
+          company_logo_url: profileData.company_logo_url || '',
+          beta_features_enabled: profileData.beta_features_enabled || false,
+          has_inventory: profileData.has_inventory || false,
         })
-        setPreview(data.profile_image_url || null)
-        setLogoPreview(data.company_logo_url || null)
+        setPreview(profileData.profile_image_url || null)
+        setLogoPreview(profileData.company_logo_url || null)
+
+        if (copilotRes.ok) {
+          const copilotData = await copilotRes.json()
+          setCopilotSettings({
+            apiKey: '',
+            apiKeyConfigured: Boolean(copilotData.apiKeyConfigured),
+            apiKeyHint: copilotData.apiKeyHint || null,
+            preferredModel: copilotData.preferredModel || 'gpt-4.1-mini',
+            autonomyMode: copilotData.autonomyMode || 'approval_required',
+            merchantCategory: copilotData.merchantCategory || '',
+            operatingRegions: (copilotData.operatingRegions || []).join(', '),
+            supplierRegions: (copilotData.supplierRegions || []).join(', '),
+            supplierNames: (copilotData.supplierNames || []).join(', '),
+            seasonalityTags: (copilotData.seasonalityTags || []).join(', '),
+            protectedChannels: (copilotData.protectedChannels || []).join(', '),
+            watchlistKeywords: (copilotData.watchlistKeywords || []).join(', '),
+            planningNotes: copilotData.planningNotes || '',
+          })
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erreur inconnue')
       } finally {
@@ -84,12 +142,17 @@ export default function SettingsPage() {
       }
     }
 
-    fetchProfile()
+    fetchSettings()
   }, [])
 
   const handleChange = (field: keyof Profile) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setProfile((prev) => ({ ...prev, [field]: e.target.value }))
   }
+
+  const handleCopilotChange =
+    (field: keyof CopilotSettings) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      setCopilotSettings((prev) => ({ ...prev, [field]: e.target.value }))
+    }
 
   const handleAvatar = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -184,6 +247,38 @@ export default function SettingsPage() {
       setPwError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setPwSaving(false)
+    }
+  }
+
+  const handleCopilotSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+    setCopilotSaving(true)
+
+    try {
+      const res = await fetch('/api/copilot/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(copilotSettings),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Échec de la mise à jour du copilote')
+      }
+
+      setCopilotSettings((prev) => ({
+        ...prev,
+        apiKey: '',
+        apiKeyConfigured: Boolean(data.apiKeyConfigured),
+        apiKeyHint: data.apiKeyHint || prev.apiKeyHint,
+      }))
+      setSuccess('Paramètres copilote mis à jour')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+    } finally {
+      setCopilotSaving(false)
     }
   }
 
@@ -423,6 +518,145 @@ export default function SettingsPage() {
             className="px-5 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
           >
             {saving ? 'Enregistrement...' : 'Enregistrer les changements'}
+          </button>
+        </div>
+      </form>
+
+      <form onSubmit={handleCopilotSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6 mt-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">Copilote IA & contexte métier</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Configurez votre clé API, le modèle préféré et les règles de contexte utilisées par le copilote marchand.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Clé API LLM</label>
+            <input
+              type="password"
+              value={copilotSettings.apiKey}
+              onChange={handleCopilotChange('apiKey')}
+              placeholder={copilotSettings.apiKeyConfigured ? copilotSettings.apiKeyHint || 'Configured' : 'sk-...'}
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {copilotSettings.apiKeyConfigured
+                ? `Clé enregistrée: ${copilotSettings.apiKeyHint || 'Configured'}`
+                : 'Aucune clé API enregistrée'}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Modèle préféré</label>
+            <input
+              type="text"
+              value={copilotSettings.preferredModel}
+              onChange={handleCopilotChange('preferredModel')}
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Mode d&apos;autonomie</label>
+            <select
+              value={copilotSettings.autonomyMode}
+              onChange={handleCopilotChange('autonomyMode')}
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            >
+              <option value="approval_required">Approval required</option>
+              <option value="recommendation_only">Recommendation only</option>
+              <option value="semi_auto">Semi-auto</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Catégorie marchand</label>
+            <input
+              type="text"
+              value={copilotSettings.merchantCategory}
+              onChange={handleCopilotChange('merchantCategory')}
+              placeholder="Fashion, home goods, electronics..."
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Zones d&apos;activité</label>
+            <input
+              type="text"
+              value={copilotSettings.operatingRegions}
+              onChange={handleCopilotChange('operatingRegions')}
+              placeholder="France, Belgium, Spain"
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Régions fournisseurs</label>
+            <input
+              type="text"
+              value={copilotSettings.supplierRegions}
+              onChange={handleCopilotChange('supplierRegions')}
+              placeholder="China, Turkey, Italy"
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Fournisseurs</label>
+            <input
+              type="text"
+              value={copilotSettings.supplierNames}
+              onChange={handleCopilotChange('supplierNames')}
+              placeholder="Nordika, Main supplier"
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Saisonnalité</label>
+            <input
+              type="text"
+              value={copilotSettings.seasonalityTags}
+              onChange={handleCopilotChange('seasonalityTags')}
+              placeholder="back-to-school, summer, Black Friday"
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Canaux protégés</label>
+            <input
+              type="text"
+              value={copilotSettings.protectedChannels}
+              onChange={handleCopilotChange('protectedChannels')}
+              placeholder="Top marketplace, premium storefront"
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Mots-clés de veille</label>
+            <input
+              type="text"
+              value={copilotSettings.watchlistKeywords}
+              onChange={handleCopilotChange('watchlistKeywords')}
+              placeholder="strike, customs, holiday, competitor"
+              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Notes de planification</label>
+          <textarea
+            value={copilotSettings.planningNotes}
+            onChange={handleCopilotChange('planningNotes')}
+            rows={4}
+            placeholder="Business constraints, lead times, important planning assumptions..."
+            className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+          />
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={copilotSaving}
+            className="px-5 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-700 transition disabled:opacity-50"
+          >
+            {copilotSaving ? 'Enregistrement...' : 'Enregistrer le copilote'}
           </button>
         </div>
       </form>

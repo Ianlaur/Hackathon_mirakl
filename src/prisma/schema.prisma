@@ -257,3 +257,186 @@ model PickingTask {
   @@map("picking_tasks")
   @@schema("public")
 }
+
+model MerchantAiSettings {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @db.Uuid
+  encrypted_api_key String?
+  api_key_hint      String?
+  preferred_model   String   @default("gpt-4.1-mini")
+  autonomy_mode     String   @default("approval_required")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@unique([user_id])
+  @@map("merchant_ai_settings")
+  @@schema("public")
+}
+
+model MerchantProfileContext {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id               String   @db.Uuid
+  merchant_category     String?
+  operating_regions     String[]
+  supplier_regions      String[]
+  supplier_names        String[]
+  seasonality_tags      String[]
+  planning_notes        String?
+  protected_channels    String[]
+  watchlist_keywords    String[]
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  @@unique([user_id])
+  @@map("merchant_profile_context")
+  @@schema("public")
+}
+
+model AgentContextSnapshot {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @db.Uuid
+  scenario_type   String
+  label           String
+  context_payload Json
+  created_at      DateTime @default(now())
+
+  @@index([user_id, scenario_type])
+  @@map("agent_context_snapshots")
+  @@schema("public")
+}
+
+model CopilotChatSession {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String               @db.Uuid
+  title           String
+  last_message_at DateTime             @default(now())
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
+  messages        CopilotChatMessage[]
+
+  @@index([user_id, last_message_at])
+  @@map("copilot_chat_sessions")
+  @@schema("public")
+}
+
+model CopilotChatMessage {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  session_id               String    @db.Uuid
+  user_id                  String    @db.Uuid
+  role                     String
+  content                  String
+  reasoning_summary        String?
+  evidence_payload         Json?
+  linked_recommendation_id String?   @db.Uuid
+  created_at               DateTime  @default(now())
+  session                  CopilotChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id, created_at])
+  @@index([user_id, created_at])
+  @@map("copilot_chat_messages")
+  @@schema("public")
+}
+
+model AgentRecommendation {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String                  @db.Uuid
+  title             String
+  scenario_type     String
+  status            String                  @default("pending_approval")
+  reasoning_summary String
+  evidence_payload  Json?
+  expected_impact   String?
+  confidence_note   String?
+  approval_required Boolean                 @default(true)
+  action_payload    Json?
+  source            String                  @default("copilot")
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  approvals         RecommendationApproval[]
+  execution_runs    AgentExecutionRun[]
+  external_signals  ExternalContextSignal[]
+
+  @@index([user_id, status, created_at])
+  @@index([user_id, scenario_type])
+  @@map("agent_recommendations")
+  @@schema("public")
+}
+
+model RecommendationApproval {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recommendation_id String              @db.Uuid
+  user_id           String              @db.Uuid
+  status            String
+  comment           String?
+  created_at        DateTime            @default(now())
+  recommendation    AgentRecommendation @relation(fields: [recommendation_id], references: [id], onDelete: Cascade)
+
+  @@index([recommendation_id, created_at])
+  @@index([user_id, status])
+  @@map("recommendation_approvals")
+  @@schema("public")
+}
+
+model AgentExecutionRun {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recommendation_id String              @db.Uuid
+  user_id           String              @db.Uuid
+  status            String              @default("queued")
+  target            String
+  payload           Json?
+  result_summary    String?
+  error_message     String?
+  executed_at       DateTime?
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  recommendation    AgentRecommendation @relation(fields: [recommendation_id], references: [id], onDelete: Cascade)
+
+  @@index([recommendation_id, created_at])
+  @@index([user_id, status])
+  @@map("agent_execution_runs")
+  @@schema("public")
+}
+
+model MerchantCalendarEvent {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String   @db.Uuid
+  title        String
+  event_type   String
+  start_date   DateTime
+  end_date     DateTime
+  notes        String?
+  impact_level String   @default("medium")
+  status       String   @default("scheduled")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([user_id, start_date])
+  @@map("merchant_calendar_events")
+  @@schema("public")
+}
+
+model ExternalContextSignal {
+  id                String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String               @db.Uuid
+  recommendation_id String?              @db.Uuid
+  title             String
+  summary           String
+  source_name       String?
+  source_url        String?
+  signal_type       String
+  impact_level      String               @default("medium")
+  relevance_score   Int                  @default(50)
+  geography         String?
+  tags              String[]
+  starts_at         DateTime?
+  ends_at           DateTime?
+  evidence_payload  Json?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  recommendation    AgentRecommendation? @relation(fields: [recommendation_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id, created_at])
+  @@index([user_id, signal_type, relevance_score])
+  @@map("external_context_signals")
+  @@schema("public")
+}

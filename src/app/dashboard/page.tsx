@@ -2,6 +2,18 @@ import Link from 'next/link'
 
 const modules = [
   {
+    name: 'Copilot',
+    href: '/copilot',
+    description: 'Chat explainable operations intelligence with approval-ready actions.',
+    tone: 'from-cyan-500 to-blue-500',
+  },
+  {
+    name: 'Planning',
+    href: '/planning',
+    description: 'Calendar events, external signals, and merchant planning workflows.',
+    tone: 'from-amber-500 to-yellow-400',
+  },
+  {
     name: 'Paramètres',
     href: '/settings',
     description: 'Profil, identité visuelle et options du compte.',
@@ -47,21 +59,21 @@ export default function DashboardPage() {
                 Hackathon Mirakl workspace
               </h1>
               <p className="max-w-2xl text-base leading-7 text-slate-600">
-                This copy now opens on a real dashboard with a working left sidebar and only the sections that exist in this hackathon build.
+                Merchant operations cockpit for stock, transport, planning, and an approval-gated AI copilot grounded in workspace data.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/stock"
+                href="/copilot"
                 className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
               >
-                Open Stock
+                Open Copilot
               </Link>
               <Link
-                href="/settings"
+                href="/planning"
                 className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
               >
-                Open Settings
+                Open Planning
               </Link>
             </div>
           </div>

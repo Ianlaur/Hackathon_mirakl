@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 interface Product {
@@ -448,9 +449,16 @@ export default function StockPageClient({
                   >
                     <div className="flex items-center gap-4">
                       {/* Product Image/Icon */}
-                      <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <div className="relative w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
                         {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-xl" />
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            fill
+                            sizes="64px"
+                            unoptimized
+                            className="object-cover rounded-xl"
+                          />
                         ) : (
                           <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
