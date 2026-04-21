@@ -1,12 +1,14 @@
 {
-  "name": "Calendar Advisor",
+  "name": "Calendar Advisor — Mirakl Hackathon",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "calendar-leave-created",
         "responseMode": "onReceived",
-        "options": {}
+        "options": {
+          "rawBody": false
+        }
       },
       "name": "Webhook Leave Created",
       "type": "n8n-nodes-base.webhook",
@@ -19,7 +21,7 @@
         "conditions": {
           "string": [
             {
-              "value1": "={{$json[\"kind\"]}}",
+              "value1": "={{$json[\"body\"][\"kind\"]}}",
               "operation": "equals",
               "value2": "leave"
             }
@@ -37,11 +39,10 @@
         "method": "POST",
         "sendBody": true,
         "contentType": "json",
-        "bodyParameters": {
-          "parameters": [
-            { "name": "event_id", "value": "={{$json[\"id\"]}}" },
-            { "name": "user_id", "value": "={{$json[\"user_id\"]}}" }
-          ]
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"event_id\": \"{{$json[\"body\"][\"event_id\"]}}\",\n  \"user_id\": \"{{$json[\"body\"][\"user_id\"]}}\"\n}",
+        "options": {
+          "timeout": 30000
         }
       },
       "name": "POST Calendar Advisor",
@@ -63,7 +64,10 @@
     {
       "parameters": {
         "url": "={{$env[\"APP_BASE_URL\"]}}/api/agent/calendar-advisor/refresh",
-        "method": "GET"
+        "method": "GET",
+        "options": {
+          "timeout": 60000
+        }
       },
       "name": "GET Refresh",
       "type": "n8n-nodes-base.httpRequest",

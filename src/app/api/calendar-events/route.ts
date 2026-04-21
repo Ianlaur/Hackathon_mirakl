@@ -94,7 +94,22 @@ export async function POST(request: NextRequest) {
       RETURNING id::text, title, start_at, end_at, kind, impact, zone, notes, locked
     `
 
-    return NextResponse.json(serializeEvent(events[0]), { status: 201 })
+    const createdEvent = events[0]
+
+    if (createdEvent.kind === 'leave') {
+      notifyN8n({
+        event_id: createdEvent.id,
+        user_id: userId,
+        kind: createdEvent.kind,
+        title: createdEvent.title,
+        start_at: createdEvent.start_at.toISOString(),
+        end_at: createdEvent.end_at.toISOString(),
+      }).catch((err) => {
+        console.error('n8n notify failed (non-blocking):', err)
+      })
+    }
+
+    return NextResponse.json(serializeEvent(createdEvent), { status: 201 })
   } catch (error) {
     console.error('Error creating calendar event:', error)
 
@@ -103,5 +118,23 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Impossible de créer l’événement' }, { status: 500 })
+  }
+}
+
+async function notifyN8n(payload: Record<string, unknown>) {
+  const webhookUrl = process.env.N8N_WEBHOOK_URL
+  if (!webhookUrl) return
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
   }
 }
