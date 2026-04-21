@@ -46,7 +46,7 @@ export default function ActionsPageClient({
         <div className="flex-1 space-y-2 overflow-y-auto">
           {recommendations.length === 0 && (
             <p className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">
-              Aucune action en attente. L'agent vous préviendra dès qu'il détecte un risque.
+              {"Aucune action en attente. L'agent vous préviendra dès qu'il détecte un risque."}
             </p>
           )}
 

@@ -26,7 +26,7 @@ export default async function ActionsPendingWidget() {
           href="/actions"
           className="rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
         >
-          Ouvrir l'inbox →
+          {"Ouvrir l'inbox →"}
         </Link>
       </div>
 
@@ -43,7 +43,7 @@ export default async function ActionsPendingWidget() {
         </ul>
       ) : (
         <p className="mt-4 text-sm text-slate-500">
-          Tout est à jour. L'agent te préviendra s'il détecte un risque.
+          {"Tout est à jour. L'agent te préviendra s'il détecte un risque."}
         </p>
       )}
     </div>
