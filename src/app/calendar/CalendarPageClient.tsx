@@ -594,6 +594,7 @@ export default function CalendarPageClient() {
   const [syncError, setSyncError] = useState<string | null>(null)
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [naturalInput, setNaturalInput] = useState('')
+  const [timelineRange, setTimelineRange] = useState(90)
 
   useEffect(() => {
     let ignore = false
@@ -840,26 +841,6 @@ export default function CalendarPageClient() {
             Suivez les congés, jours fériés et temps forts commerce qui peuvent impacter vos ventes, stocks et
             livraisons.
           </p>
-          <div className="mt-4 inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1">
-            {([
-              { value: 'day' as CalendarView, label: 'Vue journalière' },
-              { value: 'week' as CalendarView, label: 'Vue hebdomadaire' },
-              { value: 'month' as CalendarView, label: 'Vue mensuelle' },
-            ]).map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setCalendarView(option.value)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                  calendarView === option.value
-                    ? 'bg-white text-slate-950 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {isLoading && (
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -880,8 +861,129 @@ export default function CalendarPageClient() {
         </div>
       </section>
 
+      {/* --- Timeline frise --- */}
+      <section className="dashboard-card p-5 sm:p-6">
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-sm font-semibold text-slate-950">Prochains événements</p>
+          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100/80 p-0.5">
+            {[
+              { v: 30, l: '30 jours' },
+              { v: 90, l: '3 mois' },
+              { v: 180, l: '6 mois' },
+            ].map((opt) => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => setTimelineRange(opt.v)}
+                className={`rounded-md px-3 py-1 text-xs font-medium transition ${
+                  timelineRange === opt.v
+                    ? 'bg-white text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                {opt.l}
+              </button>
+            ))}
+          </div>
+        </div>
+        {(() => {
+          const rangeStart = parseDateKey(todayKey)
+          const rangeEnd = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate() + timelineRange)
+          const rangeEndKey = toDateKey(rangeEnd)
+          const totalDays = Math.max(1, timelineRange)
+
+          const tlEvents = events
+            .filter((e) => e.kind !== 'leave' && e.endDate >= todayKey && e.startDate <= rangeEndKey)
+            .sort((a, b) => a.startDate.localeCompare(b.startDate))
+
+          const pct = (dateKey: string) => {
+            const d = parseDateKey(dateKey)
+            const diff = Math.round((d.getTime() - rangeStart.getTime()) / 86400000)
+            return Math.max(2, Math.min(98, (diff / totalDays) * 100))
+          }
+
+          const shortDate = (dateKey: string) =>
+            new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(parseDateKey(dateKey))
+
+          const maxDots = timelineRange <= 30 ? 6 : timelineRange <= 90 ? 8 : 10
+          const visible = tlEvents.slice(0, maxDots)
+          const minGap = Math.max(8, 100 / Math.max(visible.length, 1) * 0.8)
+          const positions: number[] = []
+          visible.forEach((evt) => {
+            const start = evt.startDate < todayKey ? todayKey : evt.startDate
+            let pos = pct(start)
+            if (positions.length > 0) {
+              const prev = positions[positions.length - 1]
+              if (pos - prev < minGap) pos = Math.min(96, prev + minGap)
+            }
+            positions.push(pos)
+          })
+
+          if (visible.length === 0) return (
+            <p className="text-sm text-slate-400">Aucun événement sur cette période.</p>
+          )
+
+          return (
+            <div className="relative px-4">
+              <div className="absolute left-4 right-4 top-3 h-px bg-slate-200" />
+              <div className="absolute top-0 left-0">
+                <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center">
+                  <div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" />
+                </div>
+                <p className="mt-1 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Auj.</p>
+              </div>
+              {visible.map((evt, idx) => {
+                const kind = getKindStyle(evt.kind)
+                return (
+                  <div
+                    key={evt.id}
+                    className="absolute cursor-pointer group"
+                    style={{ left: `${positions[idx]}%` }}
+                    onClick={() => {
+                      setSelectedEventId(evt.id)
+                      setSelectedDate(evt.startDate)
+                      setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1))
+                    }}
+                  >
+                    <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center">
+                      <div className={`h-3 w-3 rounded-full ${kind.color} ring-2 ring-white transition group-hover:scale-125`} />
+                    </div>
+                    <div className="mt-1 -translate-x-1/2 w-28">
+                      <p className="text-xs font-semibold text-slate-900 truncate">{evt.title}</p>
+                      <p className="text-[11px] text-slate-400 capitalize">{shortDate(evt.startDate)}</p>
+                    </div>
+                  </div>
+                )
+              })}
+              <div className="h-16" />
+            </div>
+          )
+        })()}
+      </section>
+
+      {/* --- View switcher + Calendar --- */}
       <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
         <section className="dashboard-card overflow-hidden p-4 sm:p-5">
+          <div className="mb-4 inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1">
+            {[
+              { value: 'day' as CalendarView, label: 'Jour' },
+              { value: 'week' as CalendarView, label: 'Semaine' },
+              { value: 'month' as CalendarView, label: 'Mois' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setCalendarView(option.value)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  calendarView === option.value
+                    ? 'bg-white text-slate-950 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
           {/* --- Navigation bar --- */}
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <button
