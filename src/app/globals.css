@@ -35,4 +35,87 @@
   .dashboard-card {
     @apply rounded-2xl border border-white/60 bg-white/90 shadow-sm backdrop-blur;
   }
+
+  .mascot-orb {
+    isolation: isolate;
+  }
+
+  .mascot-orb__image-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: mascot-float 5s ease-in-out infinite;
+    transition: transform 220ms ease;
+  }
+
+  .mascot-orb:hover .mascot-orb__image-wrap {
+    transform: scale(1.08);
+  }
+
+  .mascot-orb:active .mascot-orb__image-wrap {
+    transform: scale(0.95);
+    transition: transform 120ms ease;
+  }
+
+  .mascot-orb__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: mascot-spin 18s linear infinite;
+    filter: drop-shadow(0 10px 22px rgba(99, 102, 241, 0.35));
+  }
+
+  .mascot-orb__halo {
+    position: absolute;
+    inset: -18%;
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle at center,
+      rgba(236, 72, 153, 0.28) 0%,
+      rgba(99, 102, 241, 0.24) 35%,
+      rgba(59, 130, 246, 0) 70%
+    );
+    filter: blur(12px);
+    animation: mascot-breathe 3.6s ease-in-out infinite;
+    z-index: -1;
+  }
+
+  @keyframes mascot-float {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-4px) scale(1.03);
+    }
+  }
+
+  @keyframes mascot-spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes mascot-breathe {
+    0%, 100% {
+      opacity: 0.55;
+      transform: scale(0.92);
+    }
+    50% {
+      opacity: 0.95;
+      transform: scale(1.05);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mascot-orb__image-wrap,
+    .mascot-orb__image,
+    .mascot-orb__halo {
+      animation: none;
+    }
+  }
 }
