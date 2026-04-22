@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import Sidebar from '@/components/Sidebar'
+import MascotOrb from '@/components/MascotOrb'
 
 const CHUNK_RETRY_COUNT_KEY = 'mirakl_chunk_retry_count'
 const CHUNK_RETRY_TS_KEY = 'mirakl_chunk_retry_ts'
@@ -94,6 +95,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       >
         <div className="px-4 pb-10 pt-6 sm:px-6 lg:px-8">{children}</div>
       </main>
+      <MascotOrb />
     </div>
   )
 }
