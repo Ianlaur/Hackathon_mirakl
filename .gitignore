@@ -31,6 +31,8 @@ Thumbs.db
 out/
 bin/
 obj/
+.next/
+*.tsbuildinfo
 
 # Package manager
 package-lock.json

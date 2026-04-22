@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Low Stock Trigger API
+  version: "1.0.0"
+  description: API contract for low-stock trigger analysis used by the merchant ops copilot.
+servers:
+  - url: https://your-webhook-host.example.com
+paths:
+  /low-stock-trigger:
+    post:
+      operationId: analyzeLowStockTrigger
+      summary: Analyze a low-stock event and return mitigation guidance.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LowStockTriggerRequest"
+      responses:
+        "200":
+          description: Dust analysis result for the low-stock trigger.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LowStockTriggerResponse"
+        "400":
+          description: Invalid request payload.
+        "401":
+          description: Unauthorized request.
+        "500":
+          description: Internal processing error.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: APIKey
+  schemas:
+    LowStockTriggerRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - event
+        - userId
+        - productId
+        - productName
+        - quantity
+        - threshold
+        - generatedAt
+      properties:
+        event:
+          type: string
+          enum:
+            - low_stock_trigger
+        userId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+          minLength: 1
+        quantity:
+          type: integer
+          minimum: 0
+        threshold:
+          type: integer
+          minimum: 1
+        supplier:
+          type: string
+          nullable: true
+        generatedAt:
+          type: string
+          format: date-time
+    LowStockTriggerResponse:
+      type: object
+      additionalProperties: true
+      required:
+        - alertSummary
+        - analysis
+        - proposedSolution
+      properties:
+        alertSummary:
+          type: string
+          minLength: 1
+          maxLength: 180
+        analysis:
+          type: string
+          minLength: 1
+          maxLength: 600
+        proposedSolution:
+          type: string
+          minLength: 1
+          maxLength: 700
+        confidence:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - critical
+        confidenceLevel:
+          type: string
+        recommendation:
+          type: string

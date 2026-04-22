@@ -1,0 +1,467 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public", "neon_auth"]
+}
+
+model User {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                 String?   @unique
+  name                  String?
+  phone                 String?
+  address               String?
+  bio                   String?
+  image                 String?
+  company_name          String?
+  company_address       String?
+  company_siret         String?
+  company_tva_text      String?
+  company_logo_url      String?
+  beta_features_enabled Boolean   @default(false)
+  has_inventory         Boolean   @default(true)
+  has_srm               Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  accounts              Account[]
+
+  @@map("user")
+  @@schema("neon_auth")
+}
+
+model Account {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @db.Uuid
+  providerId String
+  password   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId])
+  @@map("account")
+  @@schema("neon_auth")
+}
+
+model ProductCategory {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String    @db.Uuid
+  name        String
+  description String?
+  color       String?   @default("#6366f1")
+  icon        String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  products    Product[]
+
+  @@unique([user_id, name])
+  @@map("product_categories")
+  @@schema("public")
+}
+
+model Product {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id            String            @db.Uuid
+  category_id        String?           @db.Uuid
+  name               String
+  description        String?
+  sku                String?
+  barcode            String?
+  purchase_price     Decimal?          @db.Decimal(12, 2)
+  selling_price      Decimal           @default(0) @db.Decimal(12, 2)
+  quantity           Int               @default(0)
+  min_quantity       Int               @default(0)
+  unit               String            @default("piece")
+  location           String?
+  supplier           String?
+  image_url          String?
+  active             Boolean           @default(true)
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @updatedAt
+  product_categories ProductCategory?  @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  stock_movements    StockMovement[]
+  bin_contents       BinContent[]
+  picking_tasks      PickingTask[]
+  stock_low_alerts   StockLowAlert[]
+
+  @@index([user_id])
+  @@index([category_id])
+  @@map("products")
+  @@schema("public")
+}
+
+model StockLowAlert {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id               String   @db.Uuid
+  product_id            String   @db.Uuid
+  product_name_snapshot String?
+  threshold             Int      @default(10)
+  quantity              Int
+  status                String   @default("pending")
+  trigger_reason        String?
+  dust_response         String?
+  proposed_solution     String?
+  error_message         String?
+  processed_at          DateTime?
+  recommendation_id     String?  @db.Uuid
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  product               Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, status, created_at])
+  @@index([product_id, status])
+  @@map("stock_low_alerts")
+  @@schema("public")
+}
+
+model StockMovement {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  product_id String   @db.Uuid
+  type       String
+  quantity   Int
+  unit_price Decimal? @db.Decimal(12, 2)
+  reference  String?
+  notes      String?
+  created_at DateTime @default(now())
+  products   Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([product_id])
+  @@map("stock_movements")
+  @@schema("public")
+}
+
+model Parcel {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String    @db.Uuid
+  type              String    @default("incoming")
+  status            String    @default("pending")
+  tracking_code     String?
+  carrier           String?
+  carrier_url       String?
+  reference         String?
+  sender_name       String?
+  sender_address    String?
+  recipient_name    String?
+  recipient_address String?
+  weight            Decimal?  @db.Decimal(10, 2)
+  description       String?
+  notes             String?
+  estimated_date    DateTime?
+  shipped_at        DateTime?
+  delivered_at      DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  @@index([user_id])
+  @@map("parcels")
+  @@schema("public")
+}
+
+model CalendarEvent {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  title      String
+  start_at   DateTime
+  end_at     DateTime
+  kind       String
+  impact     String
+  zone       String?
+  notes      String?
+  locked     Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([start_at])
+  @@map("calendar_events")
+  @@schema("public")
+}
+
+model WarehouseZone {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String         @db.Uuid
+  name        String
+  code        String
+  description String?
+  zone_type   String         @default("storage")
+  color       String?        @default("#6366f1")
+  active      Boolean        @default(true)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+  bins        WarehouseBin[]
+
+  @@unique([user_id, code])
+  @@map("warehouse_zones")
+  @@schema("public")
+}
+
+model WarehouseBin {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String        @db.Uuid
+  zone_id       String        @db.Uuid
+  name          String
+  code          String
+  barcode       String?
+  capacity      Int?
+  current_usage Int           @default(0)
+  active        Boolean       @default(true)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
+  zone          WarehouseZone @relation(fields: [zone_id], references: [id], onDelete: Cascade)
+  bin_contents  BinContent[]
+  picking_tasks PickingTask[]
+
+  @@unique([user_id, code])
+  @@index([zone_id])
+  @@map("warehouse_bins")
+  @@schema("public")
+}
+
+model BinContent {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String       @db.Uuid
+  bin_id     String       @db.Uuid
+  product_id String       @db.Uuid
+  quantity   Int          @default(0)
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  bin        WarehouseBin @relation(fields: [bin_id], references: [id], onDelete: Cascade)
+  product    Product      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([bin_id, product_id])
+  @@index([user_id])
+  @@index([product_id])
+  @@map("bin_contents")
+  @@schema("public")
+}
+
+model PickingList {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String        @db.Uuid
+  reference     String
+  status        String        @default("pending")
+  priority      Int           @default(0)
+  notes         String?
+  assigned_to   String?
+  completed_at  DateTime?
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
+  picking_tasks PickingTask[]
+
+  @@index([user_id])
+  @@map("picking_lists")
+  @@schema("public")
+}
+
+model PickingTask {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String        @db.Uuid
+  picking_list_id  String        @db.Uuid
+  product_id       String        @db.Uuid
+  source_bin_id    String?       @db.Uuid
+  quantity_ordered Int
+  quantity_picked  Int           @default(0)
+  status           String        @default("pending")
+  picked_at        DateTime?
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  picking_list     PickingList   @relation(fields: [picking_list_id], references: [id], onDelete: Cascade)
+  product          Product       @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  source_bin       WarehouseBin? @relation(fields: [source_bin_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([picking_list_id])
+  @@index([product_id])
+  @@index([source_bin_id])
+  @@map("picking_tasks")
+  @@schema("public")
+}
+
+model MerchantAiSettings {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @db.Uuid
+  encrypted_api_key String?
+  api_key_hint      String?
+  preferred_model   String   @default("gpt-4.1-mini")
+  autonomy_mode     String   @default("approval_required")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@unique([user_id])
+  @@map("merchant_ai_settings")
+  @@schema("public")
+}
+
+model MerchantProfileContext {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id               String   @db.Uuid
+  merchant_category     String?
+  operating_regions     String[]
+  supplier_regions      String[]
+  supplier_names        String[]
+  seasonality_tags      String[]
+  planning_notes        String?
+  protected_channels    String[]
+  watchlist_keywords    String[]
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  @@unique([user_id])
+  @@map("merchant_profile_context")
+  @@schema("public")
+}
+
+model AgentContextSnapshot {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @db.Uuid
+  scenario_type   String
+  label           String
+  context_payload Json
+  created_at      DateTime @default(now())
+
+  @@index([user_id, scenario_type])
+  @@map("agent_context_snapshots")
+  @@schema("public")
+}
+
+model CopilotChatSession {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String               @db.Uuid
+  title           String
+  last_message_at DateTime             @default(now())
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
+  messages        CopilotChatMessage[]
+
+  @@index([user_id, last_message_at])
+  @@map("copilot_chat_sessions")
+  @@schema("public")
+}
+
+model CopilotChatMessage {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  session_id               String    @db.Uuid
+  user_id                  String    @db.Uuid
+  role                     String
+  content                  String
+  reasoning_summary        String?
+  evidence_payload         Json?
+  linked_recommendation_id String?   @db.Uuid
+  created_at               DateTime  @default(now())
+  session                  CopilotChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id, created_at])
+  @@index([user_id, created_at])
+  @@map("copilot_chat_messages")
+  @@schema("public")
+}
+
+model AgentRecommendation {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String                  @db.Uuid
+  title             String
+  scenario_type     String
+  status            String                  @default("pending_approval")
+  reasoning_summary String
+  evidence_payload  Json?
+  expected_impact   String?
+  confidence_note   String?
+  approval_required Boolean                 @default(true)
+  action_payload    Json?
+  source            String                  @default("copilot")
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  approvals         RecommendationApproval[]
+  execution_runs    AgentExecutionRun[]
+  external_signals  ExternalContextSignal[]
+
+  @@index([user_id, status, created_at])
+  @@index([user_id, scenario_type])
+  @@map("agent_recommendations")
+  @@schema("public")
+}
+
+model RecommendationApproval {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recommendation_id String              @db.Uuid
+  user_id           String              @db.Uuid
+  status            String
+  comment           String?
+  created_at        DateTime            @default(now())
+  recommendation    AgentRecommendation @relation(fields: [recommendation_id], references: [id], onDelete: Cascade)
+
+  @@index([recommendation_id, created_at])
+  @@index([user_id, status])
+  @@map("recommendation_approvals")
+  @@schema("public")
+}
+
+model AgentExecutionRun {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recommendation_id String              @db.Uuid
+  user_id           String              @db.Uuid
+  status            String              @default("queued")
+  target            String
+  payload           Json?
+  result_summary    String?
+  error_message     String?
+  executed_at       DateTime?
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  recommendation    AgentRecommendation @relation(fields: [recommendation_id], references: [id], onDelete: Cascade)
+
+  @@index([recommendation_id, created_at])
+  @@index([user_id, status])
+  @@map("agent_execution_runs")
+  @@schema("public")
+}
+
+model MerchantCalendarEvent {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String   @db.Uuid
+  title        String
+  event_type   String
+  start_date   DateTime
+  end_date     DateTime
+  notes        String?
+  impact_level String   @default("medium")
+  status       String   @default("scheduled")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([user_id, start_date])
+  @@map("merchant_calendar_events")
+  @@schema("public")
+}
+
+model ExternalContextSignal {
+  id                String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String               @db.Uuid
+  recommendation_id String?              @db.Uuid
+  title             String
+  summary           String
+  source_name       String?
+  source_url        String?
+  signal_type       String
+  impact_level      String               @default("medium")
+  relevance_score   Int                  @default(50)
+  geography         String?
+  tags              String[]
+  starts_at         DateTime?
+  ends_at           DateTime?
+  evidence_payload  Json?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  recommendation    AgentRecommendation? @relation(fields: [recommendation_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id, created_at])
+  @@index([user_id, signal_type, relevance_score])
+  @@map("external_context_signals")
+  @@schema("public")
+}
