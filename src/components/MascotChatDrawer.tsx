@@ -210,6 +210,14 @@ export default function MascotChatDrawer({
   const isRecording = recorder.state === 'recording'
   const isStarting = recorder.state === 'requesting'
 
+  // Auto-resize du textarea en fonction du contenu
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [input])
+
   useEffect(() => {
     if (messages.length > 0) {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
