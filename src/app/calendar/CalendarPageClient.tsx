@@ -588,6 +588,7 @@ export default function CalendarPageClient() {
   const [selectedDate, setSelectedDate] = useState(todayKey)
   const [selectedEventId, setSelectedEventId] = useState<string | null>('commerce-chinese-new-year-2026')
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null)
+  const [detailEventId, setDetailEventId] = useState<string | null>(null)
   const [isCreatingFromDate, setIsCreatingFromDate] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [savingIds, setSavingIds] = useState<string[]>([])
@@ -640,6 +641,10 @@ export default function CalendarPageClient() {
   const selectedEvent = useMemo(
     () => events.find((event) => event.id === selectedEventId) || null,
     [events, selectedEventId]
+  )
+  const detailEvent = useMemo(
+    () => (detailEventId ? events.find((event) => event.id === detailEventId) || null : null),
+    [events, detailEventId]
   )
   const selectedDateEvents = events
     .filter((event) => isDateInRange(selectedDate, event))
@@ -895,7 +900,7 @@ export default function CalendarPageClient() {
               </div>
               {vis.map((evt, i) => { const k = getKindStyle(evt.kind); return (
                 <div key={evt.id} className="absolute cursor-pointer group" style={{ left: `${pos[i]}%` }}
-                  onClick={() => { setSelectedEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
+                  onClick={() => { setDetailEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
                   <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} /></div>
                   <div className="mt-1 -translate-x-1/2 w-28">
                     <p className="text-xs font-semibold text-slate-900 truncate">{evt.title}</p>
@@ -1004,7 +1009,7 @@ export default function CalendarPageClient() {
                               draggable
                               onClick={(click) => {
                                 click.stopPropagation()
-                                setSelectedEventId(event.id)
+                                setDetailEventId(event.id)
                                 setSelectedDate(day.key)
                               }}
                               onDragStart={() => setDraggedEventId(event.id)}
@@ -1077,7 +1082,7 @@ export default function CalendarPageClient() {
                           return (
                             <div key={event.id} className="relative h-6" style={{ marginLeft: `${leftPct}%`, width: `${widthPct}%` }}>
                               <div
-                                onClick={() => { setSelectedEventId(event.id); setSelectedDate(event.startDate) }}
+                                onClick={() => { setDetailEventId(event.id); setSelectedDate(event.startDate) }}
                                 className={`absolute inset-0 mx-1 cursor-pointer truncate rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${kind.chip} ${kind.border}`}
                                 title={event.title}
                               >
@@ -1122,7 +1127,7 @@ export default function CalendarPageClient() {
                                 return (
                                   <div
                                     key={event.id}
-                                    onClick={(e) => { e.stopPropagation(); setSelectedEventId(event.id); setSelectedDate(wd.key) }}
+                                    onClick={(e) => { e.stopPropagation(); setDetailEventId(event.id); setSelectedDate(wd.key) }}
                                     className={`mb-0.5 cursor-pointer truncate rounded border px-1.5 py-0.5 text-[11px] font-semibold ${kind.chip} ${kind.border}`}
                                     title={`${event.title} · ${event.startTime}${event.endTime ? `-${event.endTime}` : ''}`}
                                   >
@@ -1168,7 +1173,7 @@ export default function CalendarPageClient() {
                           <button
                             key={event.id}
                             type="button"
-                            onClick={() => setSelectedEventId(event.id)}
+                            onClick={() => setDetailEventId(event.id)}
                             className={`w-full rounded-lg border px-3 py-2 text-left transition hover:border-blue-200 ${kind.border} ${kind.chip} ${
                               selectedEventId === event.id ? 'ring-2 ring-blue-500' : ''
                             }`}
@@ -1210,7 +1215,7 @@ export default function CalendarPageClient() {
                             <button
                               key={event.id}
                               type="button"
-                              onClick={(e) => { e.stopPropagation(); setSelectedEventId(event.id) }}
+                              onClick={(e) => { e.stopPropagation(); setDetailEventId(event.id) }}
                               className={`mb-1 w-full rounded-lg border px-3 py-2 text-left transition hover:border-blue-200 ${kind.border} ${kind.chip} ${
                                 selectedEventId === event.id ? 'ring-2 ring-blue-500' : ''
                               }`}
@@ -1250,6 +1255,39 @@ export default function CalendarPageClient() {
         </section>
 
       </div>
+
+      {detailEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setDetailEventId(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className={`h-3.5 w-3.5 rounded-full ${getKindStyle(detailEvent.kind).color}`} />
+                <h3 className="text-lg font-semibold text-slate-950">{detailEvent.title}</h3>
+              </div>
+              <button type="button" onClick={() => setDetailEventId(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span>{formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}</span>
+                {detailEvent.startTime && (
+                  <span className="text-slate-400">{detailEvent.startTime}{detailEvent.endTime ? ` - ${detailEvent.endTime}` : ''}</span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getKindStyle(detailEvent.kind).chip}`}>{getKindStyle(detailEvent.kind).label}</span>
+                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${impactLabels[detailEvent.impact].chip}`}>Impact {impactLabels[detailEvent.impact].label.toLowerCase()}</span>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{detailEvent.zone}</span>
+              </div>
+              {detailEvent.notes && (
+                <p className="rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-600">{detailEvent.notes}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
