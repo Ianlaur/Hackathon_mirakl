@@ -42,38 +42,13 @@ export default function SmartChat() {
   const [loading, setLoading] = useState(false)
   const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null)
   const [suggestions, setSuggestions] = useState<string[]>(FALLBACK_QUESTIONS)
+  const [sessionId, setSessionId] = useState<string | null>(null)
 
   const lastHistory = useMemo(() => messages.slice(-6), [messages])
 
   useEffect(() => {
-    let cancelled = false
-
-    async function loadSuggestions() {
-      try {
-        const response = await fetch('/api/dust/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ kind: 'suggestions' }),
-        })
-
-        const payload = await response.json().catch(() => ({}))
-        const questions = Array.isArray(payload?.questions)
-          ? payload.questions.filter((item: unknown) => typeof item === 'string').slice(0, 5)
-          : []
-
-        if (!cancelled && questions.length > 0) {
-          setSuggestions(questions)
-        }
-      } catch {
-        // Keep fallback questions.
-      }
-    }
-
-    void loadSuggestions()
-
-    return () => {
-      cancelled = true
-    }
+    // Static defaults are enough for now; copilot backend provides dynamic recommendations after first message.
+    setSuggestions(FALLBACK_QUESTIONS)
   }, [])
 
   async function askQuestion(rawQuestion: string) {
@@ -88,16 +63,43 @@ export default function SmartChat() {
     setMessages((current) => [...current, userMessage])
 
     try {
-      const response = await fetch('/api/dust/chat', {
+      const response = await fetch('/api/copilot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: question, history: optimisticHistory }),
+        body: JSON.stringify({
+          sessionId: sessionId || undefined,
+          message: question,
+          history: optimisticHistory,
+        }),
       })
 
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(payload?.error || 'Request failed')
 
-      const result = typeof payload?.result === 'string' ? payload.result.trim() : ''
+      const result =
+        typeof payload?.message?.content === 'string'
+          ? payload.message.content.trim()
+          : typeof payload?.result === 'string'
+            ? payload.result.trim()
+            : ''
+
+      if (typeof payload?.sessionId === 'string' && payload.sessionId) {
+        setSessionId(payload.sessionId)
+      }
+
+      if (Array.isArray(payload?.recommendations) && payload.recommendations.length > 0) {
+        const nextSuggestions = payload.recommendations
+          .map((item: unknown) =>
+            typeof item === 'object' && item !== null && typeof (item as { title?: unknown }).title === 'string'
+              ? (item as { title: string }).title
+              : null
+          )
+          .filter((item: string | null): item is string => Boolean(item))
+          .slice(0, 5)
+        if (nextSuggestions.length > 0) {
+          setSuggestions(nextSuggestions)
+        }
+      }
 
       setMessages((current) => [
         ...current,
