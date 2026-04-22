@@ -9,6 +9,78 @@ type ChatMessage = {
   tool_calls?: Array<{ name: string; args: unknown; result: unknown }>
 }
 
+const PLACEHOLDER_PROMPTS = [
+  "Combien j'ai de stock au total ?",
+  'Je pars en vacances du 5 au 15 mai',
+  "Quelles actions m'attendent ?",
+  'Stock de la chaise Oslo ?',
+  'Cherche mes tables en rupture',
+  'Liste mes produits à commander',
+]
+
+const TYPE_SPEED_MS = 38
+const ERASE_SPEED_MS = 22
+const HOLD_FULL_MS = 1800
+const HOLD_EMPTY_MS = 400
+
+function useTypingPlaceholder(active: boolean, prompts: string[]): string {
+  const [text, setText] = useState('')
+
+  useEffect(() => {
+    if (!active) {
+      setText('')
+      return
+    }
+    let cancelled = false
+    let promptIdx = 0
+    let charIdx = 0
+    let mode: 'typing' | 'holding' | 'erasing' | 'hold-empty' = 'typing'
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+    const tick = () => {
+      if (cancelled) return
+      const current = prompts[promptIdx]
+
+      if (mode === 'typing') {
+        charIdx++
+        setText(current.slice(0, charIdx))
+        if (charIdx >= current.length) {
+          mode = 'holding'
+          timeoutId = setTimeout(tick, HOLD_FULL_MS)
+        } else {
+          timeoutId = setTimeout(tick, TYPE_SPEED_MS + Math.random() * 40)
+        }
+      } else if (mode === 'holding') {
+        mode = 'erasing'
+        timeoutId = setTimeout(tick, ERASE_SPEED_MS)
+      } else if (mode === 'erasing') {
+        charIdx--
+        setText(current.slice(0, charIdx))
+        if (charIdx <= 0) {
+          mode = 'hold-empty'
+          timeoutId = setTimeout(tick, HOLD_EMPTY_MS)
+        } else {
+          timeoutId = setTimeout(tick, ERASE_SPEED_MS)
+        }
+      } else {
+        promptIdx = (promptIdx + 1) % prompts.length
+        charIdx = 0
+        mode = 'typing'
+        timeoutId = setTimeout(tick, TYPE_SPEED_MS)
+      }
+    }
+
+    timeoutId = setTimeout(tick, 400)
+
+    return () => {
+      cancelled = true
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [active, prompts])
+
+  return text
+}
+
 export default function MascotChatDrawer({
   open,
   onClose,
@@ -22,6 +94,9 @@ export default function MascotChatDrawer({
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  const placeholderActive = open && input.length === 0 && messages.length === 0 && !busy
+  const animatedPlaceholder = useTypingPlaceholder(placeholderActive, PLACEHOLDER_PROMPTS)
 
   useEffect(() => {
     if (open) {
@@ -123,7 +198,7 @@ export default function MascotChatDrawer({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Iris"
+            placeholder={placeholderActive ? animatedPlaceholder || '\u00a0' : 'Iris'}
             rows={1}
             className="iris-searchbar__input"
             disabled={busy}
