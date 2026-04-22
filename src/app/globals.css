@@ -60,11 +60,68 @@
   }
 
   .mascot-orb__image {
+    position: relative;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    animation: mascot-spin 18s linear infinite;
     filter: drop-shadow(0 10px 22px rgba(99, 102, 241, 0.35));
+    z-index: 1;
+  }
+
+  .mascot-orb__smoke {
+    position: absolute;
+    inset: 18%;
+    border-radius: 9999px;
+    overflow: hidden;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    z-index: 2;
+    filter: blur(2px);
+  }
+
+  .mascot-orb__smoke-blob {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    border-radius: 9999px;
+    filter: blur(14px);
+    will-change: transform;
+  }
+
+  .mascot-orb__smoke-blob--pink {
+    background: radial-gradient(
+      circle,
+      rgba(244, 114, 182, 0.9) 0%,
+      rgba(244, 114, 182, 0) 70%
+    );
+    animation: mascot-drift-pink 9s ease-in-out infinite;
+  }
+
+  .mascot-orb__smoke-blob--blue {
+    background: radial-gradient(
+      circle,
+      rgba(96, 165, 250, 0.9) 0%,
+      rgba(96, 165, 250, 0) 70%
+    );
+    animation: mascot-drift-blue 11s ease-in-out infinite;
+  }
+
+  .mascot-orb__smoke-blob--violet {
+    background: radial-gradient(
+      circle,
+      rgba(167, 139, 250, 0.85) 0%,
+      rgba(167, 139, 250, 0) 70%
+    );
+    animation: mascot-drift-violet 13s ease-in-out infinite;
+  }
+
+  .mascot-orb__smoke-blob--cyan {
+    background: radial-gradient(
+      circle,
+      rgba(103, 232, 249, 0.8) 0%,
+      rgba(103, 232, 249, 0) 70%
+    );
+    animation: mascot-drift-cyan 15s ease-in-out infinite;
   }
 
   .mascot-orb__halo {
@@ -91,13 +148,36 @@
     }
   }
 
-  @keyframes mascot-spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+  @keyframes mascot-drift-pink {
+    0%   { transform: translate(-10%, 30%) scale(1.05); }
+    25%  { transform: translate(35%, -5%) scale(1.2); }
+    50%  { transform: translate(50%, 45%) scale(0.9); }
+    75%  { transform: translate(-5%, 55%) scale(1.1); }
+    100% { transform: translate(-10%, 30%) scale(1.05); }
+  }
+
+  @keyframes mascot-drift-blue {
+    0%   { transform: translate(40%, 10%) scale(1); }
+    20%  { transform: translate(-10%, 40%) scale(1.15); }
+    45%  { transform: translate(20%, 55%) scale(0.95); }
+    70%  { transform: translate(55%, 20%) scale(1.1); }
+    100% { transform: translate(40%, 10%) scale(1); }
+  }
+
+  @keyframes mascot-drift-violet {
+    0%   { transform: translate(20%, 50%) scale(0.95); }
+    30%  { transform: translate(55%, 15%) scale(1.1); }
+    55%  { transform: translate(5%, 0%) scale(1.2); }
+    80%  { transform: translate(-5%, 40%) scale(1); }
+    100% { transform: translate(20%, 50%) scale(0.95); }
+  }
+
+  @keyframes mascot-drift-cyan {
+    0%   { transform: translate(5%, 5%) scale(1.1); }
+    35%  { transform: translate(45%, 50%) scale(0.9); }
+    60%  { transform: translate(-5%, 35%) scale(1.2); }
+    85%  { transform: translate(30%, 10%) scale(1); }
+    100% { transform: translate(5%, 5%) scale(1.1); }
   }
 
   @keyframes mascot-breathe {
@@ -114,7 +194,8 @@
   @media (prefers-reduced-motion: reduce) {
     .mascot-orb__image-wrap,
     .mascot-orb__image,
-    .mascot-orb__halo {
+    .mascot-orb__halo,
+    .mascot-orb__smoke-blob {
       animation: none;
     }
   }

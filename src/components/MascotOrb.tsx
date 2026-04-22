@@ -19,6 +19,12 @@ export default function MascotOrb() {
             priority
             className="mascot-orb__image"
           />
+          <div className="mascot-orb__smoke">
+            <span className="mascot-orb__smoke-blob mascot-orb__smoke-blob--pink" />
+            <span className="mascot-orb__smoke-blob mascot-orb__smoke-blob--blue" />
+            <span className="mascot-orb__smoke-blob mascot-orb__smoke-blob--violet" />
+            <span className="mascot-orb__smoke-blob mascot-orb__smoke-blob--cyan" />
+          </div>
         </div>
       </div>
     </div>
