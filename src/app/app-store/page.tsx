@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Blocks,
@@ -15,8 +14,7 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react'
-
-const PRO_PLUGIN_KEY = 'mirakl_global_control_tower_active'
+import { usePluginContext } from '@/contexts/PluginContext'
 
 const featurePills = [
   { label: 'Live Shipment Map', icon: Globe },
@@ -56,17 +54,7 @@ const smallPlugins = [
 ]
 
 export default function AppStorePage() {
-  const [activated, setActivated] = useState(false)
-
-  useEffect(() => {
-    setActivated(window.localStorage.getItem(PRO_PLUGIN_KEY) === 'true')
-  }, [])
-
-  const handleTogglePlugin = () => {
-    const next = !activated
-    window.localStorage.setItem(PRO_PLUGIN_KEY, next ? 'true' : 'false')
-    setActivated(next)
-  }
+  const { isProPluginActive, toggleProPlugin } = usePluginContext()
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
@@ -124,15 +112,15 @@ export default function AppStorePage() {
 
               <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={handleTogglePlugin}
+                  onClick={toggleProPlugin}
                   className={`inline-flex items-center gap-3 rounded-2xl px-7 py-4 text-xl font-semibold text-white shadow-lg transition ${
-                    activated
+                    isProPluginActive
                       ? 'bg-rose-500 shadow-rose-700/30 hover:bg-rose-400'
                       : 'bg-blue-500 shadow-blue-700/40 hover:bg-blue-400'
                   }`}
                 >
-                  {activated ? <CheckCircle2 className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
-                  {activated ? 'Désactiver le plugin' : 'Activer le plugin'}
+                  {isProPluginActive ? <CheckCircle2 className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
+                  {isProPluginActive ? 'Désactiver le plugin' : 'Activer le plugin'}
                 </button>
 
                 <Link

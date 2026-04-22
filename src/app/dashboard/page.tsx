@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   Bell,
-  Bot,
   CheckCircle2,
   Clock3,
   DollarSign,
@@ -14,16 +13,12 @@ import {
   MapPin,
   Package,
   Search,
-  SendHorizontal,
-  Sparkles,
   Truck,
   Wallet,
-  X,
   Zap,
 } from 'lucide-react'
 import type { Shipment, ShipmentStatus } from '@/types/shipment'
-
-const PRO_PLUGIN_KEY = 'mirakl_global_control_tower_active'
+import { usePluginContext } from '@/contexts/PluginContext'
 
 const GlobalShipmentTracker = dynamic(
   () => import('@/components/map/GlobalShipmentTracker'),
@@ -199,15 +194,11 @@ function lowStockStatusClass(status: string) {
 }
 
 export default function DashboardPage() {
-  const [isPro, setIsPro] = useState(false)
+  const { isProPluginActive } = usePluginContext()
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [lowStockAlerts, setLowStockAlerts] = useState<LowStockAlert[]>([])
   const [lowStockLoading, setLowStockLoading] = useState(true)
-
-  useEffect(() => {
-    setIsPro(window.localStorage.getItem(PRO_PLUGIN_KEY) === 'true')
-  }, [])
-
+  const isPro = isProPluginActive
   const orders = isPro ? PRO_ORDERS : BASIC_ORDERS
   const trackerShipments = useMemo(() => orders.map(orderToShipment), [orders])
   const inventory = isPro ? PRO_INVENTORY : BASIC_INVENTORY

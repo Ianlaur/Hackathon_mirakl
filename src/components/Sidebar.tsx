@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent } from 'react'
 import {
   Boxes,
@@ -19,7 +19,9 @@ import {
   Menu,
   ChevronDown,
   Workflow,
+  LogOut,
 } from 'lucide-react'
+import { usePluginContext } from '@/contexts/PluginContext'
 
 type NavLink = {
   type: 'link'
@@ -85,6 +87,8 @@ function isPathActive(pathname: string, href: string) {
 
 export default function Sidebar({ onExpandedChange }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { deactivateProPlugin, setUserProfile } = usePluginContext()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
@@ -166,6 +170,14 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
 
   const handleMouseEnter = () => setIsExpanded(true)
   const handleMouseLeave = () => setIsExpanded(false)
+
+  const handleSignOut = () => {
+    deactivateProPlugin()
+    setUserProfile(null)
+    setIsMobileOpen(false)
+    setIsNavigating(false)
+    router.push('/onboarding')
+  }
 
   return (
     <>
@@ -337,6 +349,22 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
                 <span className="text-xs text-slate-400">Hackathon</span>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleSignOut}
+              title={!isExpanded && !isMobileOpen ? 'Sign out' : undefined}
+              className="mt-4 flex w-full items-center rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2.5 text-slate-300 transition-colors hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-200"
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              <span
+                className={`ml-3 whitespace-nowrap text-sm font-medium transition-all duration-300 ${
+                  isExpanded || isMobileOpen ? 'opacity-100 translate-x-0 w-auto' : 'opacity-0 -translate-x-2 w-0 overflow-hidden'
+                }`}
+              >
+                Sign out
+              </span>
+            </button>
           </div>
         </div>
       </aside>
