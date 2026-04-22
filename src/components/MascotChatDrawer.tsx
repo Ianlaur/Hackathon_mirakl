@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { X, Send, Sparkles } from 'lucide-react'
+import { X, ArrowUp, Sparkles } from 'lucide-react'
 
 type ChatMessage = {
   role: 'user' | 'assistant'
@@ -9,16 +9,11 @@ type ChatMessage = {
   tool_calls?: Array<{ name: string; args: unknown; result: unknown }>
 }
 
-const INTRO: ChatMessage = {
-  role: 'assistant',
-  content:
-    "Salut 👋 Je suis Iris, je veille sur ton tableau de bord. Tu peux me demander l'état de ton stock, lister tes actions en attente, ou m'annoncer un congé — je mets tout en place pour toi.",
-}
-
 const SUGGESTIONS = [
-  'Combien j\'ai de stock total ?',
+  "Combien j'ai de stock total ?",
   'Je pars en vacances 2 semaines à partir du 5 mai',
-  'Quelles actions m\'attendent ?',
+  "Quelles actions m'attendent ?",
+  'Cherche mes chaises en rupture',
 ]
 
 export default function MascotChatDrawer({
@@ -28,12 +23,14 @@ export default function MascotChatDrawer({
   open: boolean
   onClose: () => void
 }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([INTRO])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  const isEmpty = messages.length === 0
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -42,8 +39,8 @@ export default function MascotChatDrawer({
   }, [open])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, busy])
+    if (!isEmpty) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, busy, isEmpty])
 
   useEffect(() => {
     if (!open) return
@@ -102,6 +99,12 @@ export default function MascotChatDrawer({
     }
   }
 
+  const resetConversation = () => {
+    setMessages([])
+    setInput('')
+    setError(null)
+  }
+
   return (
     <>
       <div
@@ -113,88 +116,180 @@ export default function MascotChatDrawer({
       />
 
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-full w-[min(420px,100vw)] flex-col border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-[min(460px,100vw)] flex-col border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
         aria-hidden={!open}
       >
-        <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-to-br from-pink-400 via-indigo-500 to-cyan-400 p-2 text-white">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">Iris</h3>
-              <p className="text-xs text-slate-500">Ta copilote Mirakl</p>
-            </div>
+        <header className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+            <Sparkles className="h-4 w-4 text-indigo-500" />
+            <span>Iris</span>
+            {!isEmpty && (
+              <button
+                type="button"
+                onClick={resetConversation}
+                className="ml-2 rounded-md px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              >
+                Nouvelle conversation
+              </button>
+            )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer le chat"
-            className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Fermer"
+            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </header>
 
-        <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4">
-          {messages.map((m, idx) => (
-            <MessageBubble key={idx} message={m} />
-          ))}
-          {busy && (
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
-              Iris réfléchit…
+        {isEmpty ? (
+          <EmptyState
+            onPickSuggestion={sendMessage}
+            input={input}
+            setInput={setInput}
+            onSubmit={handleSubmit}
+            onKeyDown={handleKeyDown}
+            inputRef={inputRef}
+            busy={busy}
+          />
+        ) : (
+          <>
+            <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
+              {messages.map((m, idx) => (
+                <MessageBubble key={idx} message={m} />
+              ))}
+              {busy && (
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
+                  Iris réfléchit…
+                </div>
+              )}
+              {error && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                  {error}
+                </div>
+              )}
+              <div ref={bottomRef} />
             </div>
-          )}
-          {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-              {error}
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
 
-        {messages.length <= 1 && !busy && (
-          <div className="flex flex-wrap gap-2 border-t border-slate-200 bg-white px-4 py-3">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => sendMessage(s)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+            <form onSubmit={handleSubmit} className="border-t border-slate-100 px-4 py-3">
+              <InputBar
+                input={input}
+                setInput={setInput}
+                onKeyDown={handleKeyDown}
+                inputRef={inputRef}
+                busy={busy}
+              />
+            </form>
+          </>
         )}
-
-        <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white p-3">
-          <div className="flex items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-indigo-400">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Demande à Iris…"
-              rows={1}
-              className="max-h-32 w-full resize-none bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
-              disabled={busy}
-            />
-            <button
-              type="submit"
-              disabled={busy || !input.trim()}
-              aria-label="Envoyer"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-        </form>
       </aside>
     </>
+  )
+}
+
+function EmptyState({
+  onPickSuggestion,
+  input,
+  setInput,
+  onSubmit,
+  onKeyDown,
+  inputRef,
+  busy,
+}: {
+  onPickSuggestion: (text: string) => void
+  input: string
+  setInput: (v: string) => void
+  onSubmit: (e: React.FormEvent) => void
+  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  inputRef: React.RefObject<HTMLTextAreaElement>
+  busy: boolean
+}) {
+  return (
+    <div className="flex flex-1 flex-col justify-center px-6 pb-24">
+      <form onSubmit={onSubmit}>
+        <InputBar
+          input={input}
+          setInput={setInput}
+          onKeyDown={onKeyDown}
+          inputRef={inputRef}
+          busy={busy}
+          autoFocus
+          size="large"
+        />
+      </form>
+
+      <div className="mt-6 space-y-2">
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Suggestions</p>
+        <div className="flex flex-col gap-1.5">
+          {SUGGESTIONS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onPickSuggestion(s)}
+              className="group flex items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+            >
+              <span>{s}</span>
+              <span className="text-xs text-slate-300 transition group-hover:text-indigo-500">↵</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function InputBar({
+  input,
+  setInput,
+  onKeyDown,
+  inputRef,
+  busy,
+  autoFocus,
+  size = 'default',
+}: {
+  input: string
+  setInput: (v: string) => void
+  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  inputRef: React.RefObject<HTMLTextAreaElement>
+  busy: boolean
+  autoFocus?: boolean
+  size?: 'default' | 'large'
+}) {
+  const isLarge = size === 'large'
+  return (
+    <div
+      className={`flex items-end gap-2 rounded-2xl border border-slate-200 bg-white transition focus-within:border-indigo-400 focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.12)] ${
+        isLarge ? 'px-4 py-3' : 'px-3 py-2'
+      }`}
+    >
+      <textarea
+        ref={inputRef}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={onKeyDown}
+        placeholder="Demande à Iris…"
+        rows={1}
+        autoFocus={autoFocus}
+        className={`max-h-32 w-full resize-none bg-transparent text-slate-800 outline-none placeholder:text-slate-400 ${
+          isLarge ? 'text-base' : 'text-sm'
+        }`}
+        disabled={busy}
+      />
+      <button
+        type="submit"
+        disabled={busy || !input.trim()}
+        aria-label="Envoyer"
+        className={`flex shrink-0 items-center justify-center rounded-full bg-slate-900 text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 ${
+          isLarge ? 'h-9 w-9' : 'h-7 w-7'
+        }`}
+      >
+        <ArrowUp className={isLarge ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
+      </button>
+    </div>
   )
 }
 
@@ -209,7 +304,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
               <span
                 key={i}
                 title={JSON.stringify(tc.args)}
-                className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700"
+                className="rounded-full border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600"
               >
                 🔧 {tc.name}
               </span>
@@ -219,8 +314,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <div
           className={`whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${
             isUser
-              ? 'bg-indigo-600 text-white'
-              : 'border border-slate-200 bg-white text-slate-800'
+              ? 'bg-slate-900 text-white'
+              : 'bg-slate-100 text-slate-800'
           }`}
         >
           {message.content}
