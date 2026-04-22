@@ -199,4 +199,255 @@
       animation: none;
     }
   }
+
+  /* ============ Iris Spotlight Overlay ============ */
+
+  .iris-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 22vh;
+    background: rgba(15, 23, 42, 0.25);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    transition: opacity 280ms ease, backdrop-filter 280ms ease;
+  }
+
+  .iris-overlay--closed {
+    opacity: 0;
+    pointer-events: none;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+
+  .iris-overlay--open {
+    opacity: 1;
+  }
+
+  .iris-panel {
+    width: min(640px, 92vw);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 320ms cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 280ms ease;
+  }
+
+  .iris-panel--closed {
+    transform: translateY(-8px) scale(0.96);
+    opacity: 0;
+  }
+
+  .iris-panel--open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .iris-searchbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 16px;
+    box-shadow:
+      0 30px 80px -20px rgba(15, 23, 42, 0.35),
+      0 2px 8px -2px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  .iris-searchbar__glyph {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .iris-searchbar__dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    filter: blur(2px);
+    opacity: 0.85;
+    animation: iris-glyph-float 5s ease-in-out infinite;
+  }
+
+  .iris-searchbar__dot--pink {
+    background: radial-gradient(circle, rgba(244, 114, 182, 0.95), rgba(244, 114, 182, 0));
+    left: 0;
+    top: 2px;
+    animation-delay: 0s;
+  }
+
+  .iris-searchbar__dot--blue {
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.95), rgba(96, 165, 250, 0));
+    right: 0;
+    top: 4px;
+    animation-delay: -1.6s;
+  }
+
+  .iris-searchbar__dot--violet {
+    background: radial-gradient(circle, rgba(167, 139, 250, 0.9), rgba(167, 139, 250, 0));
+    left: 6px;
+    bottom: 0;
+    animation-delay: -3.2s;
+  }
+
+  @keyframes iris-glyph-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(3px, -2px) scale(1.15); }
+    66% { transform: translate(-2px, 2px) scale(0.9); }
+  }
+
+  .iris-searchbar__input {
+    flex: 1;
+    min-height: 28px;
+    max-height: 160px;
+    resize: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  .iris-searchbar__input::placeholder {
+    color: rgba(100, 116, 139, 0.7);
+    font-weight: 400;
+  }
+
+  .iris-searchbar__input:disabled {
+    opacity: 0.5;
+  }
+
+  .iris-searchbar__submit {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: #0f172a;
+    color: white;
+    transition: transform 150ms ease, background 150ms ease;
+  }
+
+  .iris-searchbar__submit:hover:not(:disabled) {
+    background: #1e293b;
+    transform: scale(1.05);
+  }
+
+  .iris-searchbar__submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .iris-conversation {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    max-height: min(50vh, 520px);
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow: 0 20px 50px -20px rgba(15, 23, 42, 0.3);
+  }
+
+  .iris-msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 85%;
+  }
+
+  .iris-msg--user {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+
+  .iris-msg--assistant {
+    align-self: flex-start;
+    align-items: flex-start;
+  }
+
+  .iris-msg__tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .iris-msg__tool-chip {
+    border-radius: 9999px;
+    background: rgba(224, 231, 255, 0.7);
+    color: #4f46e5;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 500;
+    border: 1px solid rgba(165, 180, 252, 0.4);
+  }
+
+  .iris-msg__bubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .iris-msg--user .iris-msg__bubble {
+    background: #0f172a;
+    color: white;
+  }
+
+  .iris-msg--assistant .iris-msg__bubble {
+    background: rgba(241, 245, 249, 0.9);
+    color: #0f172a;
+  }
+
+  .iris-conversation__thinking {
+    display: flex;
+    gap: 4px;
+    padding: 10px 14px;
+    align-self: flex-start;
+  }
+
+  .iris-conversation__thinking-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: #94a3b8;
+    animation: iris-think 1.2s ease-in-out infinite;
+  }
+
+  .iris-conversation__thinking-dot:nth-child(2) { animation-delay: 0.15s; }
+  .iris-conversation__thinking-dot:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes iris-think {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-3px); }
+  }
+
+  .iris-conversation__error {
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(254, 226, 226, 0.8);
+    color: #b91c1c;
+    font-size: 13px;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+  }
 }
