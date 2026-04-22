@@ -66,11 +66,44 @@ function isMissingTableError(error: unknown) {
   )
 }
 
+function isDatabaseUnavailableError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return true
+  }
+
+  if (!(error instanceof Error)) {
+    return false
+  }
+
+  return (
+    error.message.includes('Environment variable not found: DATABASE_URL') ||
+    error.message.includes("Can't reach database server") ||
+    error.message.includes('Invalid `prisma.')
+  )
+}
+
+function isMissingDelegateError(error: unknown) {
+  if (!(error instanceof TypeError)) {
+    return false
+  }
+
+  return (
+    error.message.includes("Cannot read properties of undefined") &&
+    (error.message.includes("'findMany'") ||
+      error.message.includes("'findUnique'") ||
+      error.message.includes("'upsert'"))
+  )
+}
+
 async function queryWithMissingTableFallback<T>(query: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await query()
   } catch (error) {
-    if (isMissingTableError(error)) {
+    if (
+      isMissingTableError(error) ||
+      isDatabaseUnavailableError(error) ||
+      isMissingDelegateError(error)
+    ) {
       return fallback
     }
     throw error
@@ -487,7 +520,11 @@ export async function upsertCopilotConfig(
       }),
     ])
   } catch (error) {
-    if (isMissingTableError(error)) {
+    if (
+      isMissingTableError(error) ||
+      isDatabaseUnavailableError(error) ||
+      isMissingDelegateError(error)
+    ) {
       throw new Error(
         'Copilot tables are not deployed yet. Run `npm run db:push` with a direct Postgres URL.'
       )
