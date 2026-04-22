@@ -56,6 +56,19 @@ type InventoryItem = {
   levelPct: number
 }
 
+type LowStockAlert = {
+  id: string
+  status: string
+  quantity: number
+  threshold: number
+  productName: string
+  sku: string | null
+  createdAt: string
+  dustResponse: string | null
+  proposedSolution: string | null
+  errorMessage: string | null
+}
+
 const BASIC_ORDERS: Order[] = [
   { id: '#ORDER-884', product: '1 Oak Table', status: 'Processing', origin: 'Annecy, FR', destination: 'Lyon, FR', eta: 'Nov 22', carrier: 'Colissimo Eco', co2: '12 kg', stock: '3 left' },
   { id: '#ORDER-880', product: '2 Dining Chairs', status: 'Delivered', origin: 'Chambéry, FR', destination: 'Paris, FR', eta: 'Nov 18', carrier: 'Chronopost', co2: '24 kg', stock: 'In Stock' },
@@ -178,10 +191,19 @@ function inventoryTone(status: InventoryItem['status']) {
   }
 }
 
+function lowStockStatusClass(status: string) {
+  if (status === 'review_ready') return 'bg-emerald-50 text-emerald-700'
+  if (status === 'failed') return 'bg-rose-50 text-rose-700'
+  if (status === 'processing') return 'bg-amber-50 text-amber-700'
+  return 'bg-slate-100 text-slate-700'
+}
+
 export default function DashboardPage() {
   const [isPro, setIsPro] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [lowStockAlerts, setLowStockAlerts] = useState<LowStockAlert[]>([])
+  const [lowStockLoading, setLowStockLoading] = useState(true)
 
   useEffect(() => {
     setIsPro(window.localStorage.getItem(PRO_PLUGIN_KEY) === 'true')
@@ -208,6 +230,40 @@ export default function DashboardPage() {
       return orders[0]?.id ?? null
     })
   }, [orders])
+
+  useEffect(() => {
+    let active = true
+
+    async function loadLowStockAlerts() {
+      try {
+        const response = await fetch('/api/low-stock-alerts', { cache: 'no-store' })
+        const payload = await response.json().catch(() => ({}))
+
+        if (!response.ok) {
+          throw new Error(payload?.error || 'Failed to load low-stock alerts')
+        }
+
+        if (active) {
+          setLowStockAlerts(Array.isArray(payload.alerts) ? payload.alerts : [])
+        }
+      } catch (error) {
+        console.error('Failed to load low-stock alerts:', error)
+        if (active) {
+          setLowStockAlerts([])
+        }
+      } finally {
+        if (active) {
+          setLowStockLoading(false)
+        }
+      }
+    }
+
+    loadLowStockAlerts()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]">
@@ -301,6 +357,55 @@ export default function DashboardPage() {
                 </div>
               )
             })}
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Low Stock Dust Trigger</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Trigger threshold rule: max(min_quantity, 10)
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {lowStockLoading ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+                Loading low-stock alerts...
+              </div>
+            ) : lowStockAlerts.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+                No low-stock alerts yet. Update stock below threshold to trigger Dust analysis.
+              </div>
+            ) : (
+              lowStockAlerts.map((alert) => (
+                <article key={alert.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950">{alert.productName}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Qty {alert.quantity} / Threshold {alert.threshold}
+                        {alert.sku ? ` • SKU ${alert.sku}` : ''}
+                      </p>
+                    </div>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${lowStockStatusClass(alert.status)}`}>
+                      {alert.status}
+                    </span>
+                  </div>
+
+                  <p className="mt-3 text-sm text-slate-700">
+                    <span className="font-medium">Agent analysis:</span>{' '}
+                    {alert.dustResponse || (alert.status === 'failed' ? alert.errorMessage : 'Pending analysis...')}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-700">
+                    <span className="font-medium">Proposed solution:</span>{' '}
+                    {alert.proposedSolution || 'Will be provided after analysis.'}
+                  </p>
+                </article>
+              ))
+            )}
           </div>
         </section>
 

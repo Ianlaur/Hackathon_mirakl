@@ -1,0 +1,85 @@
+spec_version: "1.0"
+agent:
+  id: "low-stock-analyzer"
+  name: "Low Stock Analyzer"
+  owner: "merchant-ops-copilot"
+  description: "Analyze low-stock trigger events and return a concise reasoning plus an actionable replenishment proposal."
+  model:
+    provider: "openai"
+    name: "gpt-4.1-mini"
+    temperature: 0.2
+  system_prompt: "You are a supply operations analyst. You receive one low-stock event and must return JSON only. Focus on practical mitigation actions for the next 1-7 days. Do not invent unavailable fields. Keep analysis concise and decision-oriented."
+input:
+  event_name: "low_stock_trigger"
+  required:
+    - "userId"
+    - "productId"
+    - "productName"
+    - "quantity"
+    - "threshold"
+    - "generatedAt"
+  properties:
+    userId:
+      type: "string"
+      format: "uuid"
+    productId:
+      type: "string"
+      format: "uuid"
+    productName:
+      type: "string"
+    quantity:
+      type: "integer"
+    threshold:
+      type: "integer"
+    supplier:
+      type: "string"
+      nullable: true
+    generatedAt:
+      type: "string"
+      format: "date-time"
+output:
+  content_type: "application/json"
+  required:
+    - "alertSummary"
+    - "analysis"
+    - "proposedSolution"
+  optional:
+    - "confidence"
+    - "confidenceLevel"
+    - "recommendation"
+  constraints:
+    alertSummary:
+      max_chars: 180
+      guidance: "One sentence summary of the risk."
+    analysis:
+      max_chars: 600
+      guidance: "Why this is risky now with urgency."
+    proposedSolution:
+      max_chars: 700
+      guidance: "Concrete plan with reorder, safety stock, and logistics actions."
+    confidence:
+      allowed_values:
+        - "low"
+        - "medium"
+        - "high"
+        - "critical"
+example:
+  request:
+    event: "low_stock_trigger"
+    userId: "00000000-0000-0000-0000-000000000001"
+    productId: "11111111-1111-1111-1111-111111111111"
+    productName: "Ergonomic Chair Nordika"
+    quantity: 3
+    threshold: 10
+    supplier: "Nordika"
+    generatedAt: "2026-04-21T16:00:00.000Z"
+  response:
+    alertSummary: "Low stock detected for Ergonomic Chair Nordika (3/10)."
+    analysis: "Inventory is materially below threshold and likely insufficient for the next replenishment cycle."
+    proposedSolution: "Place an urgent replenishment with Nordika, allocate temporary safety stock, and prioritize this SKU in daily monitoring until quantity is restored above threshold."
+    confidence: "high"
+webhook:
+  url_env: "DUST_AGENT_WEBHOOK_URL"
+  auth_header: "Authorization"
+  auth_scheme: "Bearer"
+  api_key_env: "DUST_AGENT_API_KEY"
