@@ -1,0 +1,229 @@
+spec_version: "1.0"
+agent:
+  id: "merchant-ops-orchestrator"
+  name: "Merchant Ops Orchestrator"
+  owner: "merchant-ops-copilot"
+  description: "Orchestrate stock, transport, calendar, and external context signals into approval-ready operational decisions."
+  model:
+    provider: "openai"
+    name: "gpt-4.1"
+    temperature: 0.15
+  system_prompt: "You are a merchant operations orchestrator. Return JSON only. Use only provided data. Produce one primary approval-ready action and 1-2 alternatives. Never assume autonomous execution."
+triggers:
+  accepted_events:
+    - "low_stock_trigger"
+    - "transport_delay"
+    - "demand_event"
+    - "calendar_absence"
+    - "scheduled_review"
+    - "manual_chat_request"
+  scenario_types:
+    - "restock_risk"
+    - "transport_delay"
+    - "demand_event"
+    - "calendar_absence"
+    - "stock_rebalance"
+input:
+  event_name: "operations_orchestrator_trigger"
+  required:
+    - "userId"
+    - "triggerSource"
+    - "generatedAt"
+    - "merchantProfile"
+    - "currentState"
+  properties:
+    userId:
+      type: "string"
+      format: "uuid"
+    triggerSource:
+      type: "string"
+      enum:
+        - "low_stock_trigger"
+        - "transport_delay"
+        - "demand_event"
+        - "calendar_absence"
+        - "scheduled_review"
+        - "manual_chat_request"
+    generatedAt:
+      type: "string"
+      format: "date-time"
+    merchantProfile:
+      type: "object"
+      required:
+        - "category"
+        - "operatingRegions"
+      properties:
+        category:
+          type: "string"
+        operatingRegions:
+          type: "array"
+          items:
+            type: "string"
+        supplierNames:
+          type: "array"
+          items:
+            type: "string"
+        seasonalityTags:
+          type: "array"
+          items:
+            type: "string"
+    currentState:
+      type: "object"
+      properties:
+        lowStockItems:
+          type: "array"
+        delayedParcels:
+          type: "array"
+        openRecommendations:
+          type: "array"
+        upcomingCalendarEvents:
+          type: "array"
+    contextSignals:
+      type: "array"
+      max_items: 20
+      items:
+        type: "object"
+        required:
+          - "signalType"
+          - "title"
+          - "impactLevel"
+          - "relevanceScore"
+        properties:
+          signalType:
+            type: "string"
+          title:
+            type: "string"
+          summary:
+            type: "string"
+          impactLevel:
+            type: "string"
+            enum:
+              - "low"
+              - "medium"
+              - "high"
+              - "critical"
+          relevanceScore:
+            type: "integer"
+            min: 0
+            max: 100
+tools:
+  available:
+    - name: "create_recommendation"
+      description: "Create approval-ready recommendation in app."
+      input_contract:
+        required:
+          - "title"
+          - "scenarioType"
+          - "reasoningSummary"
+          - "target"
+          - "payload"
+    - name: "queue_approval"
+      description: "Push recommendation into merchant approval queue."
+      input_contract:
+        required:
+          - "recommendationId"
+          - "approvalRequired"
+    - name: "request_user_alternative"
+      description: "Allow merchant to propose an alternative option before approval."
+      input_contract:
+        required:
+          - "recommendationId"
+          - "prompt"
+guardrails:
+  approval_required: true
+  allow_autonomous_execution: false
+  require_evidence: true
+  require_alternatives: true
+output:
+  content_type: "application/json"
+  required:
+    - "alertSummary"
+    - "analysis"
+    - "proposedSolution"
+    - "scenarioType"
+    - "approvalRequired"
+    - "primaryAction"
+    - "alternatives"
+    - "evidence"
+  optional:
+    - "confidence"
+    - "confidenceLevel"
+    - "riskNote"
+    - "userAlternativePrompt"
+  constraints:
+    alertSummary:
+      max_chars: 180
+    analysis:
+      max_chars: 1200
+    proposedSolution:
+      max_chars: 900
+    alternatives:
+      min_items: 1
+      max_items: 3
+    evidence:
+      min_items: 1
+      max_items: 8
+example:
+  request:
+    event: "operations_orchestrator_trigger"
+    userId: "00000000-0000-0000-0000-000000000001"
+    triggerSource: "transport_delay"
+    generatedAt: "2026-04-22T10:00:00.000Z"
+    merchantProfile:
+      category: "furniture"
+      operatingRegions:
+        - "FR"
+      supplierNames:
+        - "Nordika"
+      seasonalityTags:
+        - "spring_promo"
+    currentState:
+      lowStockItems:
+        - productName: "Ergonomic Chair Nordika"
+          quantity: 3
+          threshold: 10
+      delayedParcels:
+        - trackingNumber: "1Z999AA10123456784"
+          delayDays: 3
+    contextSignals:
+      - signalType: "demand_event"
+        title: "Regional home expo this weekend"
+        impactLevel: "high"
+        relevanceScore: 88
+  response:
+    alertSummary: "Low stock + transport delay may cause stockout before weekend demand peak."
+    analysis: "Current inventory for Ergonomic Chair Nordika is below threshold while inbound transport is delayed, increasing immediate stockout risk under projected demand."
+    proposedSolution: "Place an expedited partial restock, reallocate available stock to priority channels, and publish a temporary lead-time notice until inbound shipment clears."
+    scenarioType: "restock_risk"
+    approvalRequired: true
+    primaryAction:
+      target: "inventory_restock_plan"
+      title: "Urgent partial restock and channel allocation"
+      payload:
+        productId: "11111111-1111-1111-1111-111111111111"
+        reorderQty: 25
+        expedite: true
+    alternatives:
+      - optionId: "alt_1"
+        title: "No expedite, strict allocation only"
+        tradeoff: "Lower logistics cost, higher stockout probability."
+      - optionId: "alt_2"
+        title: "Substitute SKU campaign"
+        tradeoff: "Protect availability with potential margin dilution."
+    evidence:
+      - label: "Quantity"
+        value: "3"
+      - label: "Threshold"
+        value: "10"
+      - label: "Delay"
+        value: "3 days"
+      - label: "Demand signal relevance"
+        value: "88"
+    confidence: "high"
+    userAlternativePrompt: "If none of these options fit, propose your own plan and constraints."
+webhook:
+  url_env: "DUST_ORCHESTRATOR_WEBHOOK_URL"
+  auth_header: "Authorization"
+  auth_scheme: "Bearer"
+  api_key_env: "DUST_ORCHESTRATOR_API_KEY"
+  agent_id_env: "DUST_ORCHESTRATOR_AGENT_ID"
