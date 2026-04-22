@@ -352,6 +352,25 @@
     cursor: not-allowed;
   }
 
+  .iris-searchbar__clear {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: transparent;
+    color: #94a3b8;
+    transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+  }
+
+  .iris-searchbar__clear:hover {
+    background: rgba(254, 226, 226, 0.7);
+    color: #dc2626;
+    transform: scale(1.05);
+  }
+
   .iris-conversation {
     display: flex;
     flex-direction: column;

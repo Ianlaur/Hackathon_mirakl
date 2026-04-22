@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUp, Calendar, Inbox, ArrowRight } from 'lucide-react'
+import { ArrowUp, Calendar, Inbox, ArrowRight, Trash2 } from 'lucide-react'
+
+const STORAGE_KEY = 'iris_chat_history_v1'
 
 type ChatMessage = {
   role: 'user' | 'assistant'
@@ -93,21 +95,61 @@ export default function MascotChatDrawer({
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hydrated, setHydrated] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const placeholderActive = open && input.length === 0 && messages.length === 0 && !busy
   const animatedPlaceholder = useTypingPlaceholder(placeholderActive, PLACEHOLDER_PROMPTS)
 
+  // Hydrate depuis sessionStorage au mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw) as ChatMessage[]
+        if (Array.isArray(parsed)) setMessages(parsed)
+      }
+    } catch {
+      /* noop */
+    }
+    setHydrated(true)
+  }, [])
+
+  // Persiste dans sessionStorage quand messages change
+  useEffect(() => {
+    if (!hydrated) return
+    try {
+      if (messages.length === 0) {
+        sessionStorage.removeItem(STORAGE_KEY)
+      } else {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+      }
+    } catch {
+      /* noop */
+    }
+  }, [messages, hydrated])
+
+  // Focus input à l'ouverture, efface l'input et l'erreur à la fermeture
   useEffect(() => {
     if (open) {
       const t = setTimeout(() => inputRef.current?.focus(), 60)
       return () => clearTimeout(t)
     }
-    setMessages([])
     setInput('')
     setError(null)
   }, [open])
+
+  const clearHistory = () => {
+    setMessages([])
+    setInput('')
+    setError(null)
+    try {
+      sessionStorage.removeItem(STORAGE_KEY)
+    } catch {
+      /* noop */
+    }
+  }
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -204,6 +246,17 @@ export default function MascotChatDrawer({
             className="iris-searchbar__input"
             disabled={busy}
           />
+          {hasConversation && !input.trim() && (
+            <button
+              type="button"
+              onClick={clearHistory}
+              aria-label="Effacer l'historique"
+              title="Effacer l'historique"
+              className="iris-searchbar__clear"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
           {input.trim() && (
             <button
               type="submit"
