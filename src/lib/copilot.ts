@@ -40,6 +40,15 @@ type ActionSuggestion = {
   payload?: Record<string, unknown>
 }
 
+type ModelResult = {
+  answer: string
+  reasoningSummary: string
+  evidence: SerializableEvidence
+  recommendations: ActionSuggestion[]
+  usedModel: string
+  fallback: boolean
+}
+
 function safeJsonParse<T>(value: string): T | null {
   try {
     return JSON.parse(value) as T
@@ -53,6 +62,66 @@ function normalizeList(raw: string | undefined) {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean)
+}
+
+function pickString(source: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = source[key]
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value
+    }
+  }
+  return null
+}
+
+function normalizeEvidence(raw: unknown): SerializableEvidence {
+  if (!Array.isArray(raw)) {
+    return []
+  }
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      const label = typeof record.label === 'string' ? record.label : null
+      const value = typeof record.value === 'string' ? record.value : null
+      if (!label || !value) return null
+      return { label, value }
+    })
+    .filter(Boolean) as SerializableEvidence
+}
+
+function normalizeSuggestions(raw: unknown): ActionSuggestion[] {
+  if (!Array.isArray(raw)) {
+    return []
+  }
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      const title = pickString(record, ['title'])
+      const reasoningSummary = pickString(record, ['reasoningSummary', 'analysis', 'reasoning'])
+
+      if (!title || !reasoningSummary) {
+        return null
+      }
+
+      return {
+        title,
+        scenarioType: pickString(record, ['scenarioType']) || 'restock_risk',
+        reasoningSummary,
+        expectedImpact:
+          pickString(record, ['expectedImpact']) || 'Operational impact should be reviewed before execution.',
+        confidenceNote: pickString(record, ['confidenceNote', 'confidence']) || 'Medium confidence.',
+        target: pickString(record, ['target']) || 'manual_review',
+        payload:
+          record.payload && typeof record.payload === 'object'
+            ? (record.payload as Record<string, unknown>)
+            : {},
+      }
+    })
+    .filter(Boolean) as ActionSuggestion[]
 }
 
 export function serializeJson<T>(value: T): T {
@@ -376,18 +445,117 @@ async function callOpenAI({
   }>(content)
 }
 
+async function callDustOrchestrator({
+  userId,
+  userMessage,
+  context,
+}: {
+  userId: string
+  userMessage: string
+  context: MerchantContext
+}): Promise<ModelResult | null> {
+  const webhookUrl =
+    process.env.DUST_ORCHESTRATOR_WEBHOOK_URL?.trim() ||
+    process.env.DUST_AGENT_WEBHOOK_URL?.trim()
+  const apiKey =
+    process.env.DUST_ORCHESTRATOR_API_KEY?.trim() ||
+    process.env.DUST_AGENT_API_KEY?.trim()
+  const agentId = process.env.DUST_ORCHESTRATOR_AGENT_ID?.trim()
+
+  if (!webhookUrl || !agentId) {
+    return null
+  }
+
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+    },
+    body: JSON.stringify({
+      event: 'manual_chat_request',
+      agentId,
+      userId,
+      message: userMessage,
+      generatedAt: new Date().toISOString(),
+      context,
+    }),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Dust orchestrator request failed: ${response.status} ${errorText}`)
+  }
+
+  const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>
+  const answer = pickString(payload, ['answer', 'response', 'message'])
+  const reasoningSummary = pickString(payload, ['reasoningSummary', 'analysis', 'reasoning'])
+  const evidence = normalizeEvidence(payload.evidence)
+  const recommendations = normalizeSuggestions(payload.recommendations)
+
+  if (answer && reasoningSummary) {
+    return {
+      answer,
+      reasoningSummary,
+      evidence,
+      recommendations,
+      usedModel: 'dust_orchestrator',
+      fallback: false,
+    }
+  }
+
+  if (payload.success === true) {
+    return {
+      answer:
+        'Your request has been sent to the orchestrator agent. I prepared immediate in-app recommendations while the orchestrator workflow processes.',
+      reasoningSummary:
+        'Dust webhook acknowledged the request in trigger mode, so this response uses your current merchant context as an immediate operational baseline.',
+      evidence: [],
+      recommendations: [],
+      usedModel: 'dust_orchestrator',
+      fallback: true,
+    }
+  }
+
+  return null
+}
+
 export async function generateCopilotResponse(userId: string, userMessage: string) {
   const context = await getMerchantContext(userId)
   const encryptedApiKey = context.aiSettings?.encrypted_api_key
+  const heuristicSuggestions = buildHeuristicSuggestions(context)
+  const defaultEvidence = buildEvidence(context)
+
+  try {
+    const dustResult = await callDustOrchestrator({
+      userId,
+      userMessage,
+      context,
+    })
+
+    if (dustResult) {
+      return {
+        answer: dustResult.answer,
+        reasoningSummary: dustResult.reasoningSummary,
+        evidence: dustResult.evidence.length ? dustResult.evidence : defaultEvidence,
+        recommendations: dustResult.recommendations.length ? dustResult.recommendations : heuristicSuggestions,
+        usedModel: dustResult.usedModel,
+        fallback: dustResult.fallback,
+        context,
+      }
+    }
+  } catch (error) {
+    console.error('Dust orchestrator call failed, trying OpenAI fallback path:', error)
+  }
 
   if (!encryptedApiKey) {
-    throw new Error('Missing merchant API key. Configure it in Settings before using the copilot.')
+    throw new Error(
+      'Missing merchant API key and Dust orchestrator response. Configure at least one provider before using the copilot.'
+    )
   }
 
   const apiKey = decryptSecret(encryptedApiKey)
   const model = context.aiSettings?.preferred_model || 'gpt-4.1-mini'
-  const heuristicSuggestions = buildHeuristicSuggestions(context)
-  const defaultEvidence = buildEvidence(context)
 
   try {
     const modelResponse = await callOpenAI({

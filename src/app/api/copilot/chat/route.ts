@@ -103,7 +103,12 @@ export async function POST(request: NextRequest) {
             payload: serializeJson(suggestion.payload || {}),
             requestedFromChat: true,
           }) as Prisma.InputJsonValue,
-          source: result.fallback ? 'copilot_fallback' : 'copilot',
+          source:
+            result.usedModel === 'dust_orchestrator'
+              ? 'dust_orchestrator'
+              : result.fallback
+                ? 'copilot_fallback'
+                : 'copilot',
         },
       })
 
