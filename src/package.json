@@ -9,6 +9,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:prepare": "prisma db execute --file scripts/create-users-view.sql --schema prisma/schema.prisma && prisma db execute --file scripts/create-email-logs.sql --schema prisma/schema.prisma",
+    "db:prepare:low-stock": "prisma db execute --file scripts/create-low-stock-trigger.sql --schema prisma/schema.prisma",
+    "dust:test:low-stock": "node scripts/test-dust-low-stock-agent.js",
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
