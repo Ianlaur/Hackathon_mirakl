@@ -89,7 +89,7 @@ export function RecommendationDetailPanel({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-wide text-slate-500">
-              Congés détectés • {payload.leave_duration_days} jours
+              Congés détectés{payload.leave_duration_days ? ` • ${payload.leave_duration_days} jours` : ''}
             </p>
             <h2 className="mt-1 text-xl font-semibold text-slate-900">
               {recommendation.title}
@@ -108,9 +108,9 @@ export function RecommendationDetailPanel({
         )}
       </header>
 
-      {payload.supplementary_notes.length > 0 && (
+      {(payload.supplementary_notes?.length ?? 0) > 0 && (
         <div className="mt-4 space-y-1 rounded-xl border border-amber-200 bg-amber-50 p-3">
-          {payload.supplementary_notes.map((n, idx) => (
+          {(payload.supplementary_notes ?? []).map((n, idx) => (
             <p key={idx} className="text-xs text-amber-900">
               ⚠️ {n}
             </p>
@@ -168,7 +168,7 @@ export function RecommendationDetailPanel({
                 </td>
                 <td className="p-3 text-xs text-slate-700">{item.supplier ?? '—'}</td>
                 <td className="p-3 text-right tabular-nums">
-                  {item.estimated_cost_eur.toFixed(2)} €
+                  {typeof item.estimated_cost_eur === 'number' ? `${item.estimated_cost_eur.toFixed(2)} €` : '—'}
                 </td>
               </tr>
             ))}

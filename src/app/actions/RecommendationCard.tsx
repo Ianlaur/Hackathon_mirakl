@@ -47,11 +47,17 @@ export function RecommendationCard({
         </span>
       </div>
 
-      {payload && isPending && (
+      {payload && isPending && (payload.items_count || payload.total_estimated_cost_eur) ? (
         <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-600">
-          <span>{payload.items_count} commandes</span>
-          <span>•</span>
-          <span>{payload.total_estimated_cost_eur.toFixed(0)} €</span>
+          {typeof payload.items_count === 'number' && (
+            <span>{payload.items_count} commandes</span>
+          )}
+          {typeof payload.total_estimated_cost_eur === 'number' && (
+            <>
+              {typeof payload.items_count === 'number' && <span>•</span>}
+              <span>{payload.total_estimated_cost_eur.toFixed(0)} €</span>
+            </>
+          )}
           {payload.order_deadline && (
             <>
               <span>•</span>
@@ -59,7 +65,7 @@ export function RecommendationCard({
             </>
           )}
         </div>
-      )}
+      ) : null}
     </button>
   )
 }
