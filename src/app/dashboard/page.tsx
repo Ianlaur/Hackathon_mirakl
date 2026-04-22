@@ -200,7 +200,6 @@ function lowStockStatusClass(status: string) {
 
 export default function DashboardPage() {
   const [isPro, setIsPro] = useState(false)
-  const [chatOpen, setChatOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [lowStockAlerts, setLowStockAlerts] = useState<LowStockAlert[]>([])
   const [lowStockLoading, setLowStockLoading] = useState(true)
@@ -481,66 +480,6 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      <button
-        onClick={() => setChatOpen((v) => !v)}
-        className="fixed bottom-6 right-6 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-300 transition hover:bg-indigo-500"
-        aria-label="Toggle AI Copilot"
-      >
-        {chatOpen ? <X className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-      </button>
-
-      {chatOpen && (
-        <aside className="fixed bottom-24 right-6 z-40 flex h-[70vh] w-[min(420px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-          <div className="border-b border-slate-200 p-4">
-            <div className="flex items-start gap-3">
-              <div className="rounded-xl bg-indigo-600 p-2 text-white"><Sparkles className="h-4 w-4" /></div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">AI Copilot {isPro && <span className="text-xs text-indigo-700">PRO</span>}</h3>
-                <p className="text-sm font-medium text-emerald-600">● Active · {isPro ? 'Monitoring 127 shipments' : '4 local orders'}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 border-b border-slate-200 p-3">
-            {(isPro ? ['Order #883', 'Marseille Strike', 'Stripe Payments'] : ['Order #884', 'Shippo Label', 'Local Delivery']).map((tag) => (
-              <span key={tag} className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{tag}</span>
-            ))}
-          </div>
-
-          <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4 text-sm">
-            {isPro ? (
-              <>
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700">⚠️ Alert: Maritime strike detected at the Port of Marseille. Shipment #883 is blocked.</div>
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700">I have calculated 2 rerouting options for your global channels.</div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-3">
-                  <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3">
-                    <p className="font-semibold text-slate-900">FAST · Reroute via Genova</p>
-                    <p className="mt-1 text-slate-600">DHL · +€150 · +2 days · High CO₂</p>
-                    <button className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-2 font-semibold text-white">Approve & Pay</button>
-                  </div>
-                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <p className="font-semibold text-slate-900">SLOW · Wait at Port</p>
-                    <p className="mt-1 text-slate-600">Ship · +€0 · +7-10 days · Low CO₂</p>
-                    <button className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-semibold text-slate-700">Select Option</button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700">👋 Hello! I&apos;m your Mirakl AI assistant. I&apos;m monitoring your local orders.</div>
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700">📦 New order #884 received. Label generated via Shippo. ETA Nov 22 to Lyon.</div>
-              </>
-            )}
-          </div>
-
-          <div className="border-t border-slate-200 p-3">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-              <input className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400" placeholder={isPro ? 'Ask about shipments, inventory, payments...' : 'Ask about your orders...'} />
-              <button className="rounded-lg bg-indigo-600 p-2 text-white transition hover:bg-indigo-500"><SendHorizontal className="h-4 w-4" /></button>
-            </div>
-          </div>
-        </aside>
-      )}
     </div>
   )
 }
