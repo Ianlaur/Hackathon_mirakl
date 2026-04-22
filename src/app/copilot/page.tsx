@@ -1,123 +1,56 @@
-import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
-import { getCurrentUserId } from '@/lib/session'
-import { getCopilotConfig, serializeJson } from '@/lib/copilot'
-import CopilotPageClient from './CopilotPageClient'
+import { headers } from 'next/headers'
+import DayBriefing from '@/components/copilot/DayBriefing'
+import QuickActions from '@/components/copilot/QuickActions'
+import SmartChat from '@/components/copilot/SmartChat'
+import { getDayBriefing } from '@/lib/dust'
+import type { DayBriefingData } from '@/types/copilot'
 
 export const dynamic = 'force-dynamic'
 
-function isMissingTableError(error: unknown) {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    error.code === 'P2021'
-  )
-}
+async function fetchBriefingSSR(): Promise<DayBriefingData> {
+  const fallback = await getDayBriefing()
 
-async function fallbackIfTableMissing<T>(query: () => Promise<T>, fallback: T): Promise<T> {
   try {
-    return await query()
-  } catch (error) {
-    if (isMissingTableError(error)) {
-      return fallback
-    }
-    throw error
+    const headerStore = headers()
+    const host = headerStore.get('x-forwarded-host') ?? headerStore.get('host')
+    const proto = headerStore.get('x-forwarded-proto') ?? 'http'
+
+    if (!host) return fallback
+
+    const response = await fetch(`${proto}://${host}/api/dust/briefing`, {
+      method: 'GET',
+      cache: 'no-store',
+    })
+
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok || !payload?.briefing) return fallback
+
+    return payload.briefing as DayBriefingData
+  } catch {
+    return fallback
   }
 }
 
 export default async function CopilotPage() {
-  const userId = await getCurrentUserId()
-
-  const [config, sessions, recommendations, executions] = await Promise.all([
-    getCopilotConfig(userId),
-    fallbackIfTableMissing(
-      () =>
-        prisma.copilotChatSession.findMany({
-          where: { user_id: userId },
-          include: {
-            messages: {
-              orderBy: { created_at: 'asc' },
-            },
-          },
-          orderBy: { last_message_at: 'desc' },
-          take: 10,
-        }),
-      []
-    ),
-    fallbackIfTableMissing(
-      () =>
-        prisma.agentRecommendation.findMany({
-          where: { user_id: userId },
-          include: {
-            approvals: {
-              orderBy: { created_at: 'desc' },
-              take: 1,
-            },
-            execution_runs: {
-              orderBy: { created_at: 'desc' },
-              take: 1,
-            },
-          },
-          orderBy: { created_at: 'desc' },
-          take: 12,
-        }),
-      []
-    ),
-    fallbackIfTableMissing(
-      () =>
-        prisma.agentExecutionRun.findMany({
-          where: { user_id: userId },
-          orderBy: { created_at: 'desc' },
-          take: 12,
-        }),
-      []
-    ),
-  ])
-
-  const serializedSessions = sessions.map((session) => ({
-    ...session,
-    last_message_at: session.last_message_at.toISOString(),
-    created_at: session.created_at.toISOString(),
-    updated_at: session.updated_at.toISOString(),
-    messages: session.messages.map((message) => ({
-      ...message,
-      created_at: message.created_at.toISOString(),
-      evidence_payload: serializeJson(message.evidence_payload),
-    })),
-  }))
-
-  const serializedRecommendations = recommendations.map((recommendation) => ({
-    ...recommendation,
-    created_at: recommendation.created_at.toISOString(),
-    updated_at: recommendation.updated_at.toISOString(),
-    evidence_payload: serializeJson(recommendation.evidence_payload),
-    action_payload: serializeJson(recommendation.action_payload),
-    approvals: recommendation.approvals.map((approval) => ({
-      ...approval,
-      created_at: approval.created_at.toISOString(),
-    })),
-    execution_runs: recommendation.execution_runs.map((run) => ({
-      ...run,
-      created_at: run.created_at.toISOString(),
-      updated_at: run.updated_at.toISOString(),
-      executed_at: run.executed_at?.toISOString() || null,
-      payload: serializeJson(run.payload),
-    })),
-  }))
-
-  const serializedExecutions = executions.map((run) => ({
-    ...run,
-    created_at: run.created_at.toISOString(),
-    updated_at: run.updated_at.toISOString(),
-    executed_at: run.executed_at?.toISOString() || null,
-    payload: serializeJson(run.payload),
-  }))
+  const briefing = await fetchBriefingSSR()
 
   return (
-    <CopilotPageClient
-      config={config}
-      sessions={serializedSessions}
-      recommendations={serializedRecommendations}
-      executions={serializedExecutions}
-    />
+    <div className="mx-auto w-full max-w-5xl pb-8">
+      <header className="mb-7">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Copilot Mira</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+          Vos priorites, sans detour
+        </h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Tout est ici pour demarrer la journee rapidement.
+        </p>
+      </header>
+
+      <div className="space-y-5">
+        <DayBriefing initialBriefing={briefing} />
+        <QuickActions stockAlertCount={briefing.metrics.stockAlerts} />
+        <SmartChat />
+      </div>
+    </div>
   )
 }
