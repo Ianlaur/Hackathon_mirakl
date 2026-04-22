@@ -3,17 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { MapViewState, PickingInfo } from '@deck.gl/core'
 import MapCanvas from '@/components/map/MapCanvas'
-import GlobeCanvas from '@/components/map/GlobeCanvas'
 import ShipmentTooltip from '@/components/map/ShipmentTooltip'
 import TrackerToolbar from '@/components/map/TrackerToolbar'
 import { useShipmentLayers } from '@/hooks/useShipmentLayers'
 import { mockShipments } from '@/lib/mockShipments'
-import {
-  GLOBE_STYLE_URL,
-  MAP_STYLE_URL,
-  aggregatePorts,
-  midpointCoordinates,
-} from '@/lib/shipmentUtils'
+import { MAP_STYLE_URL, aggregatePorts, midpointCoordinates } from '@/lib/shipmentUtils'
 import type { PortCluster, Shipment, ShipmentStatus } from '@/types/shipment'
 
 interface GlobalShipmentTrackerProps {
@@ -28,14 +22,6 @@ const INITIAL_MAP_VIEW_STATE: MapViewState = {
   latitude: 25,
   zoom: 1.8,
   pitch: 30,
-  bearing: 0,
-}
-
-const INITIAL_GLOBE_VIEW_STATE: MapViewState = {
-  longitude: 20,
-  latitude: 25,
-  zoom: 1.5,
-  pitch: 20,
   bearing: 0,
 }
 
@@ -70,17 +56,14 @@ export default function GlobalShipmentTracker({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const animationFrameRef = useRef<number | null>(null)
   const mapViewStateRef = useRef<MapViewState>(INITIAL_MAP_VIEW_STATE)
-  const globeViewStateRef = useRef<MapViewState>(INITIAL_GLOBE_VIEW_STATE)
   const focusedSelectionRef = useRef<string | null>(null)
 
-  const [activeView, setActiveView] = useState<'map' | 'globe'>('map')
   const [hoveredShipment, setHoveredShipment] = useState<Shipment | null>(null)
   const [hoveredPort, setHoveredPort] = useState<PortCluster | null>(null)
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
   const [activeStatuses, setActiveStatuses] = useState<ShipmentStatus[]>(ALL_STATUSES)
   const [containerWidth, setContainerWidth] = useState(0)
   const [mapViewState, setMapViewState] = useState<MapViewState>(INITIAL_MAP_VIEW_STATE)
-  const [globeViewState, setGlobeViewState] = useState<MapViewState>(INITIAL_GLOBE_VIEW_STATE)
   const [blockedPulse, setBlockedPulse] = useState(0)
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
 
@@ -202,41 +185,9 @@ export default function GlobalShipmentTracker({
     })
   }, [])
 
-  const handleViewChange = useCallback(
-    (nextView: 'map' | 'globe') => {
-      if (nextView === activeView) return
-
-      if (nextView === 'globe') {
-        const startState = {
-          ...mapViewState,
-          zoom: Math.max(1.4, mapViewState.zoom - 0.3),
-          pitch: 18,
-        }
-        setGlobeViewState(startState)
-        setActiveView('globe')
-        runAnimation(setGlobeViewState, startState, { zoom: Math.max(1.5, startState.zoom), pitch: 20 }, 600)
-        return
-      }
-
-      const startState = {
-        ...globeViewState,
-        zoom: Math.max(1.6, globeViewState.zoom + 0.3),
-        pitch: 26,
-      }
-      setMapViewState(startState)
-      setActiveView('map')
-      runAnimation(setMapViewState, startState, { zoom: Math.max(1.8, startState.zoom), pitch: 30 }, 600)
-    },
-    [activeView, globeViewState, mapViewState, runAnimation]
-  )
-
   useEffect(() => {
     mapViewStateRef.current = mapViewState
   }, [mapViewState])
-
-  useEffect(() => {
-    globeViewStateRef.current = globeViewState
-  }, [globeViewState])
 
   useEffect(() => {
     if (selectedShipmentId !== undefined) return
@@ -279,7 +230,7 @@ export default function GlobalShipmentTracker({
   useEffect(() => {
     if (!resolvedSelectedId) return
 
-    const focusKey = `${activeView}:${resolvedSelectedId}`
+    const focusKey = resolvedSelectedId
     if (focusedSelectionRef.current === focusKey) return
     focusedSelectionRef.current = focusKey
 
@@ -291,22 +242,13 @@ export default function GlobalShipmentTracker({
       selected.destination.coordinates
     )
 
-    if (activeView === 'map') {
-      runAnimation(
-        setMapViewState,
-        mapViewStateRef.current,
-        { longitude, latitude, zoom: 3, pitch: 20, bearing: 0 },
-        800
-      )
-    } else {
-      runAnimation(
-        setGlobeViewState,
-        globeViewStateRef.current,
-        { longitude, latitude, zoom: 3, pitch: 20, bearing: 0 },
-        800
-      )
-    }
-  }, [activeView, enrichedShipments, resolvedSelectedId, runAnimation])
+    runAnimation(
+      setMapViewState,
+      mapViewStateRef.current,
+      { longitude, latitude, zoom: 3, pitch: 20, bearing: 0 },
+      800
+    )
+  }, [enrichedShipments, resolvedSelectedId, runAnimation])
 
   const resolvedHeight = typeof height === 'number' ? `${height}px` : height
 
@@ -317,34 +259,21 @@ export default function GlobalShipmentTracker({
       style={{ height: resolvedHeight }}
     >
       <div className="absolute inset-0">
-        {activeView === 'map' ? (
-          <MapCanvas
-            viewState={mapViewState}
-            onViewStateChange={setMapViewState}
-            mapStyle={MAP_STYLE_URL}
-            layers={layers}
-            onHover={handleHover}
-            onClick={handleArcClick}
-          />
-        ) : (
-          <GlobeCanvas
-            viewState={globeViewState}
-            onViewStateChange={setGlobeViewState}
-            mapStyle={GLOBE_STYLE_URL}
-            layers={layers}
-            onHover={handleHover}
-            onClick={handleArcClick}
-          />
-        )}
+        <MapCanvas
+          viewState={mapViewState}
+          onViewStateChange={setMapViewState}
+          mapStyle={MAP_STYLE_URL}
+          layers={layers}
+          onHover={handleHover}
+          onClick={handleArcClick}
+        />
       </div>
 
       <TrackerToolbar
-        activeView={activeView}
         activeStatuses={activeStatuses}
         statusCounts={statusCounts}
         activeRouteCount={layers.length > 0 ? enrichedShipments.filter((shipment) => activeStatuses.includes(shipment.status)).length : 0}
         onToggleStatus={handleStatusToggle}
-        onViewChange={handleViewChange}
       />
 
       <ShipmentTooltip

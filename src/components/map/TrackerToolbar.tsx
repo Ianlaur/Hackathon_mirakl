@@ -1,27 +1,23 @@
 'use client'
 
-import { Globe2, Map as MapIcon } from 'lucide-react'
+import { Map as MapIcon } from 'lucide-react'
 import type { ShipmentStatus } from '@/types/shipment'
 import { getStatusColor } from '@/lib/shipmentUtils'
 
 interface TrackerToolbarProps {
-  activeView: 'map' | 'globe'
   activeStatuses: ShipmentStatus[]
   statusCounts: Record<ShipmentStatus, number>
   activeRouteCount: number
   onToggleStatus: (status: ShipmentStatus) => void
-  onViewChange: (view: 'map' | 'globe') => void
 }
 
 const ORDERED_STATUSES: ShipmentStatus[] = ['on_track', 'in_transit', 'blocked', 'rerouted']
 
 export default function TrackerToolbar({
-  activeView,
   activeStatuses,
   statusCounts,
   activeRouteCount,
   onToggleStatus,
-  onViewChange,
 }: TrackerToolbarProps) {
   return (
     <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex flex-wrap items-center gap-3 rounded-xl border border-slate-700/60 bg-slate-950/65 px-3 py-2 backdrop-blur">
@@ -58,24 +54,9 @@ export default function TrackerToolbar({
       </div>
 
       <div className="pointer-events-auto ml-auto inline-flex items-center rounded-full border border-slate-700/70 bg-slate-900/80 p-1 text-xs">
-        <button
-          type="button"
-          onClick={() => onViewChange('map')}
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition ${
-            activeView === 'map' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white'
-          }`}
-        >
+        <span className="inline-flex items-center gap-1 rounded-full bg-slate-700 px-2.5 py-1 text-white">
           <MapIcon className="h-3.5 w-3.5" /> Map 2D
-        </button>
-        <button
-          type="button"
-          onClick={() => onViewChange('globe')}
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition ${
-            activeView === 'globe' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white'
-          }`}
-        >
-          <Globe2 className="h-3.5 w-3.5" /> Globe 3D
-        </button>
+        </span>
       </div>
     </div>
   )

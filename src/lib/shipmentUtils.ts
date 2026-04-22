@@ -48,10 +48,6 @@ export const MAP_STYLE_URL = MAPTILER_KEY
   ? `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${MAPTILER_KEY}`
   : 'https://tiles.openfreemap.org/styles/dark'
 
-export const GLOBE_STYLE_URL = MAPTILER_KEY
-  ? `https://api.maptiler.com/maps/backdrop/style.json?key=${MAPTILER_KEY}`
-  : 'https://tiles.openfreemap.org/styles/dark'
-
 export function getStatusColor(status: ShipmentStatus) {
   return STATUS_COLORS[status]
 }

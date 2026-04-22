@@ -183,15 +183,15 @@ export default function Sidebar() {
           {/* Logo Section */}
           <div className="mb-10 flex items-center px-2">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-500/20">
-              M
+              JC
             </div>
             <div
               className={`ml-3 flex flex-col whitespace-nowrap transition-all duration-300 ${
                 isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 hidden'
               }`}
             >
-              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Hackathon</span>
-              <span className="text-lg font-bold tracking-tight">Mirakl Tower</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Compte</span>
+              <span className="text-lg font-bold tracking-tight">Jean-Charles</span>
             </div>
           </div>
 
@@ -322,15 +322,15 @@ export default function Sidebar() {
           <div className="mt-8 border-t border-slate-800/60 pt-6">
             <div className="flex items-center px-2">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 text-sm font-bold text-white shadow-md">
-                NS
+                JC
               </div>
               <div
                 className={`ml-3 flex flex-col whitespace-nowrap transition-all duration-300 ${
                   isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 hidden'
                 }`}
               >
-                <span className="text-sm font-semibold">Hackathon</span>
-                <span className="text-xs text-slate-400">User</span>
+                <span className="text-sm font-semibold">Jean-Charles</span>
+                <span className="text-xs text-slate-400">Compte principal</span>
               </div>
             </div>
           </div>
