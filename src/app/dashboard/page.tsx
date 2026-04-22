@@ -353,7 +353,7 @@ export default function DashboardPage() {
         <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Low Stock Dust Trigger</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Low Stock Mira Trigger</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Trigger threshold rule: max(min_quantity, 10)
               </p>
@@ -367,7 +367,7 @@ export default function DashboardPage() {
               </div>
             ) : lowStockAlerts.length === 0 ? (
               <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
-                No low-stock alerts yet. Update stock below threshold to trigger Dust analysis.
+                No low-stock alerts yet. Update stock below threshold to trigger Mira analysis.
               </div>
             ) : (
               lowStockAlerts.map((alert) => (
