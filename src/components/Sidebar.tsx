@@ -7,6 +7,7 @@ import {
   Boxes,
   LayoutDashboard,
   Bot,
+  Inbox,
   Package,
   Warehouse,
   Truck,
@@ -48,7 +49,7 @@ type SidebarProps = {
 
 const navigation: NavEntry[] = [
   { type: 'link', name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { type: 'link', name: 'Copilot', href: '/copilot', icon: Bot },
+  { type: 'link', name: 'Actions', href: '/actions', icon: Inbox },
   {
     type: 'group',
     id: 'operations',

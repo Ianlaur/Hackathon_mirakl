@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
-import { serializeJson } from '@/lib/copilot'
+import { serializeJson } from '@/lib/serialize'
 
 const signalSchema = z.object({
   title: z.string().min(2).max(160),

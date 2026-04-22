@@ -549,9 +549,17 @@ export async function generateCopilotResponse(userId: string, userMessage: strin
   }
 
   if (!encryptedApiKey) {
-    throw new Error(
-      'Missing merchant API key and Dust orchestrator response. Configure at least one provider before using the copilot.'
-    )
+    return {
+      answer:
+        'I could not reach an external model provider, so I generated an immediate operational response from your current app data.',
+      reasoningSummary:
+        'No configured provider response was available; this answer is grounded in stock, transport, calendar, and context signals already stored in the workspace.',
+      evidence: defaultEvidence,
+      recommendations: heuristicSuggestions,
+      usedModel: 'heuristic_local',
+      fallback: true,
+      context,
+    }
   }
 
   const apiKey = decryptSecret(encryptedApiKey)

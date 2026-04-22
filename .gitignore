@@ -45,3 +45,11 @@ coverage/
 # Misc
 *.tmp
 .cache/
+
+# Claude workspaces
+.claude/
+
+# Local hackathon brief assets (kept on dev machines only)
+HACKATHON MIRAKL X EUGENIA.pdf
+hackathon-brief.txt
+Infos_supplémentaire/

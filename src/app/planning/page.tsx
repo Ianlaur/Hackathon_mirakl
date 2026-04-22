@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { getCurrentUserId } from '@/lib/session'
-import { serializeJson } from '@/lib/copilot'
+import { serializeJson } from '@/lib/serialize'
 import PlanningPageClient from './PlanningPageClient'
 
 export const dynamic = 'force-dynamic'

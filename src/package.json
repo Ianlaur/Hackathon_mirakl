@@ -12,6 +12,8 @@
     "db:prepare:low-stock": "prisma db execute --file scripts/create-low-stock-trigger.sql --schema prisma/schema.prisma",
     "dust:test:low-stock": "node scripts/test-dust-low-stock-agent.js",
     "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "next lint",
     "postinstall": "prisma generate",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
@@ -83,9 +85,11 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/html2canvas": "^0.5.35",
     "@types/ws": "^8.18.1",
+    "@vitest/ui": "^4.1.5",
     "eslint": "^8",
     "eslint-config-next": "^14.2.35",
     "prettier": "^3.2.5",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "vitest": "^4.1.5"
   }
 }
