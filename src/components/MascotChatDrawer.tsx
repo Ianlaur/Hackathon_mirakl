@@ -2,7 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUp, Calendar, Inbox, ArrowRight, Trash2, Copy, Check, Mail } from 'lucide-react'
+import {
+  ArrowUp,
+  Calendar,
+  Inbox,
+  ArrowRight,
+  Trash2,
+  Copy,
+  Check,
+  Mail,
+  Mic,
+  Square,
+  Loader2,
+} from 'lucide-react'
+import { useAudioRecorder } from './useAudioRecorder'
 
 const STORAGE_KEY = 'iris_chat_history_v1'
 
@@ -151,6 +164,52 @@ export default function MascotChatDrawer({
     }
   }
 
+  const recorder = useAudioRecorder()
+  const [transcribing, setTranscribing] = useState(false)
+
+  const handleMicClick = async () => {
+    if (transcribing || busy) return
+    if (recorder.state === 'recording') {
+      const blob = await recorder.stop()
+      if (!blob) return
+      setTranscribing(true)
+      setError(null)
+      try {
+        const form = new FormData()
+        const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
+        form.append('file', blob, `iris-${Date.now()}.${ext}`)
+        form.append('language', 'fr')
+        const resp = await fetch('/api/mascot/transcribe', {
+          method: 'POST',
+          body: form,
+        })
+        const data = await resp.json()
+        if (!resp.ok) throw new Error(data?.error ?? 'Transcription échouée')
+        const text = String(data?.text ?? '').trim()
+        if (text) {
+          setInput((prev) => (prev ? `${prev} ${text}` : text))
+          setTimeout(() => inputRef.current?.focus(), 40)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur transcription')
+      } finally {
+        setTranscribing(false)
+      }
+    } else if (recorder.state === 'idle') {
+      await recorder.start()
+    }
+  }
+
+  const formatDuration = (ms: number) => {
+    const total = Math.floor(ms / 1000)
+    const m = Math.floor(total / 60)
+    const s = total % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  const isRecording = recorder.state === 'recording'
+  const isStarting = recorder.state === 'requesting'
+
   useEffect(() => {
     if (messages.length > 0) {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -241,12 +300,20 @@ export default function MascotChatDrawer({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholderActive ? animatedPlaceholder || '\u00a0' : 'Iris'}
+            placeholder={
+              isRecording
+                ? `Enregistrement… ${formatDuration(recorder.durationMs)}`
+                : transcribing
+                  ? 'Transcription…'
+                  : placeholderActive
+                    ? animatedPlaceholder || '\u00a0'
+                    : 'Iris'
+            }
             rows={1}
             className="iris-searchbar__input"
-            disabled={busy}
+            disabled={busy || isRecording || transcribing}
           />
-          {hasConversation && !input.trim() && (
+          {recorder.isSupported && !input.trim() && !isRecording && !transcribing && hasConversation && (
             <button
               type="button"
               onClick={clearHistory}
@@ -255,6 +322,26 @@ export default function MascotChatDrawer({
               className="iris-searchbar__clear"
             >
               <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+          {recorder.isSupported && !input.trim() && !busy && (
+            <button
+              type="button"
+              onClick={handleMicClick}
+              disabled={transcribing || isStarting}
+              aria-label={isRecording ? "Arrêter l'enregistrement" : 'Parler à Iris'}
+              title={isRecording ? "Arrêter l'enregistrement" : 'Parler à Iris'}
+              className={`iris-searchbar__mic ${
+                isRecording ? 'iris-searchbar__mic--recording' : ''
+              } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
+            >
+              {transcribing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isRecording ? (
+                <Square className="h-3.5 w-3.5 fill-current" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
             </button>
           )}
           {input.trim() && (
