@@ -15,6 +15,8 @@ import {
   Square,
   Loader2,
 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { useAudioRecorder } from './useAudioRecorder'
 
 const STORAGE_KEY = 'iris_chat_history_v1'
@@ -295,7 +297,7 @@ export default function MascotChatDrawer({
         className={`iris-panel ${open ? 'iris-panel--open' : 'iris-panel--closed'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
-        aria-label="Iris"
+        aria-label="Mira"
       >
         <form onSubmit={handleSubmit} className="iris-searchbar">
           <div className="iris-searchbar__glyph">
@@ -315,7 +317,7 @@ export default function MascotChatDrawer({
                   ? 'Transcription…'
                   : placeholderActive
                     ? animatedPlaceholder || '\u00a0'
-                    : 'Iris'
+                    : 'Mira'
             }
             rows={1}
             className="iris-searchbar__input"
@@ -337,8 +339,8 @@ export default function MascotChatDrawer({
               type="button"
               onClick={handleMicClick}
               disabled={transcribing || isStarting}
-              aria-label={isRecording ? "Arrêter l'enregistrement" : 'Parler à Iris'}
-              title={isRecording ? "Arrêter l'enregistrement" : 'Parler à Iris'}
+              aria-label={isRecording ? "Arrêter l'enregistrement" : 'Parler à Mira'}
+              title={isRecording ? "Arrêter l'enregistrement" : 'Parler à Mira'}
               className={`iris-searchbar__mic ${
                 isRecording ? 'iris-searchbar__mic--recording' : ''
               } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
@@ -479,7 +481,41 @@ function MessageBubble({
           ))}
         </div>
       )}
-      <div className="iris-msg__bubble">{message.content}</div>
+      <div className="iris-msg__bubble">
+        {isUser ? (
+          <span className="whitespace-pre-wrap">{message.content}</span>
+        ) : (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              p: ({ children }) => <p className="iris-md__p">{children}</p>,
+              strong: ({ children }) => (
+                <strong className="iris-md__strong">{children}</strong>
+              ),
+              em: ({ children }) => <em className="iris-md__em">{children}</em>,
+              ul: ({ children }) => <ul className="iris-md__list">{children}</ul>,
+              ol: ({ children }) => <ol className="iris-md__list iris-md__list--ordered">{children}</ol>,
+              li: ({ children }) => <li className="iris-md__li">{children}</li>,
+              hr: () => <hr className="iris-md__hr" />,
+              code: ({ children }) => (
+                <code className="iris-md__code">{children}</code>
+              ),
+              a: ({ children, href }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="iris-md__link"
+                >
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
+        )}
+      </div>
       {calendarCreated && (
         <EventRecapCard event={calendarCreated} onNavigate={onNavigate} />
       )}

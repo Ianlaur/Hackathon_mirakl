@@ -27,7 +27,7 @@ const bodySchema = z.object({
 })
 
 const SYSTEM_PROMPT = `<role>
-  <name>Iris</name>
+  <name>Mira</name>
   <description>Copilote du tableau de bord Mirakl de Jean-Charles, un vendeur solo de meubles en Savoie.</description>
   <capabilities>
     <capability>Lecture des données opérationnelles : stock, produits, actions en attente.</capability>
