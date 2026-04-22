@@ -594,7 +594,7 @@ export default function CalendarPageClient() {
   const [syncError, setSyncError] = useState<string | null>(null)
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [naturalInput, setNaturalInput] = useState('')
-  const [timelineRange, setTimelineRange] = useState(90)
+  const [tlRange, setTlRange] = useState(90)
 
   useEffect(() => {
     let ignore = false
@@ -861,127 +861,61 @@ export default function CalendarPageClient() {
         </div>
       </section>
 
-      {/* --- Timeline frise --- */}
       <section className="dashboard-card p-5 sm:p-6">
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm font-semibold text-slate-950">Prochains événements</p>
           <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100/80 p-0.5">
-            {[
-              { v: 30, l: '30 jours' },
-              { v: 90, l: '3 mois' },
-              { v: 180, l: '6 mois' },
-            ].map((opt) => (
-              <button
-                key={opt.v}
-                type="button"
-                onClick={() => setTimelineRange(opt.v)}
-                className={`rounded-md px-3 py-1 text-xs font-medium transition ${
-                  timelineRange === opt.v
-                    ? 'bg-white text-slate-950 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                {opt.l}
-              </button>
+            {[{ v: 30, l: '30 jours' }, { v: 90, l: '3 mois' }, { v: 180, l: '6 mois' }].map((o) => (
+              <button key={o.v} type="button" onClick={() => setTlRange(o.v)}
+                className={`rounded-md px-3 py-1 text-xs font-medium transition ${tlRange === o.v ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >{o.l}</button>
             ))}
           </div>
         </div>
         {(() => {
-          const rangeStart = parseDateKey(todayKey)
-          const rangeEnd = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate() + timelineRange)
-          const rangeEndKey = toDateKey(rangeEnd)
-          const totalDays = Math.max(1, timelineRange)
-
-          const tlEvents = events
-            .filter((e) => e.kind !== 'leave' && e.endDate >= todayKey && e.startDate <= rangeEndKey)
-            .sort((a, b) => a.startDate.localeCompare(b.startDate))
-
-          const pct = (dateKey: string) => {
-            const d = parseDateKey(dateKey)
-            const diff = Math.round((d.getTime() - rangeStart.getTime()) / 86400000)
-            return Math.max(2, Math.min(98, (diff / totalDays) * 100))
-          }
-
-          const shortDate = (dateKey: string) =>
-            new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(parseDateKey(dateKey))
-
-          const maxDots = timelineRange <= 30 ? 6 : timelineRange <= 90 ? 8 : 10
-          const visible = tlEvents.slice(0, maxDots)
-          const minGap = Math.max(8, 100 / Math.max(visible.length, 1) * 0.8)
-          const positions: number[] = []
-          visible.forEach((evt) => {
-            const start = evt.startDate < todayKey ? todayKey : evt.startDate
-            let pos = pct(start)
-            if (positions.length > 0) {
-              const prev = positions[positions.length - 1]
-              if (pos - prev < minGap) pos = Math.min(96, prev + minGap)
-            }
-            positions.push(pos)
-          })
-
-          if (visible.length === 0) return (
-            <p className="text-sm text-slate-400">Aucun événement sur cette période.</p>
-          )
-
+          const rs = parseDateKey(todayKey)
+          const re = new Date(rs.getFullYear(), rs.getMonth(), rs.getDate() + tlRange)
+          const rek = toDateKey(re)
+          const td = Math.max(1, tlRange)
+          const tl = events.filter((e) => e.kind !== 'leave' && e.endDate >= todayKey && e.startDate <= rek).sort((a, b) => a.startDate.localeCompare(b.startDate))
+          const pc = (dk: string) => { const d = parseDateKey(dk); return Math.max(2, Math.min(98, (Math.round((d.getTime() - rs.getTime()) / 86400000) / td) * 100)) }
+          const sd = (dk: string) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(parseDateKey(dk))
+          const mx = tlRange <= 30 ? 6 : tlRange <= 90 ? 8 : 10
+          const vis = tl.slice(0, mx)
+          const mg = Math.max(8, 100 / Math.max(vis.length, 1) * 0.8)
+          const pos: number[] = []
+          vis.forEach((e) => { let p = pc(e.startDate < todayKey ? todayKey : e.startDate); if (pos.length > 0 && p - pos[pos.length - 1] < mg) p = Math.min(96, pos[pos.length - 1] + mg); pos.push(p) })
+          if (vis.length === 0) return <p className="text-sm text-slate-400">Aucun événement sur cette période.</p>
           return (
             <div className="relative px-4">
               <div className="absolute left-4 right-4 top-3 h-px bg-slate-200" />
               <div className="absolute top-0 left-0">
-                <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center">
-                  <div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" />
-                </div>
+                <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
                 <p className="mt-1 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Auj.</p>
               </div>
-              {visible.map((evt, idx) => {
-                const kind = getKindStyle(evt.kind)
-                return (
-                  <div
-                    key={evt.id}
-                    className="absolute cursor-pointer group"
-                    style={{ left: `${positions[idx]}%` }}
-                    onClick={() => {
-                      setSelectedEventId(evt.id)
-                      setSelectedDate(evt.startDate)
-                      setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1))
-                    }}
-                  >
-                    <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center">
-                      <div className={`h-3 w-3 rounded-full ${kind.color} ring-2 ring-white transition group-hover:scale-125`} />
-                    </div>
-                    <div className="mt-1 -translate-x-1/2 w-28">
-                      <p className="text-xs font-semibold text-slate-900 truncate">{evt.title}</p>
-                      <p className="text-[11px] text-slate-400 capitalize">{shortDate(evt.startDate)}</p>
-                    </div>
+              {vis.map((evt, i) => { const k = getKindStyle(evt.kind); return (
+                <div key={evt.id} className="absolute cursor-pointer group" style={{ left: `${pos[i]}%` }}
+                  onClick={() => { setSelectedEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
+                  <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} /></div>
+                  <div className="mt-1 -translate-x-1/2 w-28">
+                    <p className="text-xs font-semibold text-slate-900 truncate">{evt.title}</p>
+                    <p className="text-[11px] text-slate-400 capitalize">{sd(evt.startDate)}</p>
                   </div>
-                )
-              })}
+                </div>
+              ) })}
               <div className="h-16" />
             </div>
           )
         })()}
       </section>
 
-      {/* --- View switcher + Calendar --- */}
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <div>
         <section className="dashboard-card overflow-hidden p-4 sm:p-5">
           <div className="mb-4 inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1">
-            {[
-              { value: 'day' as CalendarView, label: 'Jour' },
-              { value: 'week' as CalendarView, label: 'Semaine' },
-              { value: 'month' as CalendarView, label: 'Mois' },
-            ].map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setCalendarView(option.value)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                  calendarView === option.value
-                    ? 'bg-white text-slate-950 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {option.label}
-              </button>
+            {[{ value: 'day' as CalendarView, label: 'Jour' }, { value: 'week' as CalendarView, label: 'Semaine' }, { value: 'month' as CalendarView, label: 'Mois' }].map((o) => (
+              <button key={o.value} type="button" onClick={() => setCalendarView(o.value)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${calendarView === o.value ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >{o.label}</button>
             ))}
           </div>
           {/* --- Navigation bar --- */}
@@ -1315,173 +1249,6 @@ export default function CalendarPageClient() {
           </div>
         </section>
 
-        <aside className="space-y-4">
-          <section className="dashboard-card p-5">
-            <h2 className="text-lg font-semibold text-slate-950">Créer rapidement</h2>
-            {isCreatingFromDate && (
-              <p className="mt-2 rounded-xl bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">
-                Création pour le {formatDateFr(form.startDate)}
-              </p>
-            )}
-            <form onSubmit={createEvent} className="mt-4 space-y-4">
-              <label className="block">
-                <span className="text-sm font-medium text-slate-700">Décrivez l’événement</span>
-                <textarea
-                  ref={naturalInputRef}
-                  value={naturalInput}
-                  onChange={(event) => setNaturalInput(event.target.value)}
-                  className="mt-1 min-h-28 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none ring-blue-500 transition focus:ring-2"
-                  placeholder="Ex : congés du 5 au 10 mai toute la journée"
-                  required
-                />
-              </label>
-
-              <div className="flex flex-wrap gap-2">
-                {[
-                  'congés du 5 au 10 mai toute la journée',
-                  'campagne soldes le 7 mai après-midi',
-                  'fermeture fournisseur demain matin',
-                ].map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    onClick={() => setNaturalInput(example)}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
-
-              {parsedNaturalEvent ? (
-                <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">Prévisualisation</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">{parsedNaturalEvent.summary}</p>
-                    </div>
-                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-blue-700">
-                      {parsedNaturalEvent.confidence === 'high'
-                        ? 'Confiant'
-                        : parsedNaturalEvent.confidence === 'medium'
-                          ? 'À vérifier'
-                          : 'Date par défaut'}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getKindStyle(parsedNaturalEvent.event.kind).chip}`}>
-                      {getKindStyle(parsedNaturalEvent.event.kind).label}
-                    </span>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${impactLabels[parsedNaturalEvent.event.impact].chip}`}>
-                      Impact {impactLabels[parsedNaturalEvent.event.impact].label.toLowerCase()}
-                    </span>
-                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
-                      {parsedNaturalEvent.event.zone}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <p className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500">
-                  Écrivez une phrase avec une période ou une date. Exemple : “congés du 5 au 10 mai toute la journée”.
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={!parsedNaturalEvent}
-                className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                Ajouter l’événement
-              </button>
-            </form>
-          </section>
-
-          <section className="dashboard-card p-5">
-            <h2 className="text-lg font-semibold text-slate-950">Détails / édition</h2>
-            {selectedEvent ? (
-              <div className="mt-4 space-y-3">
-                <input
-                  value={selectedEvent.title}
-                  onChange={(event) => updateSelectedEvent({ title: event.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold outline-none ring-blue-500 transition focus:ring-2"
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="date"
-                    value={selectedEvent.startDate}
-                    onChange={(event) => updateSelectedEvent({ startDate: event.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 transition focus:ring-2"
-                  />
-                  <input
-                    type="date"
-                    value={selectedEvent.endDate}
-                    onChange={(event) => updateSelectedEvent({ endDate: event.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 transition focus:ring-2"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getKindStyle(selectedEvent.kind).chip}`}>
-                    {getKindStyle(selectedEvent.kind).label}
-                  </span>
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${impactLabels[selectedEvent.impact].chip}`}>
-                    Impact {impactLabels[selectedEvent.impact].label.toLowerCase()}
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                    {selectedEvent.zone}
-                  </span>
-                </div>
-                <textarea
-                  value={selectedEvent.notes}
-                  onChange={(event) => updateSelectedEvent({ notes: event.target.value })}
-                  className="min-h-28 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 outline-none ring-blue-500 transition focus:ring-2"
-                />
-                <button
-                  type="button"
-                  onClick={deleteSelectedEvent}
-                  className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-                >
-                  Supprimer
-                </button>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm leading-6 text-slate-500">Cliquez sur un événement pour voir ses détails.</p>
-            )}
-          </section>
-
-          <section className="dashboard-card p-5">
-            <h2 className="text-lg font-semibold text-slate-950">{formatDateFr(selectedDate)}</h2>
-            <div className="mt-3 space-y-2">
-              {selectedDateEvents.length > 0 ? (
-                selectedDateEvents.map((event) => {
-                  const kind = getKindStyle(event.kind)
-                  return (
-                    <button
-                      key={event.id}
-                      type="button"
-                      onClick={() => setSelectedEventId(event.id)}
-                      className={`w-full rounded-xl border bg-white p-3 text-left transition hover:border-blue-200 hover:bg-blue-50 ${kind.border}`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`h-2.5 w-2.5 rounded-full ${kind.color}`} />
-                          <span className="text-xs font-semibold text-slate-500">
-                            {formatDateRangeFr(event.startDate, event.endDate)}
-                          </span>
-                        </div>
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${impactLabels[event.impact].chip}`}>
-                          {impactLabels[event.impact].label}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-slate-950">{event.title}</p>
-                    </button>
-                  )
-                })
-              ) : (
-                <p className="text-sm text-slate-500">Aucun événement sur cette date.</p>
-              )}
-            </div>
-          </section>
-        </aside>
       </div>
     </div>
   )
