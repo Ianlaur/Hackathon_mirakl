@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { buildPlanItems, summarizePlan } from '@/lib/calendar-restock'
 
 export type ToolDefinition = {
   type: 'function'
@@ -83,6 +84,42 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
           notes: { type: 'string', description: 'Notes optionnelles' },
         },
         required: ['title', 'start_date', 'end_date', 'kind'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'propose_restock_plan',
+      description:
+        "Génère un plan de réapprovisionnement pour les SKUs à risque de rupture sur un horizon donné (par défaut 30 jours). Crée une recommandation dans l'inbox /actions que le merchant peut approuver/rejeter. À utiliser quand le merchant demande 'prépare un plan restock', 'commande ce qu'il faut', ou après avoir détecté des stocks critiques.",
+      parameters: {
+        type: 'object',
+        properties: {
+          horizon_days: {
+            type: 'number',
+            description: 'Nombre de jours de couverture ciblés (défaut 30)',
+          },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'draft_supplier_emails',
+      description:
+        "Génère des brouillons d'emails fournisseur, un par fournisseur concerné, pour commander les SKUs sous seuil. Retourne le sujet et le corps de chaque mail. Les mails ne sont PAS envoyés, uniquement préparés pour que le merchant les copie/colle ou les valide avant envoi. À utiliser quand le merchant demande 'écris les mails fournisseurs', 'prépare les commandes', 'rédige les relances'.",
+      parameters: {
+        type: 'object',
+        properties: {
+          horizon_days: {
+            type: 'number',
+            description: 'Horizon de couverture en jours pour calculer les quantités (défaut 30)',
+          },
+        },
+        required: [],
       },
     },
   },
@@ -291,7 +328,222 @@ export async function executeTool(
       }
     }
 
+    case 'propose_restock_plan': {
+      const horizonDays = Math.max(
+        7,
+        Math.min(120, Number(args.horizon_days ?? 30) || 30)
+      )
+      const plan = await buildRestockPlanForUser(ctx.userId, horizonDays)
+      if (plan.items.length === 0) {
+        return {
+          ok: true,
+          created: false,
+          horizon_days: horizonDays,
+          message: 'Aucun SKU sous risque de rupture sur cet horizon, pas de plan nécessaire.',
+        }
+      }
+
+      const title = `📦 Plan restock — ${plan.items.length} SKU critique${plan.items.length > 1 ? 's' : ''} (${horizonDays}j)`
+      const reasoning = `Sur les ${horizonDays} prochains jours, ${plan.items.length} produits risquent la rupture. Total estimé ${plan.totalCost.toFixed(0)} €.`
+
+      const reco = await prisma.agentRecommendation.create({
+        data: {
+          user_id: ctx.userId,
+          title,
+          scenario_type: 'restock_plan_manual',
+          status: 'pending_approval',
+          reasoning_summary: reasoning,
+          expected_impact: `Éviter ${plan.items.length} ruptures potentielles et protéger environ ${plan.totalCost.toFixed(0)} € de chiffre d'affaires.`,
+          confidence_note: 'Confiance élevée sur le filtrage déterministe, à valider par le merchant.',
+          evidence_payload: [
+            { label: 'Horizon', value: `${horizonDays} jours` },
+            { label: 'SKUs analysés', value: String(plan.productsCount) },
+            { label: 'SKUs à risque', value: String(plan.items.length) },
+            {
+              label: 'Deadline commande au plus tard',
+              value: plan.earliestDeadline ?? '—',
+            },
+            { label: 'Coût total estimé', value: `${plan.totalCost.toFixed(2)} €` },
+          ],
+          action_payload: {
+            horizon_days: horizonDays,
+            order_deadline: plan.earliestDeadline,
+            total_estimated_cost_eur: plan.totalCost,
+            items_count: plan.items.length,
+            target: 'restock_plan_manual',
+            supplementary_notes: [],
+            items: plan.items,
+          },
+          approval_required: true,
+          source: 'mascot_iris',
+        },
+      })
+
+      return {
+        ok: true,
+        created: true,
+        recommendation_id: reco.id,
+        horizon_days: horizonDays,
+        items_count: plan.items.length,
+        total_estimated_cost_eur: plan.totalCost,
+      }
+    }
+
+    case 'draft_supplier_emails': {
+      const horizonDays = Math.max(
+        7,
+        Math.min(120, Number(args.horizon_days ?? 30) || 30)
+      )
+      const plan = await buildRestockPlanForUser(ctx.userId, horizonDays)
+      if (plan.items.length === 0) {
+        return {
+          ok: true,
+          drafts: [],
+          message: "Rien à commander pour l'instant, aucun SKU sous risque de rupture.",
+        }
+      }
+
+      const profile = await prisma.merchantProfileContext.findUnique({
+        where: { user_id: ctx.userId },
+      })
+      const merchantName = profile?.merchant_category ?? 'Nordika Studio'
+
+      // Grouper par fournisseur
+      const grouped = new Map<string, typeof plan.items>()
+      for (const item of plan.items) {
+        const key = item.supplier ?? 'Fournisseur inconnu'
+        const arr = grouped.get(key) ?? []
+        arr.push(item)
+        grouped.set(key, arr)
+      }
+
+      const drafts = Array.from(grouped.entries()).map(([supplier, items]) => {
+        const total = items.reduce((s, i) => s + (i.estimated_cost_eur ?? 0), 0)
+        const earliestDeadline = items
+          .map((i) => i.order_deadline)
+          .filter(Boolean)
+          .sort()[0]
+
+        const tableLines = items
+          .map(
+            (i) =>
+              `- ${i.sku ?? '?'} — ${i.product_name} — ${i.recommended_qty} unités @ ${(i.unit_cost_eur ?? 0).toFixed(2)} € = ${(i.estimated_cost_eur ?? 0).toFixed(2)} €`
+          )
+          .join('\n')
+
+        const subject = `Commande ${merchantName} — ${items.length} référence${items.length > 1 ? 's' : ''} (${items.reduce((s, i) => s + i.recommended_qty, 0)} unités)`
+
+        const body =
+          `Bonjour,\n\n` +
+          `J'espère que vous allez bien. Je vous sollicite pour une commande de réassort :\n\n` +
+          tableLines +
+          `\n\nTotal estimé : ${total.toFixed(2)} €\n` +
+          (earliestDeadline
+            ? `Idéalement livrée avant le ${earliestDeadline} pour éviter toute rupture.\n\n`
+            : `\n`) +
+          `Merci de me confirmer disponibilité, délai de livraison et facture pro forma.\n\n` +
+          `Bien cordialement,\n` +
+          `Jean-Charles — ${merchantName}`
+
+        return {
+          supplier,
+          subject,
+          body,
+          items_count: items.length,
+          total_units: items.reduce((s, i) => s + i.recommended_qty, 0),
+          total_cost_eur: Number(total.toFixed(2)),
+          order_deadline: earliestDeadline ?? null,
+        }
+      })
+
+      return {
+        ok: true,
+        drafts,
+        horizon_days: horizonDays,
+      }
+    }
+
     default:
       return { error: `Tool ${name} not implemented` }
+  }
+}
+
+async function buildRestockPlanForUser(userId: string, horizonDays: number) {
+  const products = await prisma.product.findMany({
+    where: { user_id: userId, active: true },
+    select: {
+      id: true,
+      sku: true,
+      name: true,
+      quantity: true,
+      supplier: true,
+      supplier_lead_time_days: true,
+      supplier_unit_cost_eur: true,
+    },
+  })
+
+  type OrderCountRow = { sku: string; cnt: number }
+  const orderCounts = await prisma.$queryRaw<OrderCountRow[]>`
+    SELECT sku, SUM(qty)::int AS cnt
+    FROM (
+      SELECT (item->>'SellerSKU') AS sku, COALESCE((item->>'QuantityOrdered')::int, 1) AS qty
+      FROM public.data_orders_amazon o,
+           jsonb_array_elements(o.order_items) AS item
+      WHERE o.purchase_date >= NOW() - INTERVAL '60 days'
+      UNION ALL
+      SELECT (item->>'product_sku') AS sku, COALESCE((item->>'quantity')::int, 1) AS qty
+      FROM public.data_orders_google o,
+           jsonb_array_elements(o.line_items) AS item
+      WHERE o.created_at >= NOW() - INTERVAL '60 days'
+    ) x
+    WHERE sku IS NOT NULL
+    GROUP BY sku
+  `
+  const ordersMap = new Map(orderCounts.map((r) => [r.sku, r.cnt]))
+
+  const today = new Date()
+  const leaveEnd = new Date(today.getTime() + horizonDays * 24 * 3600 * 1000)
+
+  const items = buildPlanItems({
+    today,
+    leaveStart: today,
+    leaveEnd,
+    products: products.map((p) => ({
+      id: p.id,
+      sku: p.sku,
+      name: p.name,
+      currentStock: p.quantity,
+      supplier: p.supplier,
+      supplierLeadTimeDays: p.supplier_lead_time_days ?? 7,
+      supplierUnitCostEur: Number(p.supplier_unit_cost_eur ?? 0),
+    })),
+    orders: products.map((p) => ({
+      productId: p.id,
+      orders60d: p.sku ? (ordersMap.get(p.sku) ?? 0) : 0,
+    })),
+  })
+
+  const summary = summarizePlan(items)
+
+  return {
+    productsCount: products.length,
+    items: items.map((i) => ({
+      product_id: i.productId,
+      sku: i.sku,
+      product_name: i.productName,
+      current_stock: i.currentStock,
+      velocity_per_day: i.velocityPerDay,
+      projected_stock_end_of_leave: i.projectedStockEndOfLeave,
+      recommended_qty: i.recommendedQty,
+      supplier: i.supplier,
+      lead_time_days: i.leadTimeDays,
+      unit_cost_eur: i.unitCostEur,
+      estimated_cost_eur: i.estimatedCostEur,
+      priority: i.priority,
+      order_deadline: i.orderDeadline.toISOString().slice(0, 10),
+      reasoning: i.reasoning,
+    })),
+    totalCost: summary.totalCostEur,
+    earliestDeadline: summary.earliestDeadline?.toISOString().slice(0, 10) ?? null,
   }
 }

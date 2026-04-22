@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUp, Calendar, Inbox, ArrowRight, Trash2 } from 'lucide-react'
+import { ArrowUp, Calendar, Inbox, ArrowRight, Trash2, Copy, Check, Mail } from 'lucide-react'
 
 const STORAGE_KEY = 'iris_chat_history_v1'
 
@@ -295,6 +295,26 @@ type CalendarEventCreated = {
   advisor_triggered?: boolean
 }
 
+type RestockPlanCreated = {
+  ok: true
+  created: boolean
+  recommendation_id?: string
+  horizon_days: number
+  items_count?: number
+  total_estimated_cost_eur?: number
+  message?: string
+}
+
+type EmailDraft = {
+  supplier: string
+  subject: string
+  body: string
+  items_count: number
+  total_units: number
+  total_cost_eur: number
+  order_deadline: string | null
+}
+
 function extractCalendarCreation(
   toolCalls: ChatMessage['tool_calls']
 ): CalendarEventCreated | null {
@@ -309,6 +329,34 @@ function extractCalendarCreation(
   return null
 }
 
+function extractRestockPlan(
+  toolCalls: ChatMessage['tool_calls']
+): RestockPlanCreated | null {
+  if (!toolCalls) return null
+  for (const tc of toolCalls) {
+    if (tc.name !== 'propose_restock_plan') continue
+    const r = tc.result as RestockPlanCreated | { ok: false }
+    if (r && typeof r === 'object' && 'ok' in r && r.ok) {
+      return r as RestockPlanCreated
+    }
+  }
+  return null
+}
+
+function extractEmailDrafts(
+  toolCalls: ChatMessage['tool_calls']
+): EmailDraft[] {
+  if (!toolCalls) return []
+  for (const tc of toolCalls) {
+    if (tc.name !== 'draft_supplier_emails') continue
+    const r = tc.result as { ok: true; drafts: EmailDraft[] } | { ok: false }
+    if (r && typeof r === 'object' && 'ok' in r && r.ok && 'drafts' in r) {
+      return r.drafts
+    }
+  }
+  return []
+}
+
 function MessageBubble({
   message,
   onNavigate,
@@ -318,6 +366,8 @@ function MessageBubble({
 }) {
   const isUser = message.role === 'user'
   const calendarCreated = !isUser ? extractCalendarCreation(message.tool_calls) : null
+  const restockPlan = !isUser ? extractRestockPlan(message.tool_calls) : null
+  const emailDrafts = !isUser ? extractEmailDrafts(message.tool_calls) : []
 
   return (
     <div className={`iris-msg ${isUser ? 'iris-msg--user' : 'iris-msg--assistant'}`}>
@@ -337,6 +387,16 @@ function MessageBubble({
       <div className="iris-msg__bubble">{message.content}</div>
       {calendarCreated && (
         <EventRecapCard event={calendarCreated} onNavigate={onNavigate} />
+      )}
+      {restockPlan && restockPlan.created && (
+        <RestockPlanCard plan={restockPlan} onNavigate={onNavigate} />
+      )}
+      {emailDrafts.length > 0 && (
+        <div className="iris-drafts">
+          {emailDrafts.map((d, i) => (
+            <EmailDraftCard key={i} draft={d} />
+          ))}
+        </div>
       )}
     </div>
   )
@@ -391,6 +451,101 @@ function EventRecapCard({
             <ArrowRight className="h-3 w-3 opacity-80" />
           </button>
         )}
+      </div>
+    </div>
+  )
+}
+
+function RestockPlanCard({
+  plan,
+  onNavigate,
+}: {
+  plan: RestockPlanCreated
+  onNavigate: () => void
+}) {
+  const router = useRouter()
+  return (
+    <div className="iris-recap">
+      <div className="iris-recap__header">
+        <div className="iris-recap__badge">📦</div>
+        <div className="iris-recap__titles">
+          <p className="iris-recap__title">
+            Plan restock — {plan.items_count} SKU{(plan.items_count ?? 0) > 1 ? 's' : ''}
+          </p>
+          <p className="iris-recap__dates">
+            {(plan.total_estimated_cost_eur ?? 0).toFixed(0)} € · horizon {plan.horizon_days}j
+          </p>
+        </div>
+      </div>
+      <div className="iris-recap__actions">
+        <button
+          type="button"
+          onClick={() => {
+            router.push('/actions')
+            onNavigate()
+          }}
+          className="iris-recap__btn iris-recap__btn--primary"
+        >
+          <Inbox className="h-3.5 w-3.5" />
+          <span>Ouvrir dans l&apos;inbox</span>
+          <ArrowRight className="h-3 w-3 opacity-80" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function EmailDraftCard({ draft }: { draft: EmailDraft }) {
+  const [copied, setCopied] = useState(false)
+
+  const fullText = `${draft.subject}\n\n${draft.body}`
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(fullText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1600)
+    } catch {
+      /* noop */
+    }
+  }
+
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`
+
+  return (
+    <div className="iris-email">
+      <div className="iris-email__header">
+        <div className="iris-email__icon">
+          <Mail className="h-3.5 w-3.5" />
+        </div>
+        <div className="iris-email__meta">
+          <p className="iris-email__supplier">{draft.supplier}</p>
+          <p className="iris-email__stats">
+            {draft.items_count} SKU · {draft.total_units} unités · {draft.total_cost_eur.toFixed(0)} €
+          </p>
+        </div>
+      </div>
+      <div className="iris-email__subject">{draft.subject}</div>
+      <pre className="iris-email__body">{draft.body}</pre>
+      <div className="iris-email__actions">
+        <button
+          type="button"
+          onClick={handleCopy}
+          className={`iris-email__btn ${copied ? 'iris-email__btn--success' : ''}`}
+        >
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          <span>{copied ? 'Copié' : 'Copier'}</span>
+        </button>
+        <a
+          href={gmailUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="iris-email__btn iris-email__btn--primary"
+        >
+          <Mail className="h-3.5 w-3.5" />
+          <span>Ouvrir dans Gmail</span>
+          <ArrowRight className="h-3 w-3 opacity-80" />
+        </a>
       </div>
     </div>
   )

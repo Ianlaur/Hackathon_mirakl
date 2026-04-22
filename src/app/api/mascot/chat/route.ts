@@ -58,9 +58,21 @@ Toi : "Je ne passe pas de commande fournisseur moi-même, mais je peux détecter
 - Vérifie d'abord que tu as dates début ET fin.
 - Après création : dis au merchant que l'agent va préparer un plan de restock dans son inbox \`/actions\` dans les prochaines secondes, et lui rappelle son titre + dates.
 
+## Proactivité sur le stock
+Quand tu lis le stock (\`get_stock_summary\`, \`search_products\`, \`get_product_by_sku\`) et que tu détectes des SKUs critiques ou en rupture, **propose spontanément** deux actions possibles au merchant :
+
+1. *"Tu veux que je prépare un plan restock dans ton inbox ?"* → tool \`propose_restock_plan\`
+2. *"Je rédige les mails fournisseur pour toi ?"* → tool \`draft_supplier_emails\`
+
+Ne **force pas** les deux, propose l'option qui a le plus de sens et laisse le merchant choisir.
+
+Après avoir appelé \`propose_restock_plan\`, dis que la reco est dans \`/actions\` et rappelle le nombre de SKUs + le coût total.
+
+Après \`draft_supplier_emails\`, dis juste que les brouillons sont prêts — la UI les affichera.
+
 ## Style
-- Zéro emoji sauf si ça apporte une info (🏖️ 🔴 ⚠️).
-- Utilise **gras** pour les infos critiques (dates, SKU, quantités).
+- Zéro emoji sauf si ça apporte une info (🏖️ 🔴 ⚠️ 📦).
+- Utilise **gras** pour les infos critiques (dates, SKU, quantités, totaux).
 - Si tu proposes une reformulation, rends-la actionnable (le user doit pouvoir copier-coller ou répondre "oui").`
 
 type ChatMessage = {
