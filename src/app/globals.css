@@ -458,4 +458,108 @@
     font-size: 13px;
     border: 1px solid rgba(248, 113, 113, 0.4);
   }
+
+  .iris-recap {
+    margin-top: 8px;
+    max-width: 320px;
+    padding: 12px;
+    border-radius: 14px;
+    background: linear-gradient(
+      135deg,
+      rgba(249, 250, 251, 0.95),
+      rgba(243, 244, 246, 0.95)
+    );
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 6px 20px -8px rgba(15, 23, 42, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .iris-recap__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .iris-recap__badge {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .iris-recap__titles {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .iris-recap__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .iris-recap__dates {
+    font-size: 11px;
+    color: #64748b;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .iris-recap__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .iris-recap__btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+    width: 100%;
+    text-align: left;
+  }
+
+  .iris-recap__btn > span:nth-child(2) {
+    flex: 1;
+  }
+
+  .iris-recap__btn--secondary {
+    background: white;
+    color: #334155;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+  }
+
+  .iris-recap__btn--secondary:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -6px rgba(15, 23, 42, 0.15);
+  }
+
+  .iris-recap__btn--primary {
+    background: #0f172a;
+    color: white;
+    border: 1px solid #0f172a;
+  }
+
+  .iris-recap__btn--primary:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px rgba(15, 23, 42, 0.4);
+  }
 }

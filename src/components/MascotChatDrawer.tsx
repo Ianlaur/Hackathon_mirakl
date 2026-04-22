@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowUp, Calendar, Inbox, ArrowRight } from 'lucide-react'
 
 type ChatMessage = {
   role: 'user' | 'assistant'
@@ -218,7 +219,7 @@ export default function MascotChatDrawer({
         {(hasConversation || busy || error) && (
           <div ref={scrollRef} className="iris-conversation">
             {messages.map((m, idx) => (
-              <MessageBubble key={idx} message={m} />
+              <MessageBubble key={idx} message={m} onNavigate={onClose} />
             ))}
             {busy && (
               <div className="iris-conversation__thinking">
@@ -235,8 +236,36 @@ export default function MascotChatDrawer({
   )
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+type CalendarEventCreated = {
+  ok: true
+  event: { id: string; title: string; start: string; end: string; kind: string }
+  advisor_triggered?: boolean
+}
+
+function extractCalendarCreation(
+  toolCalls: ChatMessage['tool_calls']
+): CalendarEventCreated | null {
+  if (!toolCalls) return null
+  for (const tc of toolCalls) {
+    if (tc.name !== 'create_calendar_event') continue
+    const r = tc.result as CalendarEventCreated | { ok: false }
+    if (r && typeof r === 'object' && 'ok' in r && r.ok) {
+      return r as CalendarEventCreated
+    }
+  }
+  return null
+}
+
+function MessageBubble({
+  message,
+  onNavigate,
+}: {
+  message: ChatMessage
+  onNavigate: () => void
+}) {
   const isUser = message.role === 'user'
+  const calendarCreated = !isUser ? extractCalendarCreation(message.tool_calls) : null
+
   return (
     <div className={`iris-msg ${isUser ? 'iris-msg--user' : 'iris-msg--assistant'}`}>
       {message.tool_calls && message.tool_calls.length > 0 && (
@@ -253,6 +282,63 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         </div>
       )}
       <div className="iris-msg__bubble">{message.content}</div>
+      {calendarCreated && (
+        <EventRecapCard event={calendarCreated} onNavigate={onNavigate} />
+      )}
+    </div>
+  )
+}
+
+function EventRecapCard({
+  event,
+  onNavigate,
+}: {
+  event: CalendarEventCreated
+  onNavigate: () => void
+}) {
+  const router = useRouter()
+  const isLeave = event.event.kind === 'leave'
+
+  const go = (href: string) => {
+    router.push(href)
+    onNavigate()
+  }
+
+  return (
+    <div className="iris-recap">
+      <div className="iris-recap__header">
+        <div className="iris-recap__badge">
+          {isLeave ? '🏖️' : '📅'}
+        </div>
+        <div className="iris-recap__titles">
+          <p className="iris-recap__title">{event.event.title}</p>
+          <p className="iris-recap__dates">
+            {event.event.start} → {event.event.end}
+          </p>
+        </div>
+      </div>
+      <div className="iris-recap__actions">
+        <button
+          type="button"
+          onClick={() => go('/calendar')}
+          className="iris-recap__btn iris-recap__btn--secondary"
+        >
+          <Calendar className="h-3.5 w-3.5" />
+          <span>Voir dans le calendrier</span>
+          <ArrowRight className="h-3 w-3 opacity-60" />
+        </button>
+        {isLeave && event.advisor_triggered && (
+          <button
+            type="button"
+            onClick={() => go('/actions')}
+            className="iris-recap__btn iris-recap__btn--primary"
+          >
+            <Inbox className="h-3.5 w-3.5" />
+            <span>Voir le plan restock</span>
+            <ArrowRight className="h-3 w-3 opacity-80" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
