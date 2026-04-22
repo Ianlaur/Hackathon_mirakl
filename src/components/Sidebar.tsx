@@ -50,7 +50,6 @@ type SidebarProps = {
 const navigation: NavEntry[] = [
   { type: 'link', name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { type: 'link', name: 'Actions', href: '/actions', icon: Inbox },
-  { type: 'link', name: 'Copilot', href: '/copilot', icon: Bot },
   {
     type: 'group',
     id: 'operations',
