@@ -8,6 +8,7 @@ import {
   Boxes,
   LayoutDashboard,
   Bot,
+  FileSpreadsheet,
   Inbox,
   Package,
   Warehouse,
@@ -53,6 +54,7 @@ const navigation: NavEntry[] = [
   { type: 'link', name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { type: 'link', name: 'Actions', href: '/actions', icon: Inbox },
   { type: 'link', name: 'Activity', href: '/activity', icon: Activity },
+  { type: 'link', name: 'Catalog', href: '/catalog', icon: FileSpreadsheet },
   { type: 'link', name: 'RADAR', href: '/radar', icon: Radar },
   {
     type: 'group',

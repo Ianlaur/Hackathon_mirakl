@@ -46,7 +46,7 @@ export async function GET(_request: NextRequest) {
     const userId = await getCurrentUserId()
     const since24h = new Date(Date.now() - DAY_MS)
 
-    const [ordersByChannel, pendingDecisions, handledByChannel, stockSummary, founder, latestShield] =
+    const [ordersByChannel, pendingDecisions, handledByChannel, stockSummary, founder, latestShield, activeOversells] =
       await Promise.all([
         prisma.operationalObject.groupBy({
           by: ['source_channel'],
@@ -83,6 +83,21 @@ export async function GET(_request: NextRequest) {
           where: { user_id: userId, template_id: 'reputation_shield_v1' },
           orderBy: { created_at: 'desc' },
           select: { raw_payload: true, created_at: true },
+        }),
+        prisma.decisionRecord.findMany({
+          where: {
+            user_id: userId,
+            status: { in: ['proposed', 'auto_executed', 'queued'] },
+            created_at: { gte: new Date(Date.now() - 60 * 60_000) },
+            OR: [
+              { template_id: 'oversell_risk_v1' },
+              // Vacation-wrapped oversells keep their origin in raw_payload.request.action_type.
+              { AND: [{ template_id: 'vacation_queue_v1' }, { raw_payload: { path: ['request', 'action_type'], equals: 'flag_oversell' } }] },
+            ],
+          },
+          orderBy: { created_at: 'desc' },
+          select: { sku: true, channel: true, raw_payload: true, created_at: true, template_id: true },
+          take: 5,
         }),
       ])
 
@@ -151,11 +166,32 @@ export async function GET(_request: NextRequest) {
     const healthy = stockSummary.length - atRisk
     const stock_health_pct = stockSummary.length > 0 ? Math.round((healthy / stockSummary.length) * 100) : 100
 
+    const oversells = activeOversells.map((d) => {
+      // For vacation-wrapped decisions, sku/channel live on the top-level row,
+      // but the source_region can also be resolved from raw_payload.request.channel.
+      const payload = (d.raw_payload ?? {}) as Record<string, unknown>
+      const request = (payload.request ?? {}) as Record<string, unknown>
+      const channel = d.channel ?? (typeof request.channel === 'string' ? request.channel : null)
+      const sku = d.sku ?? (typeof request.sku === 'string' ? request.sku : null)
+      return {
+        sku,
+        source_channel: channel,
+        source_region: channel ? REGION_OF[channel] ?? null : null,
+        created_at: d.created_at.toISOString(),
+      }
+    })
+    const oversellActive = oversells.length > 0
+
     return NextResponse.json({
       updated_at: new Date().toISOString(),
       founder: {
         state: founder?.state ?? 'Active',
         until: founder?.until?.toISOString() ?? null,
+      },
+      oversell: {
+        active: oversellActive,
+        count: oversells.length,
+        items: oversells,
       },
       shield: shieldPayload
         ? {

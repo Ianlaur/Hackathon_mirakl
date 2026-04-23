@@ -32,9 +32,17 @@ type RegionSignal = {
   storefronts: StorefrontSignal[]
 }
 
+type OversellItem = {
+  sku: string | null
+  source_channel: string | null
+  source_region: 'FR' | 'IT' | 'DE' | null
+  created_at: string
+}
+
 type AtlasData = {
   updated_at: string
   founder: { state: string; until: string | null }
+  oversell: { active: boolean; count: number; items: OversellItem[] }
   shield: {
     primary_channel: string | null
     paused_channels: string[]
@@ -53,17 +61,30 @@ const REGION_POS: Record<'FR' | 'IT' | 'DE', { x: number; y: number; label: stri
   IT: { x: 430, y: 400, label: 'Italia' },
 }
 
+type ProfitRecovery = {
+  estimated_eur: number
+  source: string
+}
+
 export default function AtlasHome() {
   const [data, setData] = useState<AtlasData | null>(null)
+  const [profitRecovery, setProfitRecovery] = useState<ProfitRecovery | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
-      const resp = await fetch('/api/mira/atlas', { cache: 'no-store' })
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-      const payload: AtlasData = await resp.json()
+      const [atlasResp, radarResp] = await Promise.all([
+        fetch('/api/mira/atlas', { cache: 'no-store' }),
+        fetch('/api/mira/radar', { cache: 'no-store' }),
+      ])
+      if (!atlasResp.ok) throw new Error(`HTTP ${atlasResp.status}`)
+      const payload: AtlasData = await atlasResp.json()
       setData(payload)
       setError(null)
+      if (radarResp.ok) {
+        const radar = await radarResp.json()
+        if (radar?.profit_recovery) setProfitRecovery(radar.profit_recovery as ProfitRecovery)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'load failed')
     }
@@ -109,7 +130,7 @@ export default function AtlasHome() {
 
   return (
     <div className="space-y-4">
-      <AtlasHeader data={data} founderAway={founderAway} />
+      <AtlasHeader data={data} founderAway={founderAway} profitRecovery={profitRecovery} />
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <AtlasMap data={data} />
         <AtlasSidebar data={data} />
@@ -118,7 +139,15 @@ export default function AtlasHome() {
   )
 }
 
-function AtlasHeader({ data, founderAway }: { data: AtlasData; founderAway: boolean }) {
+function AtlasHeader({
+  data,
+  founderAway,
+  profitRecovery,
+}: {
+  data: AtlasData
+  founderAway: boolean
+  profitRecovery: ProfitRecovery | null
+}) {
   const healthTone = data.stock.health_pct >= 85 ? 'healthy' : data.stock.health_pct >= 60 ? 'warn' : 'alert'
   return (
     <section className="mira-card mira-card--raised flex flex-wrap items-center gap-6 px-6 py-5">
@@ -132,6 +161,13 @@ function AtlasHeader({ data, founderAway }: { data: AtlasData; founderAway: bool
         <HealthGauge pct={data.stock.health_pct} tone={healthTone} atRisk={data.stock.at_risk} />
         <KpiTile label="En attente" value={String(data.totals.pending_decisions)} tone={data.totals.pending_decisions > 0 ? 'alert' : undefined} />
         <KpiTile label="MIRA a géré" value={String(data.totals.handled_24h)} tone="accent" />
+        {profitRecovery && profitRecovery.estimated_eur > 0 ? (
+          <KpiTile
+            label="Récupération potentielle"
+            value={formatEur(profitRecovery.estimated_eur)}
+            tone="accent"
+          />
+        ) : null}
       </div>
       {founderAway ? (
         <div className="ml-auto flex items-center gap-2 rounded-full bg-[color:var(--mira-pink-soft)] px-4 py-1.5 text-xs font-semibold text-[color:var(--mira-pink)]">
@@ -190,6 +226,11 @@ function HealthGauge({ pct, tone, atRisk }: { pct: number; tone: 'healthy' | 'wa
 }
 
 function AtlasMap({ data }: { data: AtlasData }) {
+  const oversellSources = new Set<string>(
+    data.oversell.items
+      .map((o) => o.source_region)
+      .filter((r): r is 'FR' | 'IT' | 'DE' => r !== null),
+  )
   return (
     <div className="mira-card mira-card--raised relative overflow-hidden p-4" style={{ minHeight: 520 }}>
       <div className="flex items-center justify-between">
@@ -200,7 +241,18 @@ function AtlasMap({ data }: { data: AtlasData }) {
         <LegendDot color="var(--mira-pink)" label="en attente" />
         <LegendDot color="var(--mira-blue)" label="MIRA a géré" />
         <LegendDot color="#F5A524" label="shield actif" />
+        {data.oversell.active ? (
+          <LegendDot color="var(--mira-pink)" label="oversell suppression" />
+        ) : null}
       </div>
+      {data.oversell.active ? (
+        <div
+          className="mt-2 rounded-md px-3 py-1.5 text-xs font-semibold"
+          style={{ background: 'var(--mira-pink-soft)', color: 'var(--mira-pink)' }}
+        >
+          Intent-Based Shielding actif — {data.oversell.count} SKU en tension, suppression propagée aux 6 storefronts.
+        </div>
+      ) : null}
 
       <svg viewBox="0 0 800 520" className="mt-2 h-[440px] w-full">
         <defs>
@@ -249,7 +301,12 @@ function AtlasMap({ data }: { data: AtlasData }) {
         </circle>
 
         {data.regions.map((region) => (
-          <RegionNode key={region.region} region={region} />
+          <RegionNode
+            key={region.region}
+            region={region}
+            oversellSource={oversellSources.has(region.region)}
+            anyOversell={data.oversell.active}
+          />
         ))}
       </svg>
 
@@ -271,12 +328,24 @@ function CountryBlob({ cx, cy, r }: { cx: number; cy: number; r: number }) {
   )
 }
 
-function RegionNode({ region }: { region: RegionSignal }) {
+function RegionNode({
+  region,
+  oversellSource,
+  anyOversell,
+}: {
+  region: RegionSignal
+  oversellSource: boolean
+  anyOversell: boolean
+}) {
   const pos = REGION_POS[region.region]
   const pending = region.pending_decisions
   const handled = region.handled_24h
-  const pulseColor = pending > 0 ? 'var(--mira-pink)' : 'var(--mira-blue)'
-  const pulseOpacity = pending > 0 || handled > 0 ? 0.92 : 0.35
+  const pulseColor = oversellSource
+    ? 'var(--mira-pink)'
+    : pending > 0
+      ? 'var(--mira-pink)'
+      : 'var(--mira-blue)'
+  const pulseOpacity = pending > 0 || handled > 0 || oversellSource ? 0.92 : 0.35
 
   return (
     <g transform={`translate(${pos.x}, ${pos.y})`}>
@@ -293,6 +362,16 @@ function RegionNode({ region }: { region: RegionSignal }) {
       </text>
       {region.shielded ? (
         <circle r={38} fill="none" stroke="#F5A524" strokeOpacity={0.55} strokeWidth={2.5} strokeDasharray="5 4" />
+      ) : null}
+      {oversellSource ? (
+        <circle r={44} fill="none" stroke="var(--mira-pink)" strokeOpacity={0.9} strokeWidth={3}>
+          <animate attributeName="r" values="42;64;42" dur="1.8s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.9;0;0.9" dur="1.8s" repeatCount="indefinite" />
+        </circle>
+      ) : anyOversell ? (
+        <circle r={38} fill="none" stroke="var(--mira-pink)" strokeOpacity={0.55} strokeWidth={2} strokeDasharray="3 3">
+          <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="2.2s" repeatCount="indefinite" />
+        </circle>
       ) : null}
     </g>
   )

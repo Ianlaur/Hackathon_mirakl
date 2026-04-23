@@ -8,6 +8,7 @@ import {
   calculateVelocity,
   calculateStockoutDays,
   calculateChannelShares,
+  calculateGrowthFactor,
   DAYS_PER_WEEK,
 } from './tools_math'
 
@@ -175,6 +176,23 @@ export const READ_TOOLS: OpenAITool[] = [
             description: 'Défaut: revenue.',
           },
           limit: { type: 'number', description: 'Défaut 10.' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_seasonal_patterns',
+      description:
+        "Prévision de demande pour les événements commerciaux à venir (commercial_calendar). Pour chaque événement dans la fenêtre, tente une comparaison N-1 (même période l'an dernier) via operational_objects; sinon retourne un growth_factor par défaut fondé sur magnitude_hint (low/medium/high/very_high) et marque data_source=seasonal_assumption. Utile pour 'Que prévois-tu pour Black Friday ?' ou 'Quel buffer pour les soldes ?'.",
+      parameters: {
+        type: 'object',
+        properties: {
+          sku: { type: 'string', description: 'Optionnel. Restreint la comparaison N-1 à ce SKU.' },
+          region: { type: 'string', description: 'FR | IT | DE | EU. Défaut: tous.' },
+          event: { type: 'string', description: "Optionnel. Filtre par nom d'événement partiel (ex: 'Black Friday', 'Soldes')." },
+          next_days: { type: 'number', description: 'Fenêtre événements à venir en jours, défaut 120.' },
         },
       },
     },
@@ -468,6 +486,101 @@ async function getTopProducts(ctx: ReadToolContext, a: Args) {
   }
 }
 
+// Magnitude defaults used when N-1 data is thin. Labeled seasonal_assumption
+// per spec: "If real historical data is thin, label as 'seasonal assumption'".
+const MAGNITUDE_DEFAULT_GROWTH: Record<string, number> = {
+  low: 1.1,
+  medium: 1.3,
+  high: 1.8,
+  very_high: 2.5,
+}
+
+const MAGNITUDE_DEFAULT_BUFFER_WEEKS: Record<string, number> = {
+  low: 2,
+  medium: 3,
+  high: 4,
+  very_high: 5,
+}
+
+async function getSeasonalPatterns(ctx: ReadToolContext, a: Args) {
+  const nextDays = Math.min(Math.max(Number(a.next_days) || 120, 7), 365)
+  const now = new Date()
+  const until = new Date(now.getTime() + nextDays * 86400_000)
+
+  const events = await ctx.prisma.commercialCalendar.findMany({
+    where: {
+      event_date: { gte: now, lte: until },
+      ...(a.region ? { region: String(a.region) } : {}),
+      ...(a.event
+        ? { event_name: { contains: String(a.event), mode: 'insensitive' } }
+        : {}),
+    },
+    orderBy: { event_date: 'asc' },
+    take: 20,
+  })
+
+  // For each event, try N-1: sum units sold in a 7-day window centered on the
+  // same date one year ago (±3 days). Compare to a baseline from 14-21 days
+  // before event_date - 365 to get a "quiet week" reference.
+  const results = await Promise.all(
+    events.map(async (e) => {
+      const eventDate = e.event_date
+      const n1Center = new Date(eventDate.getTime() - 365 * 86400_000)
+      const n1Start = new Date(n1Center.getTime() - 3 * 86400_000)
+      const n1End = new Date(n1Center.getTime() + 3 * 86400_000)
+      const baselineStart = new Date(n1Center.getTime() - 21 * 86400_000)
+      const baselineEnd = new Date(n1Center.getTime() - 14 * 86400_000)
+
+      const whereBase = {
+        user_id: ctx.userId,
+        kind: 'order',
+        ...(a.sku ? { sku: String(a.sku) } : {}),
+      } as const
+
+      const [n1Rows, baselineRows] = await Promise.all([
+        ctx.prisma.operationalObject.findMany({
+          where: { ...whereBase, occurred_at: { gte: n1Start, lte: n1End } },
+          select: { quantity: true },
+        }),
+        ctx.prisma.operationalObject.findMany({
+          where: { ...whereBase, occurred_at: { gte: baselineStart, lte: baselineEnd } },
+          select: { quantity: true },
+        }),
+      ])
+
+      const n1Units = n1Rows.reduce((n, r) => n + (r.quantity ?? 0), 0)
+      const baselineUnits = baselineRows.reduce((n, r) => n + (r.quantity ?? 0), 0)
+      const observedGrowth = calculateGrowthFactor(n1Units, baselineUnits)
+      const hasN1 = n1Units > 0 && baselineUnits > 0 && observedGrowth !== null
+
+      const magnitudeKey = (e.magnitude_hint ?? 'medium').toLowerCase()
+      const defaultGrowth = MAGNITUDE_DEFAULT_GROWTH[magnitudeKey] ?? 1.3
+      const defaultBuffer = MAGNITUDE_DEFAULT_BUFFER_WEEKS[magnitudeKey] ?? 3
+
+      return {
+        event_name: e.event_name,
+        event_date: e.event_date.toISOString().slice(0, 10),
+        region: e.region,
+        impact_tag: e.impact_tag,
+        magnitude_hint: e.magnitude_hint,
+        growth_factor: hasN1 ? observedGrowth : defaultGrowth,
+        recommended_buffer_weeks: defaultBuffer,
+        data_source: hasN1 ? 'observed_n1' : 'seasonal_assumption',
+        n1_units: n1Units,
+        baseline_units: baselineUnits,
+        notes: e.notes,
+      }
+    }),
+  )
+
+  return {
+    window_days: nextDays,
+    sku: a.sku ?? null,
+    count: results.length,
+    events: results,
+  }
+}
+
 export async function executeReadTool(
   name: string,
   args: Record<string, unknown>,
@@ -484,6 +597,7 @@ export async function executeReadTool(
     case 'query_returns': return queryReturns(ctx, args)
     case 'compare_channels': return compareChannels(ctx, args)
     case 'get_top_products': return getTopProducts(ctx, args)
+    case 'get_seasonal_patterns': return getSeasonalPatterns(ctx, args)
     default: throw new Error(`Unknown read tool: ${name}`)
   }
 }
