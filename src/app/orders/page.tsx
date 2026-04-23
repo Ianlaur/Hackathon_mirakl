@@ -525,8 +525,8 @@ export default function OrdersPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={selectedData.trafficTrendData} margin={{ top: 12, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="4 4" stroke="#DDE5EE" vertical={false} />
-                <XAxis dataKey="date" stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                <YAxis stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={36} />
+                <XAxis dataKey="date" stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }} />
+                <YAxis stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }} width={36} />
                 <Tooltip
                   cursor={{ stroke: '#DDE5EE', strokeDasharray: '4 4' }}
                   content={({ active, payload, label }) => {
@@ -596,12 +596,15 @@ export default function OrdersPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={selectedData.marketplaceRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#DDE5EE" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={38} />
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fontFamily: 'var(--font-roboto-serif)' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }} tickLine={false} axisLine={false} width={38} />
                   <Tooltip
                     cursor={{ fill: '#F2F8FF' }}
                     formatter={(value: number) => formatCurrency(value)}
                     labelFormatter={(label: string) => `${label}`}
+                    contentStyle={{ fontFamily: 'var(--font-roboto-serif)' }}
+                    labelStyle={{ fontFamily: 'var(--font-roboto-serif)' }}
+                    itemStyle={{ fontFamily: 'var(--font-roboto-serif)' }}
                   />
                   <Bar dataKey="revenue" radius={[8, 8, 0, 0]}>
                     {selectedData.marketplaceRevenueData.map((entry) => (
@@ -616,11 +619,10 @@ export default function OrdersPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {selectedData.cashFlowKpis.map((item) => {
-            const positive = item.tone === 'positive'
             return (
               <div key={item.label} className="bg-white border border-dashed border-[#DDE5EE] rounded-xl p-4 sm:p-6">
                 <p className="font-serif text-[17px] text-[#30373E]">{item.label}</p>
-                <p className={`mt-2 font-serif text-[56px] leading-none tracking-tight font-bold ${positive ? 'text-[#3FA46A]' : 'text-[#ba1a1a]'}`}>
+                <p className="mt-2 font-serif text-[56px] leading-none tracking-tight font-bold text-[#03182F]">
                   {formatAmount(item.value)}
                 </p>
                 <p className="mt-2 font-serif text-[14px] text-[#6B7480]">
@@ -639,10 +641,10 @@ export default function OrdersPage() {
                 <button className="font-serif text-[13px] text-[#2764FF] hover:underline">View all</button>
               </div>
               <div className="mt-3 flex flex-wrap items-end gap-3">
-                <span className="font-serif text-[58px] leading-none tracking-tight font-bold text-[#2764FF]">
+                <span className="font-serif text-[58px] leading-none tracking-tight font-bold text-[#03182F]">
                   {formatAmount(item.value)}
                 </span>
-                <span className="font-serif text-[36px] leading-none tracking-tight text-[#F22E75]">
+                <span className="font-serif text-[36px] leading-none tracking-tight text-[#03182F]">
                   {item.overdueLabel}: {formatAmount(item.overdueValue)}
                 </span>
               </div>
@@ -657,9 +659,9 @@ export default function OrdersPage() {
           <div key={s.label} className="p-6 bg-white border border-[#DDE5EE] rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
             <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">{s.label}</span>
             <div className="flex items-end justify-between">
-              <span className={`font-serif text-[44px] font-bold leading-none tracking-tight italic ${s.color}`}>{s.value}</span>
+              <span className="font-serif text-[44px] font-bold leading-none tracking-tight italic text-[#03182F]">{s.value}</span>
               <div className={`w-12 h-6 rounded flex items-center justify-center ${s.badgeBg}`}>
-                <span className="text-[10px] font-mono">{s.badge}</span>
+                <span className="text-[10px] font-serif">{s.badge}</span>
               </div>
             </div>
           </div>
@@ -691,7 +693,7 @@ export default function OrdersPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="font-mono text-[12px] font-bold text-[#03182F]">{o.orderId}</span>
+                    <span className="font-serif text-[12px] font-bold text-[#03182F]">{o.orderId}</span>
                     <span className="font-serif text-[12px] text-[#6B7480]">{o.date}</span>
                   </div>
                 </td>
@@ -705,13 +707,13 @@ export default function OrdersPage() {
                     <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF]" />
                     {o.items > 1 && (
                       <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF] flex items-center justify-center">
-                        <span className="text-[10px] font-mono text-[#6B7480]">+{o.items - 1}</span>
+                        <span className="text-[10px] font-serif text-[#6B7480]">+{o.items - 1}</span>
                       </div>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <span className="font-mono text-[13px] font-bold">{o.value}</span>
+                  <span className="font-serif text-[13px] font-bold">{o.value}</span>
                 </td>
               </tr>
             ))}
@@ -743,13 +745,13 @@ export default function OrdersPage() {
         <div className="col-span-8 bg-white border border-[#DDE5EE] rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-serif text-base font-bold text-[#03182F]">Logistics Feed</h3>
-            <span className="text-[10px] font-mono uppercase text-[#2764FF] bg-[#F2F8FF] px-2 py-1 rounded">Live Syncing</span>
+            <span className="text-[10px] font-serif uppercase text-[#2764FF] bg-[#F2F8FF] px-2 py-1 rounded">Live Syncing</span>
           </div>
           <div className="space-y-3">
             {selectedData.logFeed.map((l, i) => (
               <div key={i} className="flex items-center h-8 border-b border-[#DDE5EE]">
                 <span className={`w-2 h-2 rounded-full ${l.color} mr-4 ${l.pulse ? 'animate-pulse' : ''}`} />
-                <span className="font-mono text-[10px] text-[#6B7480] w-20">{l.time}</span>
+                <span className="font-serif text-[10px] text-[#6B7480] w-20">{l.time}</span>
                 <span className="font-serif text-[13px] text-[#03182F]">{l.text}</span>
               </div>
             ))}
