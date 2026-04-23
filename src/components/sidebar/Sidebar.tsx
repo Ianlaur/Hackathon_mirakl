@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, LogOut, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import NavItem from '@/components/sidebar/NavItem'
 import PluginNavItems from '@/components/sidebar/PluginNavItems'
 import SidebarHeader from '@/components/sidebar/SidebarHeader'
@@ -15,8 +16,9 @@ type SidebarProps = {
 }
 
 export default function Sidebar({ onExpandedChange }: SidebarProps) {
+  const router = useRouter()
   const { basicItems, pluginItems, bottomItems, isActive, isItemActive, pathname } = useNavigation()
-  const { userProfile } = usePluginContext()
+  const { deactivateProPlugin, setUserProfile, userProfile } = usePluginContext()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [manualOpenGroupId, setManualOpenGroupId] = useState<string | null>(null)
 
@@ -61,6 +63,13 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
     (userProfile === 'INTERNATIONAL' ? 'Marchand international' : 'Marchand local')
 
   const bottomLinkItems = bottomItems.filter((item) => item.type !== 'profile')
+
+  const handleSignOut = () => {
+    deactivateProPlugin()
+    setUserProfile(null)
+    setIsMobileOpen(false)
+    router.push('/onboarding')
+  }
 
   return (
     <>
@@ -137,6 +146,17 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
               />
             ))}
           </nav>
+        </div>
+
+        <div className="px-3 pb-2">
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="flex w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
         </div>
 
         <SidebarProfile name={profileLabel} role={profileSubtitle} />
