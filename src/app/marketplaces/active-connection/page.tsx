@@ -1,206 +1,217 @@
 'use client'
 
-import { useState } from 'react'
-import { Store, Paperclip, Send, X, Check, Download } from 'lucide-react'
+import { MoreVertical, Plus, Settings } from 'lucide-react'
 
-const conversations = [
-  { name: 'Darty', lastMsg: 'MIRA: The category mapping is ready for your...', time: '14:20', active: true },
-  { name: 'Carrefour', lastMsg: 'We are reviewing your luxury goods catalog...', time: 'YESTERDAY', active: false },
-  { name: 'Auchan', lastMsg: 'MIRA: Proposal sent for the Q4 integration phase.', time: 'MON', active: false },
-  { name: 'ManoMano', lastMsg: 'MIRA: Checking logistics API endpoints.', time: 'OCT 24', active: false },
+const marketplaces = [
+  {
+    name: 'Amazon',
+    bgColor: 'bg-[#232F3E]',
+    icon: '🛒',
+    status: 'Active · Live',
+    statusColor: 'text-[#3FA46A]',
+    revenue: '€42,000',
+    revenueChange: '+12.4%',
+    revenueUp: true,
+    itemsSold: '1,240',
+    customers: '85.2K',
+    sparkPath: 'M0 25 Q 10 5, 20 20 T 40 10 T 60 22 T 80 5 T 100 15',
+    sparkColor: '#3FA46A',
+  },
+  {
+    name: 'Rakuten',
+    bgColor: 'bg-[#BF0000]',
+    icon: 'R',
+    isText: true,
+    status: 'Active · Live',
+    statusColor: 'text-[#3FA46A]',
+    revenue: '€28,150',
+    revenueChange: '-2.1%',
+    revenueUp: false,
+    itemsSold: '892',
+    customers: '12.4K',
+    sparkPath: 'M0 5 Q 20 25, 40 15 T 60 10 T 80 25 T 100 20',
+    sparkColor: '#F22E75',
+  },
+  {
+    name: 'Cdiscount',
+    bgColor: 'bg-[#FF6600]',
+    icon: '🛍️',
+    status: 'Active · Live',
+    statusColor: 'text-[#3FA46A]',
+    revenue: '€15,400',
+    revenueChange: '+8.3%',
+    revenueUp: true,
+    itemsSold: '456',
+    customers: '4.2K',
+    sparkPath: 'M0 28 Q 20 20, 40 25 T 60 5 T 80 15 T 100 10',
+    sparkColor: '#3FA46A',
+  },
+  {
+    name: 'Leroy Merlin',
+    bgColor: 'bg-[#008A49]',
+    icon: '🏠',
+    status: 'Syncing · 98%',
+    statusColor: 'text-[#E0A93A]',
+    revenue: '€9,820',
+    revenueChange: '+32.5%',
+    revenueUp: true,
+    itemsSold: '215',
+    customers: '1.8K',
+    sparkPath: 'M0 30 L 10 25 L 20 28 L 30 15 L 40 18 L 50 10 L 60 12 L 70 5 L 80 8 L 90 2 L 100 4',
+    sparkColor: '#3FA46A',
+  },
 ]
 
-const messages = [
-  {
-    from: 'darty',
-    text: 'Hello Fanny, we have reviewed your "Luxe Boutique" catalog. We would like to propose a premium placement on our Home & Tech section for the upcoming Black Friday period. Would you be open to syncing your inventory via Mirakl Connect?',
-    time: '10:45 AM',
-  },
-  {
-    from: 'mira',
-    text: 'MIRA has analyzed the proposal. Integration compatibility for Black Friday is 94%. I have prepared the initial category mapping for your approval.',
-    time: '11:02 AM · AUTOPILOT',
-  },
-  {
-    from: 'darty',
-    text: "Perfect. We've sent the technical requirements for the API sync. Please confirm once you've had a chance to look at the shipping categories.",
-    time: '14:15 PM',
-  },
-]
-
-const requirements = [
-  { label: 'Mirakl API Key', status: 'ok' },
-  { label: 'Catalog Matching (94%)', status: 'ok' },
-  { label: 'Shipping Policy Review', status: 'warn' },
-  { label: 'Contract Signature', status: 'pending' },
+const apiRows = [
+  { name: 'Amazon UK/EU', lastSync: '2026-04-23 14:02:45', latency: '142ms', errorRate: '0.02%', errorColor: 'text-[#3FA46A]' },
+  { name: 'Rakuten FR', lastSync: '2026-04-23 14:02:12', latency: '310ms', errorRate: '0.84%', errorColor: 'text-[#E0A93A]' },
+  { name: 'Cdiscount FR', lastSync: '2026-04-23 14:01:58', latency: '98ms', errorRate: '0.01%', errorColor: 'text-[#3FA46A]' },
+  { name: 'Leroy Merlin EU', lastSync: '2026-04-23 13:59:30', latency: '520ms', errorRate: '1.20%', errorColor: 'text-[#F22E75]' },
 ]
 
 export default function ActiveConnectionPage() {
-  const [selectedConv, setSelectedConv] = useState('Darty')
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Active Connections</h1>
-        <p className="text-[#6B7480] text-sm mt-1">Chat with marketplace partners and track integration progress.</p>
+      {/* Header */}
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">
+            Active Marketplace Connections
+          </h1>
+          <p className="text-[#6B7480] text-sm mt-1">
+            Real-time operational status across your global distribution network.
+          </p>
+        </div>
+        <button className="h-9 px-4 bg-[#004bd9] text-white text-[13px] font-semibold rounded-lg hover:bg-[#004bd9]/90 transition-colors flex items-center gap-2 shadow-sm">
+          <Plus className="h-4 w-4" />
+          Connect New Channel
+        </button>
       </div>
 
-      <div className="flex border border-[#DDE5EE] bg-white rounded overflow-hidden" style={{ height: 'calc(100vh - 220px)' }}>
-        {/* Left: Conversation list */}
-        <aside className="w-80 border-r border-slate-200 flex flex-col overflow-y-auto flex-shrink-0">
-          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-            <h3 className="font-serif text-[10px] font-bold tracking-[0.1em] text-slate-500 uppercase">Active Proposals</h3>
-          </div>
-          <div className="flex-grow">
-            {conversations.map((c) => (
-              <button
-                key={c.name}
-                type="button"
-                onClick={() => setSelectedConv(c.name)}
-                className={`w-full p-4 text-left transition-colors ${
-                  selectedConv === c.name
-                    ? 'bg-[#dce1ff]/30 border-l-4 border-[#004bd9]'
-                    : 'hover:bg-slate-50 border-l-4 border-transparent'
-                }`}
-              >
-                <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
-                    <Store className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <div className="flex-grow min-w-0">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-serif text-sm font-bold text-slate-900">{c.name}</span>
-                      <span className="text-[10px] font-mono text-slate-400 uppercase">{c.time}</span>
-                    </div>
-                    <p className="text-[12px] text-slate-500 truncate italic">{c.lastMsg}</p>
-                  </div>
+      {/* Marketplace Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {marketplaces.map((mp) => (
+          <div
+            key={mp.name}
+            className="bg-white border border-[#DDE5EE] rounded-xl p-6 transition-all hover:border-[#2764ff]/30"
+          >
+            {/* Header */}
+            <div className="flex justify-between items-start mb-8">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg ${mp.bgColor} flex items-center justify-center`}>
+                  {mp.isText ? (
+                    <span className="text-white font-bold text-xl italic">{mp.icon}</span>
+                  ) : (
+                    <span className="text-lg">{mp.icon}</span>
+                  )}
                 </div>
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        {/* Center: Chat */}
-        <article className="flex-grow flex flex-col">
-          <header className="p-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center">
-                <Store className="h-5 w-5 text-slate-400" />
+                <div>
+                  <h3 className="font-serif text-base font-bold text-[#03182F]">{mp.name}</h3>
+                  <span className={`text-[10px] uppercase tracking-widest font-bold ${mp.statusColor}`}>
+                    {mp.status}
+                  </span>
+                </div>
               </div>
+              <button className="text-[#6B7480] hover:text-[#03182F]">
+                <MoreVertical className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Revenue */}
+            <div className="space-y-6">
               <div>
-                <h2 className="font-serif text-lg font-bold text-slate-900">{selectedConv}</h2>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#3FA46A]" />
-                  <span className="text-[10px] font-mono text-slate-400 uppercase">Proposing Partner · Online</span>
+                <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase mb-1">
+                  Monthly Revenue
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">
+                    {mp.revenue}
+                  </span>
+                  <span className={`text-[12px] italic ${mp.revenueUp ? 'text-[#3FA46A]' : 'text-[#F22E75]'}`}>
+                    {mp.revenueChange}
+                  </span>
                 </div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button className="h-9 px-4 flex items-center gap-2 border border-[#BFCBDA] text-slate-700 text-[11px] font-bold rounded hover:bg-slate-50 transition-colors uppercase">
-                <X className="h-3.5 w-3.5" /> Decline
-              </button>
-              <button className="h-9 px-4 flex items-center gap-2 bg-[#3FA46A] text-white text-[11px] font-bold rounded hover:opacity-90 transition-opacity uppercase shadow-sm">
-                <Check className="h-3.5 w-3.5" /> Accept
-              </button>
-              <button className="h-9 px-4 flex items-center gap-2 bg-[#004bd9] text-white text-[11px] font-bold rounded hover:opacity-90 transition-opacity uppercase shadow-sm">
-                <Download className="h-3.5 w-3.5" /> Install
-              </button>
-            </div>
-          </header>
 
-          <div className="flex-grow overflow-y-auto p-6 space-y-8 bg-[#faf8ff]">
-            {messages.map((msg, i) => {
-              if (msg.from === 'mira') {
-                return (
-                  <div key={i} className="flex gap-4 max-w-2xl ml-auto flex-row-reverse">
-                    <div className="w-8 h-8 rounded-full bg-[#03182F] flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">AI</div>
-                    <div className="space-y-1 text-right">
-                      <div className="bg-[#004bd9] text-white p-4 rounded-xl rounded-tr-none shadow-sm">
-                        <p className="text-sm">{msg.text}</p>
-                      </div>
-                      <span className="text-[10px] font-mono text-slate-400 uppercase mr-1">{msg.time}</span>
-                    </div>
-                  </div>
-                )
-              }
-              return (
-                <div key={i} className="flex gap-4 max-w-2xl">
-                  <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex-shrink-0 flex items-center justify-center">
-                    <Store className="h-4 w-4 text-slate-400" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="bg-white border border-[#DDE5EE] p-4 rounded-xl rounded-tl-none shadow-sm">
-                      <p className="text-sm text-slate-700">{msg.text}</p>
-                    </div>
-                    <span className="text-[10px] font-mono text-slate-400 uppercase ml-1">{msg.time}</span>
-                  </div>
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-50">
+                <div>
+                  <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase mb-1">
+                    Items Sold
+                  </p>
+                  <p className="font-serif text-lg font-bold text-[#03182F]">{mp.itemsSold}</p>
                 </div>
-              )
-            })}
-          </div>
-
-          <footer className="p-4 bg-white border-t border-slate-100 flex-shrink-0">
-            <div className="flex gap-3 items-center bg-[#03182F] rounded-full p-1.5 pl-4 shadow-lg">
-              <button className="text-slate-400 hover:text-white transition-colors">
-                <Paperclip className="h-5 w-5" />
-              </button>
-              <input className="flex-grow bg-transparent border-none text-white text-sm focus:ring-0 focus:outline-none placeholder:text-slate-500 font-serif" placeholder={`Type your message to ${selectedConv} team...`} type="text" />
-              <button className="bg-[#004bd9] text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
-                <Send className="h-4 w-4" />
-              </button>
-            </div>
-          </footer>
-        </article>
-
-        {/* Right: Info pane */}
-        <aside className="w-72 border-l border-slate-200 flex flex-col overflow-y-auto flex-shrink-0">
-          <div className="p-6 space-y-8">
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-2xl bg-white border border-slate-100 shadow-sm mx-auto mb-4 flex items-center justify-center">
-                <Store className="h-10 w-10 text-slate-300" />
+                <div>
+                  <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase mb-1">
+                    Unique Customers
+                  </p>
+                  <p className="font-serif text-lg font-bold text-[#03182F]">{mp.customers}</p>
+                </div>
               </div>
-              <h3 className="font-serif text-[22px] font-bold text-slate-900">{selectedConv}</h3>
-              <p className="text-[12px] text-slate-500 mt-1">High-Tech & Electronics Marketplace</p>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 bg-[#F2F8FF] rounded-lg border border-[#DDE5EE]">
-                <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-slate-500 uppercase block mb-1">Daily Users</span>
-                <span className="font-serif text-2xl font-bold text-slate-900">2.4M</span>
+              {/* Sparkline + Action */}
+              <div className="flex items-center justify-between pt-2">
+                <svg className="w-24 h-8 overflow-visible" viewBox="0 0 100 30">
+                  <path d={mp.sparkPath} fill="none" stroke={mp.sparkColor} strokeWidth="1.5" />
+                </svg>
+                <button className="text-[#004bd9] text-[13px] font-semibold hover:underline">
+                  View Ledger
+                </button>
               </div>
-              <div className="p-4 bg-[#F2F8FF] rounded-lg border border-[#DDE5EE]">
-                <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-slate-500 uppercase block mb-1">LY Revenue</span>
-                <span className="font-serif text-2xl font-bold text-slate-900">€850M</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-serif text-sm font-bold uppercase text-slate-500 tracking-wider">About</h4>
-              <p className="text-[13px] text-slate-600 leading-relaxed">
-                Leading French electronics retailer. Integrating provides access to a highly qualified consumer base focused on home appliances, computing, and high-end consumer electronics.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-serif text-sm font-bold uppercase text-slate-500 tracking-wider">Requirements</h4>
-              <ul className="space-y-2">
-                {requirements.map((r) => (
-                  <li key={r.label} className="flex items-start gap-2 text-[13px] text-slate-600">
-                    {r.status === 'ok' && <span className="text-[#3FA46A] text-base mt-0.5">&#10003;</span>}
-                    {r.status === 'warn' && <span className="text-[#E0A93A] text-base mt-0.5">&#9888;</span>}
-                    {r.status === 'pending' && <span className="text-slate-300 text-base mt-0.5">&#9675;</span>}
-                    <span>{r.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="p-4 bg-[#FFE7EC] rounded-lg border border-[#F22E75]/20">
-              <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#F22E75] uppercase block">Risk Signal</span>
-              <p className="text-[11px] text-[#F22E75] font-medium mt-1">Pricing for Black Friday must be finalized by Nov 1st to ensure placement.</p>
             </div>
           </div>
-        </aside>
+        ))}
+      </div>
+
+      {/* API Health Table */}
+      <div className="bg-white border border-[#DDE5EE] rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-[#DDE5EE] bg-slate-50/50 flex justify-between items-center">
+          <h3 className="font-serif text-base font-bold text-[#03182F]">API Health & Sync Status</h3>
+          <span className="px-2 py-1 bg-[#3FA46A]/10 text-[#3FA46A] text-[10px] font-bold rounded uppercase tracking-wider">
+            All Systems Operational
+          </span>
+        </div>
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-slate-50/30">
+              <th className="px-6 py-3 border-b border-[#DDE5EE] font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase">
+                Marketplace
+              </th>
+              <th className="px-6 py-3 border-b border-[#DDE5EE] font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase">
+                Last Sync
+              </th>
+              <th className="px-6 py-3 border-b border-[#DDE5EE] font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase">
+                Latency
+              </th>
+              <th className="px-6 py-3 border-b border-[#DDE5EE] font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase">
+                Error Rate
+              </th>
+              <th className="px-6 py-3 border-b border-[#DDE5EE] font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase text-right">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {apiRows.map((row) => (
+              <tr key={row.name} className="hover:bg-slate-50/50 transition-colors">
+                <td className="px-6 py-4 flex items-center gap-3">
+                  <div className="w-6 h-6 rounded bg-[#03182F]/5 flex items-center justify-center text-[#03182F] text-xs">
+                    ☁️
+                  </div>
+                  <span className="font-serif text-sm font-semibold">{row.name}</span>
+                </td>
+                <td className="px-6 py-4 font-mono text-[10px] text-[#6B7480]">{row.lastSync}</td>
+                <td className="px-6 py-4 text-[13px]">{row.latency}</td>
+                <td className={`px-6 py-4 text-[13px] ${row.errorColor}`}>{row.errorRate}</td>
+                <td className="px-6 py-4 text-right">
+                  <button className="text-[#004bd9] hover:text-[#004bd9]/70">
+                    <Settings className="h-4 w-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
