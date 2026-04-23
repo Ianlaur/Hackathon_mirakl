@@ -146,12 +146,12 @@ const GEO_REGIONS: GeoRegion[] = [
 ]
 
 const statusTone: Record<Parcel['status'], string> = {
-  pending: 'bg-slate-100 text-slate-700',
-  in_transit: 'bg-blue-100 text-blue-700',
-  out_for_delivery: 'bg-amber-100 text-amber-700',
-  delivered: 'bg-emerald-100 text-emerald-700',
+  pending: 'bg-slate-100 text-[#30373E]',
+  in_transit: 'bg-[#2764FF]/10 text-[#004bd9]',
+  out_for_delivery: 'bg-[#E0A93A]/10 text-amber-700',
+  delivered: 'bg-[#3FA46A]/10 text-emerald-700',
   returned: 'bg-rose-100 text-rose-700',
-  cancelled: 'bg-slate-200 text-slate-600',
+  cancelled: 'bg-slate-200 text-[#6B7480]',
 }
 
 const statusColor: Record<Parcel['status'], string> = {
@@ -289,18 +289,18 @@ export default function ParcelGlobe({
 
   if (parcels.length === 0) {
     return (
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.14),_transparent_45%),linear-gradient(180deg,#0f172a_0%,#1e293b_100%)] p-6 text-white">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-200">Logistics network</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight">Parcel globe</h2>
         </div>
-        <div className="p-6 text-sm text-slate-600">Create parcels with sender and recipient addresses to render routes.</div>
+        <div className="p-6 text-sm text-[#6B7480]">Create parcels with sender and recipient addresses to render routes.</div>
       </section>
     )
   }
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_42%),linear-gradient(180deg,#020617_0%,#0f172a_58%,#172554_100%)] p-6 text-white">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl space-y-3">
@@ -406,18 +406,18 @@ export default function ParcelGlobe({
                   key={route.id}
                   type="button"
                   onClick={() => onParcelSelect(route.parcel)}
-                  className={`rounded-2xl border p-4 text-left transition ${
+                  className={`rounded-lg border p-4 text-left transition ${
                     isActive
-                      ? 'border-blue-300 bg-blue-50 shadow-sm'
-                      : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
+                      ? 'border-blue-300 bg-[#2764FF]/10 shadow-sm'
+                      : 'border-slate-200 bg-slate-50 hover:border-[#BFCBDA] hover:bg-white'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-950">
+                      <p className="text-sm font-semibold text-[#03182F]">
                         {route.parcel.reference || route.parcel.tracking_code || 'Parcel route'}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#6B7480]">
                         {route.start.label} to {route.end.label}
                       </p>
                     </div>
@@ -425,7 +425,7 @@ export default function ParcelGlobe({
                       {route.parcel.status.replaceAll('_', ' ')}
                     </span>
                   </div>
-                  <p className="mt-4 text-sm text-slate-600">
+                  <p className="mt-4 text-sm text-[#6B7480]">
                     {Math.round(route.distance).toLocaleString()} km
                     {' · '}
                     {route.parcel.carrier || 'Carrier not assigned'}
@@ -437,12 +437,12 @@ export default function ParcelGlobe({
         </div>
 
         <aside className="rounded-[28px] border border-slate-200 bg-slate-50 p-5">
-          <h3 className="text-lg font-semibold text-slate-950">Focused parcel</h3>
+          <h3 className="text-lg font-semibold text-[#03182F]">Focused parcel</h3>
           {activeRoute ? (
             <div className="mt-4 space-y-4">
               <div>
-                <p className="text-sm font-medium text-slate-500">Reference</p>
-                <p className="mt-1 text-base font-semibold text-slate-950">
+                <p className="text-sm font-medium text-[#6B7480]">Reference</p>
+                <p className="mt-1 text-base font-semibold text-[#03182F]">
                   {activeRoute.parcel.reference || activeRoute.parcel.tracking_code || 'Parcel'}
                 </p>
               </div>
@@ -458,18 +458,18 @@ export default function ParcelGlobe({
               <button
                 type="button"
                 onClick={() => onParcelSelect(activeRoute.parcel)}
-                className="w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                className="w-full rounded-lg bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
               >
                 Open parcel details
               </button>
             </div>
           ) : (
-            <p className="mt-4 text-sm leading-6 text-slate-600">No parcel route could be mapped from the current data.</p>
+            <p className="mt-4 text-sm leading-6 text-[#6B7480]">No parcel route could be mapped from the current data.</p>
           )}
 
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
-            <p className="text-sm font-medium text-slate-900">How route mapping works</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+          <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
+            <p className="text-sm font-medium text-[#03182F]">How route mapping works</p>
+            <p className="mt-2 text-sm leading-6 text-[#6B7480]">
               The globe resolves known cities first, then falls back to country-level routing with deterministic placement
               so the same address renders consistently without calling an external geocoding API.
             </p>
@@ -482,7 +482,7 @@ export default function ParcelGlobe({
 
 function MetricCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm">
+    <div className="rounded-lg border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm">
       <p className="text-xs uppercase tracking-[0.18em] text-slate-300">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
     </div>
@@ -492,8 +492,8 @@ function MetricCard({ label, value }: { label: string; value: number | string })
 function InfoRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-sm text-slate-800">{value || 'Not provided'}</p>
+      <p className="text-sm font-medium text-[#6B7480]">{label}</p>
+      <p className="mt-1 text-sm text-[#03182F]">{value || 'Not provided'}</p>
     </div>
   )
 }

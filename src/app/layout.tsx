@@ -4,8 +4,8 @@ import type { Metadata } from 'next'
 import AppShell from '@/components/AppShell'
 
 export const metadata: Metadata = {
-  title: 'Hackathon Mirakl',
-  description: 'Hackathon dashboard and inventory workspace',
+  title: 'MIRAKL CONNECT',
+  description: 'Mirakl Connect Operations Dashboard',
 }
 
 export default function RootLayout({
@@ -15,7 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+      </head>
+      <body className="bg-[#F2F8FF] font-serif text-[#03182F] antialiased">
         <AppShell>{children}</AppShell>
       </body>
     </html>

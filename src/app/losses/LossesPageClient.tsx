@@ -72,9 +72,9 @@ const reasonLabels: Record<string, string> = {
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   open: { label: 'Ouvert', className: 'bg-rose-50 text-rose-700 ring-rose-100' },
-  investigating: { label: 'En analyse', className: 'bg-amber-50 text-amber-700 ring-amber-100' },
-  resolved: { label: 'Résolu', className: 'bg-emerald-50 text-emerald-700 ring-emerald-100' },
-  ignored: { label: 'Ignoré', className: 'bg-slate-100 text-slate-600 ring-slate-200' },
+  investigating: { label: 'En analyse', className: 'bg-[#E0A93A]/10 text-amber-700 ring-amber-100' },
+  resolved: { label: 'Résolu', className: 'bg-[#3FA46A]/10 text-emerald-700 ring-emerald-100' },
+  ignored: { label: 'Ignoré', className: 'bg-slate-100 text-[#6B7480] ring-slate-200' },
 }
 
 const confidenceLabels: Record<string, string> = {
@@ -84,10 +84,10 @@ const confidenceLabels: Record<string, string> = {
 }
 
 const stageAccent: Record<string, string> = {
-  carrier_transit: 'bg-blue-500',
-  receiving: 'bg-emerald-500',
+  carrier_transit: 'bg-[#2764ff]',
+  receiving: 'bg-[#3FA46A]/100',
   storage: 'bg-cyan-500',
-  picking: 'bg-amber-500',
+  picking: 'bg-[#E0A93A]/100',
   packing: 'bg-orange-500',
   shipping: 'bg-rose-500',
   customer_return: 'bg-violet-500',
@@ -149,7 +149,7 @@ function PieDistribution({ title, items }: { title: string; items: GroupMetric[]
 
   return (
     <section className="dashboard-card min-w-0 overflow-hidden p-5">
-      <h2 className="break-words text-lg font-semibold text-slate-950">{title}</h2>
+      <h2 className="break-words text-lg font-semibold text-[#03182F]">{title}</h2>
       {items.length > 0 ? (
         <div className="mt-5 min-w-0 space-y-4">
           <div className="relative mx-auto h-44 w-44">
@@ -182,12 +182,12 @@ function PieDistribution({ title, items }: { title: string; items: GroupMetric[]
               })}
             </svg>
             <div className="pointer-events-none absolute inset-10 flex flex-col items-center justify-center rounded-full bg-white text-center shadow-sm">
-              <span className="text-xl font-semibold text-slate-950">{totalCount}</span>
-              <span className="text-xs font-medium text-slate-500">événements</span>
+              <span className="text-xl font-semibold text-[#03182F]">{totalCount}</span>
+              <span className="text-xs font-medium text-[#6B7480]">événements</span>
             </div>
           </div>
           <div
-            className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            className="min-w-0 rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] p-4"
             onMouseLeave={() => setHoveredKey(null)}
           >
             {activeItem ? (
@@ -198,31 +198,31 @@ function PieDistribution({ title, items }: { title: string; items: GroupMetric[]
                     style={{ backgroundColor: pieColors[activeIndex % pieColors.length] }}
                   />
                   <div className="min-w-0">
-                    <p className="break-words text-base font-semibold leading-6 text-slate-950">{activeItem.label}</p>
-                    <p className="mt-1 text-sm leading-5 text-slate-500">Survolez une portion pour changer le détail.</p>
+                    <p className="break-words text-base font-semibold leading-6 text-[#03182F]">{activeItem.label}</p>
+                    <p className="mt-1 text-sm leading-5 text-[#6B7480]">Survolez une portion pour changer le détail.</p>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                   <div className="rounded-xl bg-white p-2">
-                    <p className="text-xs text-slate-500">Part</p>
-                    <p className="mt-1 font-semibold text-slate-950">{activePercent}%</p>
+                    <p className="text-xs text-[#6B7480]">Part</p>
+                    <p className="mt-1 font-semibold text-[#03182F]">{activePercent}%</p>
                   </div>
                   <div className="rounded-xl bg-white p-2">
-                    <p className="text-xs text-slate-500">Cas</p>
-                    <p className="mt-1 font-semibold text-slate-950">{activeItem.count}</p>
+                    <p className="text-xs text-[#6B7480]">Cas</p>
+                    <p className="mt-1 font-semibold text-[#03182F]">{activeItem.count}</p>
                   </div>
                   <div className="rounded-xl bg-white p-2">
-                    <p className="text-xs text-slate-500">Unités</p>
-                    <p className="mt-1 font-semibold text-slate-950">{number(activeItem.quantity)}</p>
+                    <p className="text-xs text-[#6B7480]">Unités</p>
+                    <p className="mt-1 font-semibold text-[#03182F]">{number(activeItem.quantity)}</p>
                   </div>
                 </div>
                 <div className="mt-3 rounded-xl bg-white p-3">
-                  <p className="text-xs text-slate-500">Valeur estimée</p>
-                  <p className="mt-1 break-words text-lg font-semibold text-slate-950">{euro(activeItem.value)}</p>
+                  <p className="text-xs text-[#6B7480]">Valeur estimée</p>
+                  <p className="mt-1 break-words text-lg font-semibold text-[#03182F]">{euro(activeItem.value)}</p>
                 </div>
               </>
             ) : (
-              <p className="text-sm text-slate-500">Survolez une portion du camembert.</p>
+              <p className="text-sm text-[#6B7480]">Survolez une portion du camembert.</p>
             )}
           </div>
           <div className="min-w-0">
@@ -236,7 +236,7 @@ function PieDistribution({ title, items }: { title: string; items: GroupMetric[]
                     onMouseEnter={() => setHoveredKey(item.key)}
                     onFocus={() => setHoveredKey(item.key)}
                     className={`flex min-w-0 items-center gap-2 rounded-full border px-3 py-1.5 text-left text-xs font-medium transition ${
-                      active ? 'border-slate-300 bg-white text-slate-950 shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
+                      active ? 'border-[#BFCBDA] bg-white text-[#03182F] shadow-sm' : 'border-[#DDE5EE] bg-[#F2F8FF] text-[#6B7480] hover:bg-white'
                     }`}
                   >
                     <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: pieColors[index % pieColors.length] }} />
@@ -248,7 +248,7 @@ function PieDistribution({ title, items }: { title: string; items: GroupMetric[]
           </div>
         </div>
       ) : (
-        <p className="mt-4 text-sm text-slate-500">Aucune donnée.</p>
+        <p className="mt-4 text-sm text-[#6B7480]">Aucune donnée.</p>
       )}
     </section>
   )
@@ -352,8 +352,8 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
       <section className="dashboard-card p-5 sm:p-6">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-rose-700">Contrôle opérationnel</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Suivi des pertes</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#03182F]">Suivi des pertes</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7480]">
             Une vue courte pour identifier les pertes, leurs causes et les acteurs concernés.
           </p>
         </div>
@@ -370,9 +370,9 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
               activeMetric === metric.key ? 'ring-2 ring-rose-500' : ''
             }`}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{metric.label}</p>
-            <p className="mt-3 truncate text-2xl font-semibold text-slate-950">{metric.value}</p>
-            <p className="mt-1 text-sm text-slate-500">{metric.detail}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B7480]">{metric.label}</p>
+            <p className="mt-3 truncate text-2xl font-semibold text-[#03182F]">{metric.value}</p>
+            <p className="mt-1 text-sm text-[#6B7480]">{metric.detail}</p>
           </button>
         ))}
       </section>
@@ -380,11 +380,11 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
       <section className="dashboard-card p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Détail KPI</p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-950">{metricSummaries[activeMetric].title}</h2>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">{metricSummaries[activeMetric].description}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B7480]">Détail KPI</p>
+            <h2 className="mt-2 text-xl font-semibold text-[#03182F]">{metricSummaries[activeMetric].title}</h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-[#6B7480]">{metricSummaries[activeMetric].description}</p>
           </div>
-          <p className="text-sm font-semibold text-slate-950">{metricEvents[activeMetric].length} événement{metricEvents[activeMetric].length > 1 ? 's' : ''}</p>
+          <p className="text-sm font-semibold text-[#03182F]">{metricEvents[activeMetric].length} événement{metricEvents[activeMetric].length > 1 ? 's' : ''}</p>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {metricEvents[activeMetric].slice(0, 4).map((event) => (
@@ -392,17 +392,17 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
               key={event.id}
               type="button"
               onClick={() => setSelectedId(event.id)}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-rose-200 hover:bg-rose-50"
+              className="rounded-xl border border-[#DDE5EE] bg-[#F2F8FF] p-3 text-left transition hover:border-rose-200 hover:bg-rose-50"
             >
-              <p className="truncate text-sm font-semibold text-slate-950">{event.sku}</p>
-              <p className="mt-1 truncate text-xs text-slate-500">{event.productName}</p>
+              <p className="truncate text-sm font-semibold text-[#03182F]">{event.sku}</p>
+              <p className="mt-1 truncate text-xs text-[#6B7480]">{event.productName}</p>
               <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-slate-950">{euro(event.estimatedLossValue)}</span>
-                <span className="text-xs text-slate-500">{event.quantityLost} u.</span>
+                <span className="text-sm font-semibold text-[#03182F]">{euro(event.estimatedLossValue)}</span>
+                <span className="text-xs text-[#6B7480]">{event.quantityLost} u.</span>
               </div>
             </button>
           ))}
-          {metricEvents[activeMetric].length === 0 && <p className="text-sm text-slate-500">Aucun événement dans ce KPI.</p>}
+          {metricEvents[activeMetric].length === 0 && <p className="text-sm text-[#6B7480]">Aucun événement dans ce KPI.</p>}
         </div>
       </section>
 
@@ -412,9 +412,9 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="SKU, produit, commande..."
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-rose-500 transition focus:ring-2"
+            className="rounded-xl border border-[#DDE5EE] bg-white px-3 py-2 text-sm outline-none ring-rose-500 transition focus:ring-2"
           />
-          <select value={stage} onChange={(event) => setStage(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+          <select value={stage} onChange={(event) => setStage(event.target.value)} className="rounded-xl border border-[#DDE5EE] bg-white px-3 py-2 text-sm">
             <option value="all">Toutes les étapes</option>
             {stages.map((value) => (
               <option key={value} value={value}>
@@ -422,7 +422,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
               </option>
             ))}
           </select>
-          <select value={reason} onChange={(event) => setReason(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+          <select value={reason} onChange={(event) => setReason(event.target.value)} className="rounded-xl border border-[#DDE5EE] bg-white px-3 py-2 text-sm">
             <option value="all">Toutes les raisons</option>
             {reasons.map((value) => (
               <option key={value} value={value}>
@@ -430,7 +430,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
               </option>
             ))}
           </select>
-          <select value={carrier} onChange={(event) => setCarrier(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+          <select value={carrier} onChange={(event) => setCarrier(event.target.value)} className="rounded-xl border border-[#DDE5EE] bg-white px-3 py-2 text-sm">
             <option value="all">Tous transporteurs</option>
             {carriers.map((value) => (
               <option key={value} value={value}>
@@ -438,7 +438,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
               </option>
             ))}
           </select>
-          <select value={marketplace} onChange={(event) => setMarketplace(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+          <select value={marketplace} onChange={(event) => setMarketplace(event.target.value)} className="rounded-xl border border-[#DDE5EE] bg-white px-3 py-2 text-sm">
             <option value="all">Toutes marketplaces</option>
             {marketplaces.map((value) => (
               <option key={value} value={value}>
@@ -446,7 +446,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
               </option>
             ))}
           </select>
-          <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+          <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-xl border border-[#DDE5EE] bg-white px-3 py-2 text-sm">
             <option value="all">Tous statuts</option>
             {statuses.map((value) => (
               <option key={value} value={value}>
@@ -465,15 +465,15 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
 
       <section className="grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
         <div className="dashboard-card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-200 p-5">
+          <div className="flex items-center justify-between border-b border-[#DDE5EE] p-5">
             <div>
-              <h2 className="text-lg font-semibold text-slate-950">Événements de perte</h2>
-              <p className="mt-1 text-sm text-slate-500">{filteredEvents.length} ligne{filteredEvents.length > 1 ? 's' : ''} affichée{filteredEvents.length > 1 ? 's' : ''}</p>
+              <h2 className="text-lg font-semibold text-[#03182F]">Événements de perte</h2>
+              <p className="mt-1 text-sm text-[#6B7480]">{filteredEvents.length} ligne{filteredEvents.length > 1 ? 's' : ''} affichée{filteredEvents.length > 1 ? 's' : ''}</p>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500">
+              <thead className="bg-[#F2F8FF] text-xs uppercase tracking-[0.14em] text-[#6B7480]">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Détection</th>
                   <th className="px-5 py-3 font-semibold">Produit</th>
@@ -492,27 +492,27 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                     className={`cursor-pointer transition hover:bg-rose-50/50 ${selectedEvent?.id === event.id ? 'bg-rose-50/70' : 'bg-white'}`}
                   >
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-900">{dateFr(event.detectedAt)}</p>
-                      <p className="mt-1 text-xs text-slate-500">{event.sourceOrderRef}</p>
+                      <p className="font-medium text-[#03182F]">{dateFr(event.detectedAt)}</p>
+                      <p className="mt-1 text-xs text-[#6B7480]">{event.sourceOrderRef}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="font-semibold text-slate-950">{event.sku}</p>
-                      <p className="mt-1 max-w-xs truncate text-xs text-slate-500">{event.productName}</p>
+                      <p className="font-semibold text-[#03182F]">{event.sku}</p>
+                      <p className="mt-1 max-w-xs truncate text-xs text-[#6B7480]">{event.productName}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="font-semibold text-slate-950">{euro(event.estimatedLossValue)}</p>
-                      <p className="mt-1 text-xs text-slate-500">{event.quantityLost} unité{event.quantityLost > 1 ? 's' : ''}</p>
+                      <p className="font-semibold text-[#03182F]">{euro(event.estimatedLossValue)}</p>
+                      <p className="mt-1 text-xs text-[#6B7480]">{event.quantityLost} unité{event.quantityLost > 1 ? 's' : ''}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                        <span className={`h-2 w-2 rounded-full ${stageAccent[event.detectedStage] || 'bg-slate-500'}`} />
+                      <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-[#30373E]">
+                        <span className={`h-2 w-2 rounded-full ${stageAccent[event.detectedStage] || 'bg-[#F2F8FF]0'}`} />
                         {labelFromMap(stageLabels, event.detectedStage)}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-slate-700">{labelFromMap(reasonLabels, event.reasonCategory)}</td>
-                    <td className="px-5 py-4 text-slate-700">{event.carrierName || '—'}</td>
+                    <td className="px-5 py-4 text-[#30373E]">{labelFromMap(reasonLabels, event.reasonCategory)}</td>
+                    <td className="px-5 py-4 text-[#30373E]">{event.carrierName || '—'}</td>
                     <td className="px-5 py-4">
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${statusLabels[event.status]?.className || 'bg-slate-100 text-slate-600 ring-slate-200'}`}>
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${statusLabels[event.status]?.className || 'bg-slate-100 text-[#6B7480] ring-slate-200'}`}>
                         {statusLabels[event.status]?.label || event.status}
                       </span>
                     </td>
@@ -520,7 +520,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                 ))}
                 {filteredEvents.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-slate-500">
+                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#6B7480]">
                       Aucune perte ne correspond aux filtres.
                     </td>
                   </tr>
@@ -533,18 +533,18 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
         <aside className="dashboard-card p-5">
           {selectedEvent ? (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Détail perte</p>
-              <h2 className="mt-2 text-xl font-semibold text-slate-950">{selectedEvent.sku}</h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600">{selectedEvent.productName}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B7480]">Détail perte</p>
+              <h2 className="mt-2 text-xl font-semibold text-[#03182F]">{selectedEvent.sku}</h2>
+              <p className="mt-1 text-sm leading-6 text-[#6B7480]">{selectedEvent.productName}</p>
 
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Valeur</p>
-                  <p className="mt-1 font-semibold text-slate-950">{euro(selectedEvent.estimatedLossValue)}</p>
+                <div className="rounded-xl bg-[#F2F8FF] p-3">
+                  <p className="text-xs text-[#6B7480]">Valeur</p>
+                  <p className="mt-1 font-semibold text-[#03182F]">{euro(selectedEvent.estimatedLossValue)}</p>
                 </div>
-                <div className="rounded-xl bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Quantité</p>
-                  <p className="mt-1 font-semibold text-slate-950">{selectedEvent.quantityLost}</p>
+                <div className="rounded-xl bg-[#F2F8FF] p-3">
+                  <p className="text-xs text-[#6B7480]">Quantité</p>
+                  <p className="mt-1 font-semibold text-[#03182F]">{selectedEvent.quantityLost}</p>
                 </div>
               </div>
 
@@ -563,21 +563,21 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                   ['Prix catalogue', euro(selectedEvent.unitCost)],
                   ['Prix commande', euro(selectedEvent.orderUnitPrice)],
                 ].map(([label, value]) => (
-                  <div key={label} className="flex justify-between gap-4 border-b border-slate-100 pb-3">
-                    <dt className="text-slate-500">{label}</dt>
-                    <dd className="text-right font-medium text-slate-900">{value}</dd>
+                  <div key={label} className="flex justify-between gap-4 border-b border-[#DDE5EE] pb-3">
+                    <dt className="text-[#6B7480]">{label}</dt>
+                    <dd className="text-right font-medium text-[#03182F]">{value}</dd>
                   </div>
                 ))}
               </dl>
 
-              <div className="mt-5 rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Contexte</p>
-                <p className="mt-2 text-sm leading-6 text-slate-700">{selectedEvent.reasonDetail || selectedEvent.notes || 'Aucun détail.'}</p>
-                {selectedEvent.notes && selectedEvent.reasonDetail && <p className="mt-3 text-xs leading-5 text-slate-500">{selectedEvent.notes}</p>}
+              <div className="mt-5 rounded-xl bg-[#F2F8FF] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">Contexte</p>
+                <p className="mt-2 text-sm leading-6 text-[#30373E]">{selectedEvent.reasonDetail || selectedEvent.notes || 'Aucun détail.'}</p>
+                {selectedEvent.notes && selectedEvent.reasonDetail && <p className="mt-3 text-xs leading-5 text-[#6B7480]">{selectedEvent.notes}</p>}
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-500">Sélectionnez une perte pour voir le détail.</p>
+            <p className="text-sm text-[#6B7480]">Sélectionnez une perte pour voir le détail.</p>
           )}
         </aside>
       </section>
