@@ -77,14 +77,14 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
   const carrierGroups = useMemo(() => {
     const map = new Map<string, number>()
     events.forEach((e) => { const c = e.carrierName || 'Unknown'; map.set(c, (map.get(c) || 0) + e.estimatedLossValue) })
-    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4)
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4)
   }, [events])
   const maxCarrierValue = carrierGroups.length > 0 ? carrierGroups[0][1] : 1
 
   const marketplaceGroups = useMemo(() => {
     const map = new Map<string, number>()
     events.forEach((e) => { const m = e.marketplace || 'Other'; map.set(m, (map.get(m) || 0) + e.estimatedLossValue) })
-    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4)
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4)
   }, [events])
   const mpTotal = marketplaceGroups.reduce((s, [, v]) => s + v, 0) || 1
   const activeMarketplaceIndex =
@@ -101,7 +101,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
       existing.value += e.estimatedLossValue
       map.set(e.sku, existing)
     })
-    return [...map.entries()].sort((a, b) => b[1].value - a[1].value).slice(0, 5)
+    return Array.from(map.entries()).sort((a, b) => b[1].value - a[1].value).slice(0, 5)
   }, [events])
 
   const recentEvents = useMemo(() => events.slice(0, 4), [events])
