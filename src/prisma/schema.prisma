@@ -522,6 +522,7 @@ model DecisionRecord {
   reversible          Boolean   @default(true)
   source_agent        String?
   triggered_by        String?
+  trigger_event_id    String?
   created_at          DateTime  @default(now())
   executed_at         DateTime?
   founder_decision_at DateTime?
@@ -532,6 +533,7 @@ model DecisionRecord {
   @@index([user_id, status, created_at(sort: Desc)])
   @@index([sku])
   @@index([template_id])
+  @@index([trigger_event_id])
   @@map("decision_ledger")
   @@schema("public")
 }

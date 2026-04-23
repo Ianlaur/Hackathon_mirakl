@@ -1,8 +1,15 @@
 // MIRA — READ tools. Free to call; no governance involved. The LLM uses these to analyze.
 // Each tool returns a plain object serialized to the LLM as tool message content.
 // Schemas follow the OpenAI function-calling format.
+// All numeric calculations delegate to tools_math — the LLM never produces numbers.
 
 import type { PrismaClient } from '@prisma/client'
+import {
+  calculateVelocity,
+  calculateStockoutDays,
+  calculateChannelShares,
+  DAYS_PER_WEEK,
+} from './tools_math'
 
 export type ReadToolContext = {
   prisma: PrismaClient
@@ -248,19 +255,16 @@ async function queryVelocity(ctx: ReadToolContext, a: Args) {
     select: { quantity: true, occurred_at: true },
   })
 
-  const unitsSold = rows.reduce((n, r) => n + (r.quantity ?? 0), 0)
-  const perHour = unitsSold / windowHours
-  const perDay = perHour * 24
-  const perWeek = perDay * 7
+  const math = calculateVelocity(rows, windowHours)
 
   return {
     sku: a.sku,
     channel: a.channel || 'all',
     window_hours: windowHours,
-    orders: rows.length,
-    units_sold: unitsSold,
-    units_per_day: Number(perDay.toFixed(2)),
-    units_per_week: Number(perWeek.toFixed(2)),
+    orders: math.orders,
+    units_sold: math.units_sold,
+    units_per_day: math.units_per_day,
+    units_per_week: math.units_per_week,
   }
 }
 
@@ -316,14 +320,14 @@ async function predictStockout(ctx: ReadToolContext, a: Args) {
   const perWeek = Number(state.velocity_per_week)
   if (perWeek <= 0) return { sku, known: true, on_hand: state.on_hand, days_to_stockout: null, message: 'Vélocité nulle.' }
 
-  const perDay = perWeek / 7
-  const days = state.on_hand / perDay
+  const perDay = perWeek / DAYS_PER_WEEK
+  const days = calculateStockoutDays(state.on_hand, perDay)
   return {
     sku,
     known: true,
     on_hand: state.on_hand,
     velocity_per_day: Number(perDay.toFixed(2)),
-    days_to_stockout: Number(days.toFixed(1)),
+    days_to_stockout: days,
   }
 }
 
@@ -412,11 +416,8 @@ async function compareChannels(ctx: ReadToolContext, a: Args) {
     }))
     .sort((x, y) => y.revenue - x.revenue)
 
+  const withShare = calculateChannelShares(channels)
   const totalRevenue = channels.reduce((n, c) => n + c.revenue, 0)
-  const withShare = channels.map((c) => ({
-    ...c,
-    share_pct: totalRevenue > 0 ? Number(((c.revenue / totalRevenue) * 100).toFixed(1)) : 0,
-  }))
 
   return {
     period_days: periodDays,

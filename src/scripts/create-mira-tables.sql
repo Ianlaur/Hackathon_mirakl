@@ -59,6 +59,9 @@ INSERT INTO public.decision_templates (id, description) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 3) decision_ledger: template-only action trace. Every row is rendered by a known template.
+-- trigger_event_id links each decision back to the operational_objects row that
+-- triggered it (external_id of the source order / return / event). Soft reference:
+-- kept as TEXT for portability. Enables full re-playability of a decision.
 CREATE TABLE IF NOT EXISTS public.decision_ledger (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -72,6 +75,7 @@ CREATE TABLE IF NOT EXISTS public.decision_ledger (
   reversible boolean NOT NULL DEFAULT true,
   source_agent text,
   triggered_by text,
+  trigger_event_id text,
   created_at timestamptz NOT NULL DEFAULT now(),
   executed_at timestamptz,
   founder_decision_at timestamptz
@@ -83,6 +87,8 @@ CREATE INDEX IF NOT EXISTS idx_decision_ledger_sku
   ON public.decision_ledger (sku);
 CREATE INDEX IF NOT EXISTS idx_decision_ledger_template
   ON public.decision_ledger (template_id);
+CREATE INDEX IF NOT EXISTS idx_decision_ledger_trigger_event
+  ON public.decision_ledger (trigger_event_id);
 
 -- 4) THE invariant: BEFORE INSERT trigger rejects unknown template_ids.
 -- Complements the Python-side render() guard and the test-invariant script.

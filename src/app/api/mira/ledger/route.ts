@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         reversible: true,
         source_agent: true,
         triggered_by: true,
+        trigger_event_id: true,
         created_at: true,
         executed_at: true,
         founder_decision_at: true,

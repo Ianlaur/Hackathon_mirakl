@@ -38,6 +38,11 @@ export const ACTION_TOOLS: OpenAITool[] = [
             properties: {},
             additionalProperties: true,
           },
+          trigger_event_id: {
+            type: 'string',
+            description:
+              "external_id de la commande / retour / événement opérationnel qui a déclenché cette décision (ex: 'ORD-000236'). Rend la trace rejouable via operational_objects.",
+          },
         },
         required: ['action_type', 'sku'],
       },
@@ -123,6 +128,7 @@ type ExecuteArgs = {
   sku: string
   channel?: string
   params?: Record<string, unknown>
+  trigger_event_id?: string
 }
 
 function buildTemplatePayload(
@@ -238,9 +244,17 @@ async function executeAction(ctx: ActionToolContext, args: ExecuteArgs) {
       reversible: decision.reversible,
       source_agent: 'conversation',
       triggered_by: 'founder',
+      trigger_event_id: args.trigger_event_id ?? null,
       executed_at: decision.status === 'auto_executed' ? new Date() : null,
     },
-    select: { id: true, status: true, template_id: true, logical_inference: true, created_at: true },
+    select: {
+      id: true,
+      status: true,
+      template_id: true,
+      logical_inference: true,
+      trigger_event_id: true,
+      created_at: true,
+    },
   })
 
   return {

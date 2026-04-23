@@ -13,6 +13,7 @@
     "db:prepare:mira": "prisma db execute --file scripts/create-mira-tables.sql --schema prisma/schema.prisma",
     "db:prepare:mira-realtime": "prisma db execute --file scripts/enable-mira-realtime.sql --schema prisma/schema.prisma",
     "db:prepare:mira-templates-v2": "prisma db execute --file scripts/migrate-mira-templates-v2.sql --schema prisma/schema.prisma",
+    "db:prepare:mira-trigger-event-id": "prisma db execute --file scripts/migrate-mira-trigger-event-id.sql --schema prisma/schema.prisma",
     "dust:test:low-stock": "node scripts/test-dust-low-stock-agent.js",
     "start": "next start",
     "test": "vitest run",
@@ -26,6 +27,7 @@
     "prisma:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
     "mira:ingest": "ts-node --project tsconfig.scripts.json scripts/run-mira-ingestion.ts",
     "test:mira-invariant": "ts-node --project tsconfig.scripts.json scripts/test-mira-invariant.ts",
+    "test:mira-math": "ts-node --project tsconfig.scripts.json scripts/test-mira-math.ts",
     "test:mira-decision-mutations": "ts-node --project tsconfig.scripts.json scripts/test-mira-decision-mutations.ts",
     "test:dashboard-mira-only": "node scripts/test-dashboard-mira-only.js",
     "test:mira-design-language": "node scripts/test-mira-design-language.js"
