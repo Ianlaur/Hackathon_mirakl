@@ -33,7 +33,7 @@
 
 @layer components {
   .dashboard-card {
-    @apply rounded-2xl border border-white/60 bg-white/90 shadow-sm backdrop-blur;
+    @apply bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)];
   }
 
   .mascot-orb {
@@ -860,7 +860,10 @@
   }
 }
 
-/* MIRA — styles for DecisionFeed + /activity page (scoped classes, no global rewrite) */
+/* MIRA — styles for DecisionFeed + /activity page (scoped classes, no global rewrite).
+   Hex values are aligned with the official Mirakl brand palette in .cursorrules
+   (Primary Dark #03182F, Primary Accent #2764FF, Primary Bg #F2F8FF,
+   Secondary Accent #F22E75, Secondary Bg #FFE7EC). */
 @layer base {
   :root {
     --mira-bg: #F2F8FF;
