@@ -120,36 +120,36 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
 
       {/* Section 1: KPIs */}
       <div className="space-y-4">
-        <h2 className="font-serif text-2xl font-bold text-[#03182F]">How are we recovering losses?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between h-[140px]">
+        <h2 className="font-serif text-[30px] leading-tight font-bold text-[#03182F] sm:text-2xl">How are we recovering losses?</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+          <div className="min-h-[140px] bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between">
             <div className="flex justify-between items-start">
               <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Total Lost Value</span>
-              <span className="text-[#F22E75] font-mono text-[10px]">+12.4%</span>
+              <span className="text-[#F22E75] font-serif text-[10px]">+12.4%</span>
             </div>
-            <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{fmt(totalLostValue)}</span>
+            <span className="font-serif text-[34px] sm:text-[44px] font-bold leading-none tracking-tight text-[#03182F] break-words">{fmt(totalLostValue)}</span>
           </div>
-          <div className="bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between h-[140px]">
+          <div className="min-h-[140px] bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between">
             <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Total Lost Units</span>
             <div>
-              <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{totalLostUnits}</span>
+              <span className="font-serif text-[34px] sm:text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{totalLostUnits}</span>
               <p className="font-serif text-[12px] text-[#6B7480] mt-1 italic">Across {new Set(events.map((e) => e.carrierName).filter(Boolean)).size} carriers</p>
             </div>
           </div>
-          <div className="bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between h-[140px]">
+          <div className="min-h-[140px] bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between">
             <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Claims Pending</span>
             <div>
-              <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{pendingClaims}</span>
+              <span className="font-serif text-[34px] sm:text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{pendingClaims}</span>
               <p className="font-serif text-[12px] text-[#E0A93A] mt-1 font-bold">Action required on {events.filter((e) => e.status === 'open').length}</p>
             </div>
           </div>
-          <div className="bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between h-[140px]">
+          <div className="min-h-[140px] bg-white border border-[#DDE5EE] p-5 rounded-lg flex flex-col justify-between">
             <div className="flex justify-between items-start">
               <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Reimbursement Rate</span>
-              <span className="text-[#3FA46A] font-mono text-[10px]">94% Target</span>
+              <span className="text-[#3FA46A] font-serif text-[10px]">94% Target</span>
             </div>
             <div>
-              <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{reimbursementRate}%</span>
+              <span className="font-serif text-[34px] sm:text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{reimbursementRate}%</span>
               <div className="mt-3 w-full bg-[#ededfa] h-1 rounded-full overflow-hidden">
                 <div className="bg-[#2764FF] h-full" style={{ width: `${reimbursementRate}%` }} />
               </div>
@@ -160,30 +160,32 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
 
       {/* Section 2: Charts */}
       <div className="space-y-4">
-        <h2 className="font-serif text-2xl font-bold text-[#03182F]">Why are these losses happening?</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <h2 className="font-serif text-[30px] leading-tight font-bold text-[#03182F] sm:text-2xl">Why are these losses happening?</h2>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Bar chart */}
-          <div className="lg:col-span-2 bg-white border border-[#DDE5EE] p-6 rounded-lg">
+          <div className="xl:col-span-2 bg-white border border-[#DDE5EE] p-4 sm:p-6 rounded-lg">
             <h3 className="font-serif text-base font-bold text-[#03182F] mb-6">Loss by Carrier (Monthly Euro Impact)</h3>
-            <div className="flex items-end justify-between h-[240px] px-4 gap-8">
-              {carrierGroups.map(([name, value], i) => (
-                <div key={name} className="flex-1 flex flex-col items-center">
-                  <div
-                    className={`w-full rounded-t-sm relative group ${i === 0 ? 'bg-[#FFE7EC] border border-[#F22E75]/20' : 'bg-[#2764FF]/10 border border-[#2764FF]/20'}`}
-                    style={{ height: `${(value / maxCarrierValue) * 100}%` }}
-                  >
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-[10px] text-[#03182F] opacity-0 group-hover:opacity-100 transition-opacity">
-                      {fmt(value)}
+            <div className="overflow-x-auto">
+              <div className="flex min-w-[560px] items-end justify-between h-[240px] px-4 gap-8">
+                {carrierGroups.map(([name, value], i) => (
+                  <div key={name} className="flex-1 flex flex-col items-center">
+                    <div
+                      className={`w-full rounded-t-sm relative group ${i === 0 ? 'bg-[#FFE7EC] border border-[#F22E75]/20' : 'bg-[#2764FF]/10 border border-[#2764FF]/20'}`}
+                      style={{ height: `${(value / maxCarrierValue) * 100}%` }}
+                    >
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 font-serif text-[10px] text-[#03182F] opacity-0 group-hover:opacity-100 transition-opacity">
+                        {fmt(value)}
+                      </div>
                     </div>
+                    <span className="mt-4 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase text-center break-words">{name || 'N/A'}</span>
                   </div>
-                  <span className="mt-4 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">{name || 'N/A'}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Donut chart */}
-          <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg">
+          <div className="bg-white border border-[#DDE5EE] p-4 sm:p-6 rounded-lg">
             <h3 className="font-serif text-base font-bold text-[#03182F] mb-6">Loss by Platform</h3>
             <div className="flex flex-col items-center justify-center h-[240px]">
               <div className="relative w-40 h-40">
@@ -198,15 +200,15 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                   })}
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="font-mono text-[10px] text-[#6B7480]">DOMINANT</span>
-                  <span className="font-serif font-bold text-[#03182F]">{marketplaceGroups[0]?.[0] || 'N/A'}</span>
+                  <span className="font-serif text-[10px] text-[#6B7480]">DOMINANT</span>
+                  <span className="font-serif font-bold text-[#03182F] text-center px-2">{marketplaceGroups[0]?.[0] || 'N/A'}</span>
                 </div>
               </div>
-              <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-1 w-full">
+              <div className="mt-6 grid w-full grid-cols-1 gap-y-1 sm:grid-cols-2 sm:gap-x-4">
                 {marketplaceGroups.map(([name, value], i) => (
-                  <div key={name} className="flex items-center gap-2">
+                  <div key={name} className="flex items-center gap-2 min-w-0">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: mpColors[i % mpColors.length] }} />
-                    <span className="font-serif text-[12px] text-[#30373E]">{name} {Math.round((value / mpTotal) * 100)}%</span>
+                    <span className="font-serif text-[12px] text-[#30373E] break-words">{name} {Math.round((value / mpTotal) * 100)}%</span>
                   </div>
                 ))}
               </div>
@@ -217,47 +219,51 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
 
       {/* Section 3: Product table + Live pulse */}
       <div className="space-y-4">
-        <h2 className="font-serif text-2xl font-bold text-[#03182F]">What products are affected?</h2>
+        <h2 className="font-serif text-[30px] leading-tight font-bold text-[#03182F] sm:text-2xl">What products are affected?</h2>
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
           {/* Table */}
           <div className="xl:col-span-3 bg-white border border-[#DDE5EE] rounded-lg overflow-hidden">
             <div className="p-6 border-b border-[#DDE5EE] flex justify-between items-center">
               <h3 className="font-serif text-base font-bold text-[#03182F]">Top Product-Level Losses</h3>
             </div>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-[#f3f2ff] border-b border-[#DDE5EE]">
-                  {['Product Details', 'Units Lost', 'Financial Impact', 'Main Cause', 'Action'].map((h) => (
-                    <th key={h} className="py-4 px-6 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#DDE5EE]">
-                {topProducts.map(([sku, p]) => (
-                  <tr key={sku} className="hover:bg-[#F2F8FF] transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded border border-[#DDE5EE] bg-[#F2F8FF] flex items-center justify-center font-mono text-[10px] text-[#6B7480]">{sku.slice(0, 4)}</div>
-                        <span className="font-serif text-[14px] text-[#03182F] font-bold">{p.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 font-mono text-[14px]">{p.units}</td>
-                    <td className="py-4 px-6 font-mono text-[14px] text-[#F22E75]">{fmt(p.value)}</td>
-                    <td className="py-4 px-6">
-                      <span className={`font-serif text-[12px] border px-2 py-1 rounded-full ${reasonStyle[p.reason] || 'text-[#6B7480] bg-[#F2F8FF] border-[#DDE5EE]'}`}>
-                        {reasonLabels[p.reason] || p.reason}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <button className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#2764FF] hover:underline uppercase">Investigate</button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] text-left">
+                <thead>
+                  <tr className="bg-[#f3f2ff] border-b border-[#DDE5EE]">
+                    <th className="w-[48%] py-4 px-6 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Product Details</th>
+                    <th className="w-[10%] py-4 px-6 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase whitespace-nowrap">Units Lost</th>
+                    <th className="w-[14%] py-4 px-6 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase whitespace-nowrap">Financial Impact</th>
+                    <th className="w-[16%] py-4 px-6 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase whitespace-nowrap">Main Cause</th>
+                    <th className="w-[12%] py-4 px-6 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase whitespace-nowrap">Action</th>
                   </tr>
-                ))}
-                {topProducts.length === 0 && (
-                  <tr><td colSpan={5} className="py-8 px-6 text-center font-serif text-[#6B7480]">No loss data available</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-[#DDE5EE]">
+                  {topProducts.map(([sku, p]) => (
+                    <tr key={sku} className="hover:bg-[#F2F8FF] transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded border border-[#DDE5EE] bg-[#F2F8FF] flex items-center justify-center font-serif text-[10px] text-[#6B7480]">{sku.slice(0, 4)}</div>
+                          <span className="font-serif text-[14px] text-[#03182F] font-bold break-words">{p.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 font-serif text-[14px] whitespace-nowrap">{p.units}</td>
+                      <td className="py-4 px-6 font-serif text-[14px] text-[#F22E75] whitespace-nowrap">{fmt(p.value)}</td>
+                      <td className="py-4 px-6 min-w-[160px]">
+                        <span className={`inline-flex items-center whitespace-nowrap font-serif text-[12px] border px-2 py-1 rounded-full ${reasonStyle[p.reason] || 'text-[#6B7480] bg-[#F2F8FF] border-[#DDE5EE]'}`}>
+                          {reasonLabels[p.reason] || p.reason}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <button className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#2764FF] hover:underline uppercase whitespace-nowrap">Investigate</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {topProducts.length === 0 && (
+                    <tr><td colSpan={5} className="py-8 px-6 text-center font-serif text-[#6B7480]">No loss data available</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Live Pulse */}
@@ -267,7 +273,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                 <h3 className="font-serif text-base font-bold text-[#03182F]">Live Pulse</h3>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-[#3FA46A] rounded-full animate-pulse mr-2" />
-                  <span className="font-mono text-[10px] uppercase text-[#3FA46A]">Streaming</span>
+                  <span className="font-serif text-[10px] uppercase text-[#3FA46A]">Streaming</span>
                 </div>
               </div>
             </div>
@@ -280,7 +286,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                   <div key={e.id} className={`flex gap-4 border-l-2 ${borderColor} pl-4 py-1`}>
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
-                        <span className="font-mono text-[10px] text-[#6B7480]">{new Date(e.detectedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                        <span className="font-serif text-[10px] text-[#6B7480]">{new Date(e.detectedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                         <span className={`font-serif text-[9px] font-bold ${tagColor}`}>{tagLabel}</span>
                       </div>
                       <p className="font-serif text-[13px] text-[#03182F] mt-1">{e.productName} — {reasonLabels[e.reasonCategory] || e.reasonCategory} ({e.quantityLost} units, {fmt(e.estimatedLossValue)})</p>
@@ -308,7 +314,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
               {topProducts[0] ? `${topProducts[0][1].name}: ${topProducts[0][1].units} units lost (${fmt(topProducts[0][1].value)}). Consider escalating for reimbursement.` : 'No high-value disputes at this time.'}
             </p>
           </div>
-          <div className="mt-6 flex gap-4">
+          <div className="mt-6 flex flex-wrap gap-3">
             <button className="h-9 px-6 bg-[#F22E75] text-white font-serif text-[13px] font-bold rounded-lg hover:opacity-90 transition-opacity">Escalate to Legal</button>
             <button className="h-9 px-6 border border-[#F22E75]/30 text-[#F22E75] font-serif text-[13px] font-bold rounded-lg hover:bg-white transition-colors">Review Evidence</button>
           </div>
