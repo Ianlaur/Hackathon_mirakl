@@ -78,7 +78,7 @@ export default function IntegrationProposalsPage() {
           {proposals.map((p) => (
             <div key={p.name} className="bg-white border border-[#DDE5EE] p-4 flex items-center hover:bg-slate-50 transition-colors">
               <div className="w-12 h-12 bg-white flex-shrink-0 flex items-center justify-center border border-slate-200 p-2 rounded">
-                <Store className="h-6 w-6 text-slate-400" />
+                <Store className="h-6 w-6 text-[#6B7480]" />
               </div>
               <div className="ml-6 flex-1 grid grid-cols-4 items-center">
                 <div>
@@ -114,7 +114,7 @@ export default function IntegrationProposalsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {suggestions.map((s) => (
-            <div key={s.name} className="bg-white border border-dashed border-slate-300 p-5 flex flex-col items-center text-center rounded-lg hover:border-[#004bd9] transition-all">
+            <div key={s.name} className="bg-white border border-dashed border-[#BFCBDA] p-5 flex flex-col items-center text-center rounded-lg hover:border-[#004bd9] transition-all">
               <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
                 <Store className="h-8 w-8 text-slate-300" />
               </div>

@@ -158,8 +158,8 @@ function orderToShipment(order: Order): Shipment {
 }
 
 function statusStyle(status: Order['status']) {
-  if (status === 'Delivered') return 'border-emerald-200 bg-emerald-50 text-emerald-700'
-  if (status === 'In Transit') return 'border-amber-200 bg-amber-50 text-amber-700'
+  if (status === 'Delivered') return 'border-emerald-200 bg-[#3FA46A]/10 text-emerald-700'
+  if (status === 'In Transit') return 'border-amber-200 bg-[#E0A93A]/10 text-amber-700'
   if (status === 'Blocked') return 'border-rose-200 bg-rose-50 text-rose-700'
   return 'border-indigo-200 bg-indigo-50 text-indigo-700'
 }
@@ -174,23 +174,23 @@ function inventoryTone(status: InventoryItem['status']) {
   }
   if (status === 'low') {
     return {
-      chip: 'border-amber-200 bg-amber-50 text-amber-700',
+      chip: 'border-amber-200 bg-[#E0A93A]/10 text-amber-700',
       qty: 'text-amber-700',
-      bar: 'bg-amber-500',
+      bar: 'bg-[#E0A93A]/100',
     }
   }
   return {
-    chip: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    chip: 'border-emerald-200 bg-[#3FA46A]/10 text-emerald-700',
     qty: 'text-emerald-700',
-    bar: 'bg-emerald-500',
+    bar: 'bg-[#3FA46A]/100',
   }
 }
 
 function lowStockStatusClass(status: string) {
-  if (status === 'review_ready') return 'bg-emerald-50 text-emerald-700'
+  if (status === 'review_ready') return 'bg-[#3FA46A]/10 text-emerald-700'
   if (status === 'failed') return 'bg-rose-50 text-rose-700'
-  if (status === 'processing') return 'bg-amber-50 text-amber-700'
-  return 'bg-slate-100 text-slate-700'
+  if (status === 'processing') return 'bg-[#E0A93A]/10 text-amber-700'
+  return 'bg-slate-100 text-[#30373E]'
 }
 
 export default function DashboardPage() {
@@ -205,13 +205,13 @@ export default function DashboardPage() {
   const alertCount = inventory.filter((item) => item.status !== 'ok').length
   const kpis = isPro
     ? [
-        { label: 'Total Revenue', value: '€2.47M', trend: '+12.4% vs last month', icon: DollarSign, trendColor: 'text-emerald-600' },
-        { label: 'Stripe Liquidity Available', value: '€184,300', trend: '+€23,500 this week', icon: Wallet, trendColor: 'text-emerald-600' },
+        { label: 'Total Revenue', value: '€2.47M', trend: '+12.4% vs last month', icon: DollarSign, trendColor: 'text-[#3FA46A]' },
+        { label: 'Stripe Liquidity Available', value: '€184,300', trend: '+€23,500 this week', icon: Wallet, trendColor: 'text-[#3FA46A]' },
         { label: 'Active Shipments', value: '127', trend: '-3 blocked at port', icon: Package, trendColor: 'text-rose-600' },
       ]
     : [
-        { label: 'Total Revenue', value: '€8,240', trend: '+6.2% vs last month', icon: DollarSign, trendColor: 'text-emerald-600' },
-        { label: 'Total Orders', value: '34', trend: '+4 this week', icon: Package, trendColor: 'text-emerald-600' },
+        { label: 'Total Revenue', value: '€8,240', trend: '+6.2% vs last month', icon: DollarSign, trendColor: 'text-[#3FA46A]' },
+        { label: 'Total Orders', value: '34', trend: '+4 this week', icon: Package, trendColor: 'text-[#3FA46A]' },
       ]
 
   useEffect(() => {
@@ -261,16 +261,16 @@ export default function DashboardPage() {
         <header className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Control Tower</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-[#03182F]">Control Tower</h1>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                  isPro ? 'border border-indigo-200 bg-indigo-50 text-indigo-700' : 'border border-slate-200 bg-slate-100 text-slate-600'
+                  isPro ? 'border border-indigo-200 bg-indigo-50 text-indigo-700' : 'border border-slate-200 bg-slate-100 text-[#6B7480]'
                 }`}
               >
                 {isPro ? 'Optimisé flux internationaux' : 'Optimisé activité atelier'}
               </span>
             </div>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[#6B7480]">
               {isPro
                 ? 'Dashboard optimisé pour vos opérations globales avec supervision temps réel.'
                 : 'Dashboard optimisé pour votre activité locale, avec les indicateurs essentiels.'}
@@ -285,16 +285,16 @@ export default function DashboardPage() {
               <Zap className="h-4 w-4" /> Manage Plugins <ArrowRight className="h-4 w-4" />
             </Link>
 
-            <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500">
+            <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#6B7480]">
               <Search className="h-4 w-4" />
-              <input className="w-44 border-none bg-transparent text-slate-700 outline-none placeholder:text-slate-400" placeholder="Search orders..." />
+              <input className="w-44 border-none bg-transparent text-[#30373E] outline-none placeholder:text-[#6B7480]" placeholder="Search orders..." />
             </label>
 
-            <button className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50">
+            <button className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#6B7480] transition hover:bg-slate-50">
               <Filter className="h-4 w-4" /> Filter
             </button>
 
-            <button className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 transition hover:bg-slate-50">
+            <button className="rounded-xl border border-slate-200 bg-white p-2.5 text-[#6B7480] transition hover:bg-slate-50">
               <Bell className="h-4 w-4" />
             </button>
           </div>
@@ -302,11 +302,11 @@ export default function DashboardPage() {
 
         <section className={`grid gap-3 ${isPro ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
           {kpis.map((item) => (
-            <article key={item.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <article key={item.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{item.label}</p>
-                  <p className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">{item.value}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6B7480]">{item.label}</p>
+                  <p className="mt-3 text-4xl font-semibold tracking-tight text-[#03182F]">{item.value}</p>
                   <p className={`mt-2 text-base font-medium ${item.trendColor}`}>↗ {item.trend}</p>
                 </div>
                 <div className="rounded-xl bg-indigo-100 p-3 text-indigo-700">
@@ -317,9 +317,9 @@ export default function DashboardPage() {
           ))}
         </section>
 
-        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Inventory Alerts</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#30373E]">Inventory Alerts</h2>
             <span className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
               {alertCount} alerts
             </span>
@@ -332,9 +332,9 @@ export default function DashboardPage() {
               return (
                 <div key={item.sku}>
                   <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-base font-semibold text-slate-900">
+                    <p className="text-base font-semibold text-[#03182F]">
                       {item.name}{' '}
-                      <span className="text-sm font-medium text-slate-500">{item.sku}</span>
+                      <span className="text-sm font-medium text-[#6B7480]">{item.sku}</span>
                     </p>
                     <div className="flex items-center gap-2">
                       <span className={`text-base font-semibold ${tone.qty}`}>{item.qtyLabel}</span>
@@ -352,11 +352,11 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Low Stock Mira Trigger</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#30373E]">Low Stock Mira Trigger</h2>
+              <p className="mt-1 text-sm text-[#6B7480]">
                 Trigger threshold rule: max(min_quantity, 10)
               </p>
             </div>
@@ -364,20 +364,20 @@ export default function DashboardPage() {
 
           <div className="space-y-3">
             {lowStockLoading ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+              <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-[#6B7480]">
                 Loading low-stock alerts...
               </div>
             ) : lowStockAlerts.length === 0 ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+              <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-[#6B7480]">
                 No low-stock alerts yet. Update stock below threshold to trigger Mira analysis.
               </div>
             ) : (
               lowStockAlerts.map((alert) => (
-                <article key={alert.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <article key={alert.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-950">{alert.productName}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="text-sm font-semibold text-[#03182F]">{alert.productName}</p>
+                      <p className="mt-1 text-xs text-[#6B7480]">
                         Qty {alert.quantity} / Threshold {alert.threshold}
                         {alert.sku ? ` • SKU ${alert.sku}` : ''}
                       </p>
@@ -387,11 +387,11 @@ export default function DashboardPage() {
                     </span>
                   </div>
 
-                  <p className="mt-3 text-sm text-slate-700">
+                  <p className="mt-3 text-sm text-[#30373E]">
                     <span className="font-medium">Agent analysis:</span>{' '}
                     {alert.dustResponse || (alert.status === 'failed' ? alert.errorMessage : 'Pending analysis...')}
                   </p>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-2 text-sm text-[#30373E]">
                     <span className="font-medium">Proposed solution:</span>{' '}
                     {alert.proposedSolution || 'Will be provided after analysis.'}
                   </p>
@@ -402,7 +402,7 @@ export default function DashboardPage() {
         </section>
 
         {isPro && (
-          <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <GlobalShipmentTracker
               shipments={trackerShipments}
               selectedShipmentId={selectedOrderId ?? undefined}
@@ -412,10 +412,10 @@ export default function DashboardPage() {
           </section>
         )}
 
-        <section className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-slate-900">{isPro ? 'Global Orders' : 'Recent Orders'}</h2>
+              <h2 className="text-lg font-semibold text-[#03182F]">{isPro ? 'Global Orders' : 'Recent Orders'}</h2>
               <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">{orders.length} orders</span>
             </div>
             <button className="text-sm font-semibold text-indigo-700">View all →</button>
@@ -423,7 +423,7 @@ export default function DashboardPage() {
 
           <div className="overflow-x-auto">
             <table className="min-w-full text-left">
-              <thead className="bg-white text-xs uppercase tracking-[0.14em] text-slate-500">
+              <thead className="bg-white text-xs uppercase tracking-[0.14em] text-[#6B7480]">
                 <tr>
                   <th className="px-4 py-3">Order ID</th>
                   <th className="px-4 py-3">Product</th>
@@ -448,7 +448,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <td className="px-4 py-4 font-semibold text-indigo-700">{order.id}</td>
-                    <td className="px-4 py-4 font-medium text-slate-800">{order.product}</td>
+                    <td className="px-4 py-4 font-medium text-[#03182F]">{order.product}</td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${statusStyle(order.status)}`}>
                         {order.status === 'Delivered' && <CheckCircle2 className="mr-1 h-4 w-4" />}
@@ -457,14 +457,14 @@ export default function DashboardPage() {
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-slate-700">
-                      <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4 text-slate-400" /> {order.origin}</span>{' '}
-                      <span className="text-slate-400">→</span> {order.destination}
+                    <td className="px-4 py-4 text-[#30373E]">
+                      <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4 text-[#6B7480]" /> {order.origin}</span>{' '}
+                      <span className="text-[#6B7480]">→</span> {order.destination}
                     </td>
-                    <td className={`px-4 py-4 font-semibold ${order.status === 'Blocked' ? 'text-rose-700' : 'text-slate-800'}`}>{order.eta}</td>
-                    <td className="px-4 py-4 text-slate-700">{order.carrier}</td>
+                    <td className={`px-4 py-4 font-semibold ${order.status === 'Blocked' ? 'text-rose-700' : 'text-[#03182F]'}`}>{order.eta}</td>
+                    <td className="px-4 py-4 text-[#30373E]">{order.carrier}</td>
                     <td className="px-4 py-4 font-medium text-emerald-700">{order.co2}</td>
-                    <td className="px-4 py-4 font-semibold text-slate-800">{order.stock}</td>
+                    <td className="px-4 py-4 font-semibold text-[#03182F]">{order.stock}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Head -->
+  <circle cx="12" cy="10" r="4" />
+  <!-- Left bun -->
+  <circle cx="6" cy="9" r="2.5" />
+  <!-- Right bun -->
+  <circle cx="18" cy="9" r="2.5" />
+  <!-- Body -->
+  <path d="M8 14 C8 14 6 20 6 21 L18 21 C18 20 16 14 16 14" />
+  <!-- Neckline -->
+  <path d="M10 14 L12 16 L14 14" />
+</svg>

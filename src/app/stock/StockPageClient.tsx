@@ -54,13 +54,13 @@ interface Stats {
 }
 
 const MOVEMENT_TYPES = {
-  purchase: { label: 'Achat', icon: '+', color: 'text-green-600 bg-green-50' },
-  sale: { label: 'Vente', icon: '-', color: 'text-blue-600 bg-blue-50' },
+  purchase: { label: 'Achat', icon: '+', color: 'text-[#3FA46A] bg-[#3FA46A]/10' },
+  sale: { label: 'Vente', icon: '-', color: 'text-[#2764FF] bg-[#2764FF]/10' },
   return_in: { label: 'Retour client', icon: '←', color: 'text-purple-600 bg-purple-50' },
   return_out: { label: 'Retour fournisseur', icon: '→', color: 'text-orange-600 bg-orange-50' },
-  adjustment: { label: 'Ajustement', icon: '±', color: 'text-gray-600 bg-gray-50' },
+  adjustment: { label: 'Ajustement', icon: '±', color: 'text-[#30373E] bg-[#F2F8FF]' },
   transfer: { label: 'Transfert', icon: '⇄', color: 'text-indigo-600 bg-indigo-50' },
-  loss: { label: 'Perte', icon: '×', color: 'text-red-600 bg-red-50' },
+  loss: { label: 'Perte', icon: '×', color: 'text-[#F22E75] bg-[#FFE7EC]' },
   initial: { label: 'Stock initial', icon: '○', color: 'text-teal-600 bg-teal-50' },
 }
 
@@ -214,26 +214,26 @@ export default function StockPageClient({
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F2F8FF]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-white border-b border-[#DDE5EE] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Link href="/" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <Link href="/" className="p-2 hover:bg-[#F2F8FF] rounded-lg transition-colors">
+                <svg className="w-5 h-5 text-[#30373E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Gestion des stocks</h1>
-                <p className="text-sm text-gray-500">{stats.totalProducts} produits en stock</p>
+                <h1 className="text-xl font-bold text-[#03182F]">Gestion des stocks</h1>
+                <p className="text-sm text-[#6B7480]">{stats.totalProducts} produits en stock</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {/* Import/Export Dropdown */}
               <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                <button className="flex items-center gap-2 px-3 py-2 text-[#30373E] hover:bg-[#F2F8FF] rounded-xl transition-colors">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
@@ -242,10 +242,10 @@ export default function StockPageClient({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-[#DDE5EE] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                   <button
                     onClick={() => setShowImportModal(true)}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-t-xl"
+                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF] rounded-t-xl"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -254,7 +254,7 @@ export default function StockPageClient({
                   </button>
                   <button
                     onClick={handleExportCSV}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF]"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -263,17 +263,17 @@ export default function StockPageClient({
                   </button>
                   <button
                     onClick={handleExportJSON}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF]"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                     </svg>
                     Exporter JSON
                   </button>
-                  <div className="border-t border-gray-100"></div>
+                  <div className="border-t border-[#DDE5EE]"></div>
                   <button
                     onClick={handleDeleteAll}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-b-xl"
+                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#F22E75] hover:bg-[#FFE7EC] rounded-b-xl"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -285,7 +285,7 @@ export default function StockPageClient({
               
               <button
                 onClick={() => setShowNewProductModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl"
+                className="flex items-center gap-2 px-4 py-2 bg-[#004bd9] text-white font-medium rounded-xl hover:bg-[#004bd9]/90 transition-all shadow-lg hover:shadow-xl"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -300,58 +300,58 @@ export default function StockPageClient({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#2764FF]/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#2764FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total produits</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
+                <p className="text-sm text-[#6B7480]">Total produits</p>
+                <p className="text-2xl font-bold text-[#03182F]">{stats.totalProducts}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#3FA46A]/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#3FA46A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Valeur stock</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalValue.toLocaleString('fr-FR')}€</p>
+                <p className="text-sm text-[#6B7480]">Valeur stock</p>
+                <p className="text-2xl font-bold text-[#03182F]">{stats.totalValue.toLocaleString('fr-FR')}€</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#E0A93A]/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#E0A93A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Stock bas</p>
-                <p className="text-2xl font-bold text-amber-600">{stats.lowStockCount}</p>
+                <p className="text-sm text-[#6B7480]">Stock bas</p>
+                <p className="text-2xl font-bold text-[#E0A93A]">{stats.lowStockCount}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#FFE7EC] rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#F22E75]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Rupture</p>
-                <p className="text-2xl font-bold text-red-600">{stats.outOfStockCount}</p>
+                <p className="text-sm text-[#6B7480]">Rupture</p>
+                <p className="text-2xl font-bold text-[#F22E75]">{stats.outOfStockCount}</p>
               </div>
             </div>
           </div>
@@ -361,11 +361,11 @@ export default function StockPageClient({
           {/* Products List */}
           <div className="lg:col-span-2">
             {/* Filters */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6">
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-[#DDE5EE] mb-6">
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex-1 min-w-[200px]">
                   <div className="relative">
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
@@ -373,7 +373,7 @@ export default function StockPageClient({
                       placeholder="Rechercher un produit..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -381,7 +381,7 @@ export default function StockPageClient({
                 <select
                   value={selectedCategory || ''}
                   onChange={(e) => setSelectedCategory(e.target.value || null)}
-                  className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent max-w-[200px] truncate"
+                  className="px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff] focus:border-transparent max-w-[200px] truncate"
                 >
                   <option value="">Toutes catégories</option>
                   {categories.map(cat => (
@@ -403,7 +403,7 @@ export default function StockPageClient({
                         }
                       }
                     }}
-                    className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors"
+                    className="px-3 py-2 text-sm text-[#F22E75] hover:bg-[#FFE7EC] rounded-xl font-medium transition-colors"
                     title="Supprimer les catégories vides"
                   >
                     Nettoyer catégories
@@ -414,8 +414,8 @@ export default function StockPageClient({
                   onClick={() => setShowLowStock(!showLowStock)}
                   className={`px-4 py-2 rounded-xl font-medium transition-colors ${
                     showLowStock 
-                      ? 'bg-amber-100 text-amber-700' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-[#E0A93A]/10 text-amber-700' 
+                      : 'bg-[#F2F8FF] text-[#30373E] hover:bg-gray-200'
                   }`}
                 >
                   Stock bas
@@ -426,17 +426,17 @@ export default function StockPageClient({
             {/* Products Grid */}
             <div className="space-y-3">
               {filteredProducts.length === 0 ? (
-                <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="bg-white rounded-lg p-12 shadow-sm border border-[#DDE5EE] text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-[#F2F8FF] rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun produit</h3>
-                  <p className="text-gray-500 mb-6">Commencez par ajouter votre premier produit</p>
+                  <h3 className="text-lg font-semibold text-[#03182F] mb-2">Aucun produit</h3>
+                  <p className="text-[#6B7480] mb-6">Commencez par ajouter votre premier produit</p>
                   <button
                     onClick={() => setShowNewProductModal(true)}
-                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl"
+                    className="px-6 py-3 bg-[#004bd9] text-white font-medium rounded-xl"
                   >
                     Ajouter un produit
                   </button>
@@ -445,11 +445,11 @@ export default function StockPageClient({
                 filteredProducts.map(product => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    className="bg-white rounded-xl p-4 shadow-sm border border-[#DDE5EE] hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-4">
                       {/* Product Image/Icon */}
-                      <div className="relative w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <div className="relative w-16 h-16 bg-[#F2F8FF] rounded-xl flex items-center justify-center flex-shrink-0">
                         {product.image_url ? (
                           <Image
                             src={product.image_url}
@@ -460,7 +460,7 @@ export default function StockPageClient({
                             className="object-cover rounded-xl"
                           />
                         ) : (
-                          <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-6 h-6 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                           </svg>
                         )}
@@ -469,7 +469,7 @@ export default function StockPageClient({
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
+                          <h3 className="font-semibold text-[#03182F] truncate">{product.name}</h3>
                           {product.category && (
                             <span 
                               className="px-2 py-0.5 text-xs font-medium rounded-full"
@@ -482,7 +482,7 @@ export default function StockPageClient({
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-[#6B7480]">
                           {product.sku && <span>SKU: {product.sku}</span>}
                           <span>{product.selling_price.toLocaleString('fr-FR')}€/{product.unit}</span>
                         </div>
@@ -491,20 +491,20 @@ export default function StockPageClient({
                       {/* Stock Level */}
                       <div className="text-right">
                         <div className={`text-2xl font-bold ${
-                          product.quantity === 0 ? 'text-red-600' :
-                          product.quantity <= product.min_quantity ? 'text-amber-600' :
-                          'text-gray-900'
+                          product.quantity === 0 ? 'text-[#F22E75]' :
+                          product.quantity <= product.min_quantity ? 'text-[#E0A93A]' :
+                          'text-[#03182F]'
                         }`}>
                           {product.quantity}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-[#6B7480]">
                           {product.unit}s en stock
                         </div>
                         {product.quantity <= product.min_quantity && product.quantity > 0 && (
-                          <span className="text-xs text-amber-600 font-medium">Stock bas</span>
+                          <span className="text-xs text-[#E0A93A] font-medium">Stock bas</span>
                         )}
                         {product.quantity === 0 && (
-                          <span className="text-xs text-red-600 font-medium">Rupture</span>
+                          <span className="text-xs text-[#F22E75] font-medium">Rupture</span>
                         )}
                       </div>
 
@@ -512,7 +512,7 @@ export default function StockPageClient({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setShowStockModal(product.id)}
-                          className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                          className="p-2 bg-[#3FA46A]/10 text-[#3FA46A] rounded-lg hover:bg-[#3FA46A]/10 transition-colors"
                           title="Mouvement de stock"
                         >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -522,7 +522,7 @@ export default function StockPageClient({
                         <button
                           onClick={() => handleDeleteProduct(product.id, product.name)}
                           disabled={deletingId === product.id}
-                          className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                          className="p-2 bg-[#FFE7EC] text-[#F22E75] rounded-lg hover:bg-[#FFE7EC] transition-colors disabled:opacity-50"
                           title="Supprimer le produit"
                         >
                           {deletingId === product.id ? (
@@ -546,33 +546,33 @@ export default function StockPageClient({
 
           {/* Recent Movements Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 sticky top-24">
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-900">Mouvements récents</h2>
+            <div className="bg-white rounded-lg shadow-sm border border-[#DDE5EE] sticky top-24">
+              <div className="p-4 border-b border-[#DDE5EE]">
+                <h2 className="font-semibold text-[#03182F]">Mouvements récents</h2>
               </div>
               <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
                 {recentMovements.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500">
+                  <div className="p-6 text-center text-[#6B7480]">
                     Aucun mouvement
                   </div>
                 ) : (
                   recentMovements.map(movement => {
                     const typeInfo = MOVEMENT_TYPES[movement.type as keyof typeof MOVEMENT_TYPES] || MOVEMENT_TYPES.adjustment
                     return (
-                      <div key={movement.id} className="p-4 hover:bg-gray-50">
+                      <div key={movement.id} className="p-4 hover:bg-[#F2F8FF]">
                         <div className="flex items-start gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${typeInfo.color}`}>
                             {typeInfo.icon}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-[#03182F] truncate">
                               {movement.products.name}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-[#6B7480]">
                               {typeInfo.label} · {movement.quantity > 0 ? '+' : ''}{movement.quantity}
                             </p>
                           </div>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-[#6B7480]">
                             {new Date(movement.created_at).toLocaleDateString('fr-FR')}
                           </span>
                         </div>
@@ -678,11 +678,11 @@ function NewProductModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-white rounded-lg shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-[#DDE5EE]">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">Nouveau produit</h2>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <h2 className="text-xl font-bold text-[#03182F]">Nouveau produit</h2>
+            <button onClick={onClose} className="p-2 hover:bg-[#F2F8FF] rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -692,46 +692,46 @@ function NewProductModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit *</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-1">Nom du produit *</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
               placeholder="Ex: T-shirt bleu"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">SKU</label>
               <input
                 type="text"
                 value={formData.sku}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="TSH-BLU-001"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Code-barres</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Code-barres</label>
               <input
                 type="text"
                 value={formData.barcode}
                 onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="3760123456789"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-1">Catégorie</label>
             <select
               value={formData.category_id}
               onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
             >
               <option value="">Aucune catégorie</option>
               {categories.map(cat => (
@@ -742,25 +742,25 @@ function NewProductModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prix d&apos;achat (€)</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Prix d&apos;achat (€)</label>
               <input
                 type="number"
                 step="0.01"
                 value={formData.purchase_price}
                 onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="10.00"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (€) *</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Prix de vente (€) *</label>
               <input
                 type="number"
                 step="0.01"
                 required
                 value={formData.selling_price}
                 onChange={(e) => setFormData({ ...formData, selling_price: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="29.99"
               />
             </div>
@@ -768,29 +768,29 @@ function NewProductModal({
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantité initiale</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Quantité initiale</label>
               <input
                 type="number"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Seuil alerte</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Seuil alerte</label>
               <input
                 type="number"
                 value={formData.min_quantity}
                 onChange={(e) => setFormData({ ...formData, min_quantity: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Unité</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Unité</label>
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
               >
                 <option value="pièce">Pièce</option>
                 <option value="kg">Kilogramme</option>
@@ -804,22 +804,22 @@ function NewProductModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Emplacement</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Emplacement</label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="Rayon A, Étagère 3"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fournisseur</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Fournisseur</label>
               <input
                 type="text"
                 value={formData.supplier}
                 onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="Nom du fournisseur"
               />
             </div>
@@ -829,14 +829,14 @@ function NewProductModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200"
+              className="flex-1 px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-[#004bd9] text-white font-medium rounded-xl hover:bg-[#004bd9]/90 disabled:opacity-50"
             >
               {loading ? 'Création...' : 'Créer le produit'}
             </button>
@@ -898,14 +898,14 @@ function StockMovementModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
+        <div className="p-6 border-b border-[#DDE5EE]">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Mouvement de stock</h2>
-              <p className="text-sm text-gray-500">{productName}</p>
+              <h2 className="text-xl font-bold text-[#03182F]">Mouvement de stock</h2>
+              <p className="text-sm text-[#6B7480]">{productName}</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button onClick={onClose} className="p-2 hover:bg-[#F2F8FF] rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -915,12 +915,12 @@ function StockMovementModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type de mouvement *</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-1">Type de mouvement *</label>
             <select
               required
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
             >
               <option value="purchase">Achat (entrée)</option>
               <option value="sale">Vente (sortie)</option>
@@ -933,47 +933,47 @@ function StockMovementModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Quantité *</label>
               <input
                 type="number"
                 required
                 min="1"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="10"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prix unitaire (€)</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-1">Prix unitaire (€)</label>
               <input
                 type="number"
                 step="0.01"
                 value={formData.unit_price}
                 onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
                 placeholder="15.00"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Référence</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-1">Référence</label>
             <input
               type="text"
               value={formData.reference}
               onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
               placeholder="N° facture, bon de commande..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-1">Notes</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff]"
               rows={2}
               placeholder="Commentaire optionnel..."
             />
@@ -983,14 +983,14 @@ function StockMovementModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200"
+              className="flex-1 px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-[#004bd9] text-white font-medium rounded-xl hover:bg-[#004bd9]/90 disabled:opacity-50"
             >
               {loading ? 'Enregistrement...' : 'Enregistrer'}
             </button>
@@ -1226,19 +1226,19 @@ function ImportModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-[#DDE5EE]">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Importer des produits</h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <h2 className="text-xl font-bold text-[#03182F]">Importer des produits</h2>
+              <p className="text-sm text-[#6B7480] mt-1">
                 {step === 'upload' && 'Étape 1/3 - Sélection du fichier'}
                 {step === 'mapping' && 'Étape 2/3 - Configuration des colonnes'}
                 {step === 'preview' && 'Étape 3/3 - Vérification'}
                 {step === 'result' && 'Import terminé'}
               </p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button onClick={onClose} className="p-2 hover:bg-[#F2F8FF] rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -1250,9 +1250,9 @@ function ImportModal({
             {['upload', 'mapping', 'preview'].map((s, i) => (
               <div key={s} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step === s ? 'bg-emerald-500 text-white' :
-                  ['upload', 'mapping', 'preview'].indexOf(step) > i || step === 'result' ? 'bg-emerald-100 text-emerald-700' :
-                  'bg-gray-100 text-gray-400'
+                  step === s ? 'bg-[#3FA46A]/100 text-white' :
+                  ['upload', 'mapping', 'preview'].indexOf(step) > i || step === 'result' ? 'bg-[#3FA46A]/10 text-emerald-700' :
+                  'bg-[#F2F8FF] text-[#6B7480]'
                 }`}>
                   {i + 1}
                 </div>
@@ -1267,7 +1267,7 @@ function ImportModal({
         <div className="p-6 space-y-6">
           {/* Error */}
           {error && (
-            <div className="bg-red-50 text-red-700 p-4 rounded-xl flex items-center gap-2">
+            <div className="bg-[#FFE7EC] text-red-700 p-4 rounded-xl flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -1278,7 +1278,7 @@ function ImportModal({
           {/* Step 1: File Upload */}
           {step === 'upload' && (
             <>
-              <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-emerald-400 transition-colors">
+              <div className="border-2 border-dashed border-[#DDE5EE] rounded-xl p-8 text-center hover:border-emerald-400 transition-colors">
                 <input
                   type="file"
                   accept=".csv,.json"
@@ -1287,17 +1287,17 @@ function ImportModal({
                   id="file-upload"
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
-                  <svg className="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-12 h-12 mx-auto text-[#6B7480] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  <p className="text-gray-600 mb-2">Cliquez pour sélectionner un fichier</p>
-                  <p className="text-xs text-gray-400">CSV ou JSON</p>
+                  <p className="text-[#30373E] mb-2">Cliquez pour sélectionner un fichier</p>
+                  <p className="text-xs text-[#6B7480]">CSV ou JSON</p>
                 </label>
               </div>
               
-              <div className="bg-blue-50 p-4 rounded-xl">
+              <div className="bg-[#2764FF]/10 p-4 rounded-xl">
                 <h4 className="font-medium text-blue-900 mb-2">Formats acceptés</h4>
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-[#004bd9]">
                   Importez un fichier CSV ou JSON depuis n&apos;importe quelle application. 
                   Vous pourrez ensuite choisir quelle colonne correspond à quel champ.
                 </p>
@@ -1308,24 +1308,24 @@ function ImportModal({
           {/* Step 2: Column Mapping */}
           {step === 'mapping' && (
             <>
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <div className="bg-[#F2F8FF] rounded-xl p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Fichier: {file?.name}</span>
-                  <span className="text-sm text-gray-500">{rawData.length} lignes détectées</span>
+                  <span className="text-sm font-medium text-[#30373E]">Fichier: {file?.name}</span>
+                  <span className="text-sm text-[#6B7480]">{rawData.length} lignes détectées</span>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h3 className="font-medium text-gray-900">Associez les colonnes de votre fichier</h3>
-                <p className="text-sm text-gray-500">Sélectionnez quelle colonne correspond à chaque champ. Seul le nom est obligatoire.</p>
+                <h3 className="font-medium text-[#03182F]">Associez les colonnes de votre fichier</h3>
+                <p className="text-sm text-[#6B7480]">Sélectionnez quelle colonne correspond à chaque champ. Seul le nom est obligatoire.</p>
                 
                 <div className="grid gap-3">
                   {IMPORT_FIELDS.map(field => (
-                    <div key={field.key} className="flex items-center gap-4 bg-white border border-gray-200 rounded-lg p-3">
+                    <div key={field.key} className="flex items-center gap-4 bg-white border border-[#DDE5EE] rounded-lg p-3">
                       <div className="w-40 flex-shrink-0">
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium text-[#30373E]">
                           {field.label}
-                          {field.required && <span className="text-red-500 ml-1">*</span>}
+                          {field.required && <span className="text-[#F22E75] ml-1">*</span>}
                         </span>
                       </div>
                       <div className="flex-1">
@@ -1335,8 +1335,8 @@ function ImportModal({
                             ...columnMapping,
                             [field.key]: e.target.value === '' ? null : parseInt(e.target.value)
                           })}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
-                            field.required && columnMapping[field.key] === null ? 'border-red-300' : 'border-gray-200'
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#2764ff] focus:border-transparent ${
+                            field.required && columnMapping[field.key] === null ? 'border-red-300' : 'border-[#DDE5EE]'
                           }`}
                         >
                           <option value="">-- Ne pas importer --</option>
@@ -1354,13 +1354,13 @@ function ImportModal({
 
               {/* Sample Data Preview */}
               <div className="mt-6">
-                <h3 className="font-medium text-gray-900 mb-2">Aperçu des données brutes (3 premières lignes)</h3>
-                <div className="overflow-x-auto bg-gray-50 rounded-xl">
+                <h3 className="font-medium text-[#03182F] mb-2">Aperçu des données brutes (3 premières lignes)</h3>
+                <div className="overflow-x-auto bg-[#F2F8FF] rounded-xl">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-gray-100">
+                      <tr className="bg-[#F2F8FF]">
                         {headers.map((header, i) => (
-                          <th key={i} className="px-3 py-2 text-left text-gray-600 font-medium whitespace-nowrap">
+                          <th key={i} className="px-3 py-2 text-left text-[#30373E] font-medium whitespace-nowrap">
                             {header}
                           </th>
                         ))}
@@ -1368,9 +1368,9 @@ function ImportModal({
                     </thead>
                     <tbody>
                       {rawData.slice(0, 3).map((row, i) => (
-                        <tr key={i} className="border-t border-gray-200">
+                        <tr key={i} className="border-t border-[#DDE5EE]">
                           {row.map((cell, j) => (
-                            <td key={j} className="px-3 py-2 text-gray-700 whitespace-nowrap max-w-[150px] truncate">
+                            <td key={j} className="px-3 py-2 text-[#30373E] whitespace-nowrap max-w-[150px] truncate">
                               {cell || '-'}
                             </td>
                           ))}
@@ -1385,7 +1385,7 @@ function ImportModal({
                 <button
                   type="button"
                   onClick={() => { setStep('upload'); setFile(null); setHeaders([]); setRawData([]); }}
-                  className="px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200"
+                  className="px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
                 >
                   Retour
                 </button>
@@ -1398,7 +1398,7 @@ function ImportModal({
                       setStep('preview')
                     }
                   }}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600"
+                  className="flex-1 px-4 py-3 bg-[#004bd9] text-white font-medium rounded-xl hover:bg-[#004bd9]/90"
                 >
                   Continuer
                 </button>
@@ -1409,39 +1409,39 @@ function ImportModal({
           {/* Step 3: Preview */}
           {step === 'preview' && (
             <>
-              <div className="bg-emerald-50 p-4 rounded-xl">
+              <div className="bg-[#3FA46A]/10 p-4 rounded-xl">
                 <p className="text-emerald-700">
                   <strong>{buildProducts().length}</strong> produits prêts à être importés
                 </p>
               </div>
 
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Aperçu des produits à importer</h3>
-                <div className="overflow-x-auto bg-gray-50 rounded-xl">
+                <h3 className="font-medium text-[#03182F] mb-2">Aperçu des produits à importer</h3>
+                <div className="overflow-x-auto bg-[#F2F8FF] rounded-xl">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-100">
-                        <th className="px-3 py-2 text-left text-gray-600 font-medium">Nom</th>
-                        <th className="px-3 py-2 text-left text-gray-600 font-medium">SKU</th>
-                        <th className="px-3 py-2 text-left text-gray-600 font-medium">Prix</th>
-                        <th className="px-3 py-2 text-left text-gray-600 font-medium">Qté</th>
-                        <th className="px-3 py-2 text-left text-gray-600 font-medium">Catégorie</th>
+                      <tr className="bg-[#F2F8FF]">
+                        <th className="px-3 py-2 text-left text-[#30373E] font-medium">Nom</th>
+                        <th className="px-3 py-2 text-left text-[#30373E] font-medium">SKU</th>
+                        <th className="px-3 py-2 text-left text-[#30373E] font-medium">Prix</th>
+                        <th className="px-3 py-2 text-left text-[#30373E] font-medium">Qté</th>
+                        <th className="px-3 py-2 text-left text-[#30373E] font-medium">Catégorie</th>
                       </tr>
                     </thead>
                     <tbody>
                       {getPreviewProducts().map((p, i) => (
-                        <tr key={i} className="border-t border-gray-200">
-                          <td className="px-3 py-2 font-medium text-gray-900">{p.name || '-'}</td>
-                          <td className="px-3 py-2 text-gray-600">{p.sku || '-'}</td>
-                          <td className="px-3 py-2 text-gray-600">{p.selling_price || '-'}</td>
-                          <td className="px-3 py-2 text-gray-600">{p.quantity || '0'}</td>
-                          <td className="px-3 py-2 text-gray-600">{p.category || '-'}</td>
+                        <tr key={i} className="border-t border-[#DDE5EE]">
+                          <td className="px-3 py-2 font-medium text-[#03182F]">{p.name || '-'}</td>
+                          <td className="px-3 py-2 text-[#30373E]">{p.sku || '-'}</td>
+                          <td className="px-3 py-2 text-[#30373E]">{p.selling_price || '-'}</td>
+                          <td className="px-3 py-2 text-[#30373E]">{p.quantity || '0'}</td>
+                          <td className="px-3 py-2 text-[#30373E]">{p.category || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                   {buildProducts().length > 5 && (
-                    <p className="text-center text-sm text-gray-500 py-2">
+                    <p className="text-center text-sm text-[#6B7480] py-2">
                       ... et {buildProducts().length - 5} autres produits
                     </p>
                   )}
@@ -1452,14 +1452,14 @@ function ImportModal({
                 <button
                   type="button"
                   onClick={() => setStep('mapping')}
-                  className="px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200"
+                  className="px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
                 >
                   Retour
                 </button>
                 <button
                   onClick={handleImport}
                   disabled={loading}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50"
+                  className="flex-1 px-4 py-3 bg-[#004bd9] text-white font-medium rounded-xl hover:bg-[#004bd9]/90 disabled:opacity-50"
                 >
                   {loading ? 'Import en cours...' : `Importer ${buildProducts().length} produits`}
                 </button>
@@ -1471,16 +1471,16 @@ function ImportModal({
           {step === 'result' && importStats && (
             <>
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-16 h-16 mx-auto mb-4 bg-[#3FA46A]/10 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-[#3FA46A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Import terminé</h3>
-                <p className="text-gray-600">
-                  <strong className="text-emerald-600">{importStats.success}</strong> produits importés avec succès
+                <h3 className="text-xl font-bold text-[#03182F] mb-2">Import terminé</h3>
+                <p className="text-[#30373E]">
+                  <strong className="text-[#3FA46A]">{importStats.success}</strong> produits importés avec succès
                   {importStats.failed > 0 && (
-                    <span className="text-red-600"> · {importStats.failed} échecs</span>
+                    <span className="text-[#F22E75]"> · {importStats.failed} échecs</span>
                   )}
                 </p>
               </div>
@@ -1488,7 +1488,7 @@ function ImportModal({
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600"
+                  className="flex-1 px-4 py-3 bg-[#004bd9] text-white font-medium rounded-xl hover:bg-[#004bd9]/90"
                 >
                   Fermer
                 </button>

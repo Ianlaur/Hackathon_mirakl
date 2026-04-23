@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import MascotOrb from '@/components/MascotOrb'
@@ -15,6 +15,8 @@ const CHUNK_RETRY_WINDOW_MS = 20000
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const shouldHideSidebar = pathname.startsWith('/onboarding')
+  const [sidebarExpanded, setSidebarExpanded] = useState(true)
+  const handleSidebarChange = useCallback((expanded: boolean) => setSidebarExpanded(expanded), [])
 
   useEffect(() => {
     const shouldHandleChunkError = (message: string) =>
@@ -90,8 +92,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <PluginProvider>
       <div className="min-h-screen bg-[#F2F8FF]">
-        {!shouldHideSidebar && <Sidebar />}
-        <main className={`min-h-screen ${shouldHideSidebar ? '' : 'lg:ml-60'}`}>
+        {!shouldHideSidebar && <Sidebar onExpandedChange={handleSidebarChange} />}
+        <main className={`min-h-screen transition-[margin] duration-300 ease-out ${shouldHideSidebar ? '' : sidebarExpanded ? 'lg:ml-60' : 'lg:ml-[68px]'}`}>
           <div className="p-6 max-w-[1440px] mx-auto w-full">{children}</div>
         </main>
         {!shouldHideSidebar && <MascotOrb />}

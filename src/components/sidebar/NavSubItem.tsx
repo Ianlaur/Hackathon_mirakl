@@ -12,8 +12,8 @@ export default function NavSubItem({ item, active }: NavSubItemProps) {
   return (
     <Link
       href={item.href}
-      className={`block rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
-        active ? 'font-semibold text-blue-700' : 'text-slate-500 hover:text-slate-900'
+      className={`block rounded-md py-2 px-3 font-serif text-sm transition-all duration-200 ${
+        active ? 'bg-[#2764FF]/5 font-bold text-[#2764FF]' : 'text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F]'
       }`}
     >
       {item.label}

@@ -25,8 +25,8 @@ export default function SidebarProfile({
           {initialsFromName(name)}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">{name}</p>
-          <p className="truncate text-xs text-slate-500">{role}</p>
+          <p className="truncate text-sm font-semibold text-[#03182F]">{name}</p>
+          <p className="truncate text-xs text-[#6B7480]">{role}</p>
         </div>
       </div>
     </div>

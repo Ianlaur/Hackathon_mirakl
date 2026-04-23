@@ -19,12 +19,12 @@ export default async function ActionsPendingWidget() {
     <div className="dashboard-card overflow-hidden p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Actions en attente</p>
-          <p className="mt-1 text-4xl font-semibold text-slate-950">{totalCount}</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-[#6B7480]">Actions en attente</p>
+          <p className="mt-1 text-4xl font-semibold text-[#03182F]">{totalCount}</p>
         </div>
         <Link
           href="/actions"
-          className="rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+          className="rounded-xl bg-[#2764FF] px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
         >
           {"Ouvrir l'inbox →"}
         </Link>
@@ -35,14 +35,14 @@ export default async function ActionsPendingWidget() {
           {pending.map((r) => (
             <li
               key={r.id}
-              className="truncate rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700"
+              className="truncate rounded-lg bg-slate-50 px-3 py-2 text-sm text-[#30373E]"
             >
               {r.title}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-sm text-slate-500">
+        <p className="mt-4 text-sm text-[#6B7480]">
           {"Tout est à jour. L'agent te préviendra s'il détecte un risque."}
         </p>
       )}

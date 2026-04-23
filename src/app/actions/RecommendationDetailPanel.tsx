@@ -5,7 +5,7 @@ import type { PlanItemDTO, RecommendationDTO } from './types'
 
 const priorityStyles: Record<PlanItemDTO['priority'], string> = {
   critical: 'bg-rose-100 text-rose-700',
-  high: 'bg-amber-100 text-amber-700',
+  high: 'bg-[#E0A93A]/10 text-amber-700',
   medium: 'bg-sky-100 text-sky-700',
 }
 
@@ -79,7 +79,7 @@ export function RecommendationDetailPanel({
 
   if (!payload) {
     return (
-      <p className="text-sm text-slate-500">Pas de détails disponibles pour cette action.</p>
+      <p className="text-sm text-[#6B7480]">Pas de détails disponibles pour cette action.</p>
     )
   }
 
@@ -88,10 +88,10 @@ export function RecommendationDetailPanel({
       <header className="border-b border-slate-200 pb-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
+            <p className="text-xs uppercase tracking-wide text-[#6B7480]">
               Congés détectés{payload.leave_duration_days ? ` • ${payload.leave_duration_days} jours` : ''}
             </p>
-            <h2 className="mt-1 text-xl font-semibold text-slate-900">
+            <h2 className="mt-1 text-xl font-semibold text-[#03182F]">
               {recommendation.title}
             </h2>
           </div>
@@ -102,14 +102,14 @@ export function RecommendationDetailPanel({
             </div>
           )}
         </div>
-        <p className="mt-3 text-sm text-slate-700">{recommendation.reasoning_summary}</p>
+        <p className="mt-3 text-sm text-[#30373E]">{recommendation.reasoning_summary}</p>
         {recommendation.expected_impact && (
           <p className="mt-2 text-xs text-emerald-700">💡 {recommendation.expected_impact}</p>
         )}
       </header>
 
       {(payload.supplementary_notes?.length ?? 0) > 0 && (
-        <div className="mt-4 space-y-1 rounded-xl border border-amber-200 bg-amber-50 p-3">
+        <div className="mt-4 space-y-1 rounded-xl border border-amber-200 bg-[#E0A93A]/10 p-3">
           {(payload.supplementary_notes ?? []).map((n, idx) => (
             <p key={idx} className="text-xs text-amber-900">
               ⚠️ {n}
@@ -120,7 +120,7 @@ export function RecommendationDetailPanel({
 
       <div className="mt-6 flex-1 overflow-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-[#6B7480]">
             <tr>
               <th className="p-3 text-left">☑</th>
               <th className="p-3 text-left">Priorité</th>
@@ -151,22 +151,22 @@ export function RecommendationDetailPanel({
                     {item.priority}
                   </span>
                 </td>
-                <td className="p-3 font-mono text-xs text-slate-700">{item.sku ?? '—'}</td>
-                <td className="p-3 text-slate-900">{item.product_name}</td>
+                <td className="p-3 font-mono text-xs text-[#30373E]">{item.sku ?? '—'}</td>
+                <td className="p-3 text-[#03182F]">{item.product_name}</td>
                 <td className="p-3 text-right tabular-nums">{item.current_stock}</td>
                 <td
                   className={`p-3 text-right tabular-nums ${
                     item.projected_stock_end_of_leave < 0
                       ? 'text-rose-700 font-medium'
-                      : 'text-slate-700'
+                      : 'text-[#30373E]'
                   }`}
                 >
                   {item.projected_stock_end_of_leave}
                 </td>
-                <td className="p-3 text-right tabular-nums font-semibold text-slate-900">
+                <td className="p-3 text-right tabular-nums font-semibold text-[#03182F]">
                   +{item.recommended_qty}
                 </td>
-                <td className="p-3 text-xs text-slate-700">{item.supplier ?? '—'}</td>
+                <td className="p-3 text-xs text-[#30373E]">{item.supplier ?? '—'}</td>
                 <td className="p-3 text-right tabular-nums">
                   {typeof item.estimated_cost_eur === 'number' ? `${item.estimated_cost_eur.toFixed(2)} €` : '—'}
                 </td>
@@ -180,16 +180,16 @@ export function RecommendationDetailPanel({
         <footer className="mt-6 border-t border-slate-200 pt-4">
           {error && <p className="mb-3 text-sm text-rose-700">{error}</p>}
           <div className="flex items-center justify-between">
-            <div className="text-sm text-slate-600">
+            <div className="text-sm text-[#6B7480]">
               {selectedItems.length}/{items.length} lignes sélectionnées •{' '}
-              <strong className="text-slate-900">{selectedCost.toFixed(2)} €</strong>
+              <strong className="text-[#03182F]">{selectedCost.toFixed(2)} €</strong>
             </div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => submit('reject')}
                 disabled={busy}
-                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="rounded-xl border border-[#BFCBDA] bg-white px-4 py-2 text-sm font-medium text-[#30373E] hover:bg-slate-50 disabled:opacity-50"
               >
                 Rejeter
               </button>
@@ -197,7 +197,7 @@ export function RecommendationDetailPanel({
                 type="button"
                 onClick={() => submit('approve')}
                 disabled={busy || selectedItems.length === 0}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-xl bg-[#2764FF] px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
               >
                 Approuver la sélection
               </button>

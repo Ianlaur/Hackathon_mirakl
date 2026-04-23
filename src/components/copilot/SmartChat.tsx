@@ -125,10 +125,10 @@ export default function SmartChat() {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
+    <section className="rounded-lg border border-slate-200 bg-white p-5">
       <header>
-        <h2 className="text-lg font-semibold text-slate-900">Copilot Mira</h2>
-        <p className="mt-1 text-sm text-slate-600">
+        <h2 className="text-lg font-semibold text-[#03182F]">Copilot Mira</h2>
+        <p className="mt-1 text-sm text-[#6B7480]">
           Posez une question ou choisissez-en une ci-dessous.
         </p>
       </header>
@@ -146,7 +146,7 @@ export default function SmartChat() {
 
       <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-4">
         {messages.length === 0 ? (
-          <p className="text-sm text-slate-500">Choisissez une question pour demarrer avec Copilot Mira.</p>
+          <p className="text-sm text-[#6B7480]">Choisissez une question pour demarrer avec Copilot Mira.</p>
         ) : (
           messages.map((message) => (
             <div
@@ -158,12 +158,12 @@ export default function SmartChat() {
                   className={`rounded-xl px-3 py-2 text-sm leading-6 ${
                     message.role === 'user'
                       ? 'bg-slate-900 text-white'
-                      : 'border border-slate-200 bg-white text-slate-700'
+                      : 'border border-slate-200 bg-white text-[#30373E]'
                   }`}
                 >
                   {message.content}
                 </p>
-                <p className="text-[11px] text-slate-400">{formatTime(message.createdAt)}</p>
+                <p className="text-[11px] text-[#6B7480]">{formatTime(message.createdAt)}</p>
               </div>
             </div>
           ))
@@ -176,7 +176,7 @@ export default function SmartChat() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="Posez votre question a Copilot Mira..."
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-400"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-[#30373E] outline-none placeholder:text-[#6B7480] focus:border-slate-400"
           />
           <button
             type="submit"

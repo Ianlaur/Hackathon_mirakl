@@ -1,129 +1,132 @@
-# MIRAKL CONNECT — Design System & Rules
+# Mirakl Branding Guidelines
 
-## Brand Identity
-- Name: **MIRAKL CONNECT**
-- Sub-label: **Operations**
-- Font stack: **Noto Serif** (headings, body, labels, cards), **JetBrains Mono** (data, monospace values)
+Apply Mirakl's official branding guidelines to any design output. Use this skill whenever
+creating or styling any visual content — including UI components, dashboards, data tables,
+KPI cards, reports, timelines, mockups, or any other design artifact that should follow
+Mirakl's visual identity.
+
+## Core Principles
+
+- **Always** use Roboto Serif as the font family (titles, subtitles, body text)
+- **Always** use the official color palette — no invented or approximated colors
+- Aim for a **premium, trustworthy, minimalistic enterprise look**
+- Use accent colors **strategically** to highlight key insights
+- Follow **accessibility & readability** best practices
+- Do **not** overuse secondary colors — they support, never replace, primary
+
+---
+
+## Typography
+
+| Level | Size  | Line Height | Weight  | Color   | Padding Bottom |
+|-------|-------|-------------|---------|---------|----------------|
+| H1    | 22px  | 32px        | 700     | #03182F | 24px           |
+| H2    | 18px  | 28px        | 700     | #03182F | 16px           |
+| H3    | 16px  | 26px        | 700     | #03182F | 12px           |
+| H4    | 14px  | 24px        | 700     | #03182F | 4px            |
+| H5    | 14px  | 24px        | 400     | #03182F | 4px            |
+
+**Body text**: Roboto Serif, weight 400, color `#03182F` (dark blue) or `#30373E` (dark grey)
+
+**Monospace data**: JetBrains Mono for order IDs, timestamps, data values
+
+---
 
 ## Color Palette
 
-### Primary
-- `primary`: #004bd9
-- `primary-container`: #2764ff (buttons, active states, accents)
-- `on-primary`: #ffffff
+### Primary (dominant — always used)
+| Token               | Hex       | Usage                                      |
+|---------------------|-----------|--------------------------------------------|
+| Primary Dark        | `#03182F` | Headers, titles, primary text              |
+| Primary Accent      | `#2764FF` | KPIs, icons, emphasis, highlights          |
+| Primary Background  | `#F2F8FF` | Light backgrounds, card fills              |
 
-### Secondary / Urgent
-- `secondary`: #b70051
-- `urgent`: #F22E75
-- `urgent-soft`: #FFE7EC
-- `error`: #ba1a1a
+### Secondary (sparingly — supports primary)
+| Token                  | Hex       | Usage                         |
+|------------------------|-----------|-------------------------------|
+| Secondary Dark         | `#770031` | Subtle emphasis only          |
+| Secondary Accent       | `#F22E75` | Alerts, badges, highlights    |
+| Secondary Background   | `#FFE7EC` | Soft backgrounds, tags        |
 
-### Surfaces
-- `background`: #F2F8FF (page background)
-- `surface`: #faf8ff
-- `surface-raised`: #FFFFFF (cards, panels)
-- `surface-container`: #ededfa
-- `surface-container-low`: #f3f2ff
-- `surface-container-high`: #e7e7f4
+### Status Colors
+| Token | Hex       | Usage              |
+|-------|-----------|--------------------|
+| OK    | `#3FA46A` | Success, fulfilled |
+| Warn  | `#E0A93A` | Warning states     |
+| Error | `#ba1a1a` | Error states       |
 
-### Text
-- `on-surface`: #191b24 (primary text)
-- `on-background`: #191b24
-- `ink`: #03182F (dark elements like chat bar)
-- `foreground-muted`: #30373E
-- `foreground-subtle`: #6B7480
+### Borders & Surfaces
+| Token          | Hex       | Usage                    |
+|----------------|-----------|--------------------------|
+| Border         | `#DDE5EE` | Default borders          |
+| Border Strong  | `#BFCBDA` | Emphasized borders       |
+| Subtle Text    | `#6B7480` | Captions, secondary text |
+| Muted Text     | `#30373E` | Body text alternative    |
 
-### Borders
-- `border`: #DDE5EE (default borders)
-- `border-strong`: #BFCBDA (emphasized borders)
-- `outline`: #737687
-- `outline-variant`: #c3c5d8
+---
 
-### Status
-- `ok`: #3FA46A (success, fulfilled)
-- `warn`: #E0A93A (warning)
-- `error`: #ba1a1a (error)
-- `urgent`: #F22E75 (risk, critical)
-
-## Border Radius
-- Default: `0.125rem` (2px) — sharp, editorial feel
-- `rounded-lg`: `0.25rem` (4px)
-- `rounded-xl`: `0.5rem` (8px)
-- `rounded-full`: `0.75rem` (12px) — pills, badges
-- Exception: chat bar uses `rounded-full` (fully round)
-
-## Typography Classes
-- `font-h1` / `font-h2`: Noto Serif, bold, tracking-tight
-- `font-body`: Noto Serif, regular
-- `font-label-caps`: Noto Serif, uppercase, small, tracking-wide — used for section labels
-- `font-card-title`: Noto Serif, medium weight
-- `font-caption`: Noto Serif, small, subtle color
-- `font-kpi-value`: Noto Serif, large/bold — KPI numbers
-- `font-mono-data`: JetBrains Mono — order IDs, timestamps, data values
-
-## Component Patterns
-
-### Sidebar (SideNavBar)
-- Fixed left, `w-60`, white background, `border-r border-slate-100`
-- Logo: "MIRAKL CONNECT" in `text-xl font-black tracking-widest`
-- Sub-label: uppercase, `text-xs text-slate-400`
-- Nav items: `mx-2 px-3 py-2`, flex with icon + label
-- Active: `bg-slate-50 text-primary-container border border-slate-200 rounded-md`
-- Inactive: `text-slate-500`, hover → `bg-slate-50 text-slate-900`
-- Icons: Material Symbols Outlined, weight 300, size 20px
-
-### Top Bar
-- `h-14`, white, `border-b border-slate-100`, sticky top
-- Brand name left, user info + avatar right
+## Layout & Components
 
 ### Cards
-- `bg-surface-raised border border-border p-6`
-- No shadow by default — rely on border
-- Section label: uppercase `font-label-caps text-foreground-subtle`
-- KPI value: `font-kpi-value text-on-surface` (large)
-- Delta/change: `text-ok italic text-sm` or colored accordingly
+- `border-radius: 8px`
+- Box shadow: `0 1px 4px rgba(0,0,0,0.1)` (subtle) or `0 2px 8px rgba(0,0,0,0.12)` (medium)
+- Background options: `#03182F` (dark), `#F2F8FF` (light), `#FFFFFF` (white)
+- Title: Roboto Serif, bold, `#03182F`
+- Border: `#DDE5EE`
 
-### Tables
-- Container: `bg-surface-raised border border-border`
-- Header row: `bg-surface-container-low`, uppercase labels
-- Cells: `px-6 py-4`
-- Row hover: `hover:bg-surface-container-lowest`
-- Status badges: `px-2 py-0.5 rounded-full text-[11px] font-bold`
-  - Fulfilled: `text-ok bg-ok/10`
-  - Processing: `text-primary-container bg-primary-container/10`
-  - Risk: `text-urgent bg-urgent-soft`
+### Spacing Scale
+| Token    | Value |
+|----------|-------|
+| xs       | 8px   |
+| sm       | 16px  |
+| md       | 24px  |
+| lg       | 32px  |
+| xl       | 48px  |
+| xxl      | 64px  |
+| generous | 96px  |
 
-### Decision Cards
-- Same card pattern with colored label (urgent or primary)
-- Icon top-right matching label color
-- Two buttons: primary (`bg-primary-container text-white`) + secondary (`border border-border-strong`)
+Use generous spacing between elements. Do not clutter. Whitespace creates structure.
 
-### AI Chat Bar
-- `bg-ink rounded-full py-3 px-6`
-- Dark bar, white text, subtle border `border-white/10`
-- Icon: `text-primary-container`
-- Submit button: `bg-primary-container text-white rounded-full`
+### Sidebar
+- Fixed left, width 240px, white background
+- Border right: `border-slate-100`
+- Logo: "MIRAKL CONNECT" in Roboto Serif, bold, tracking-widest
+- Active nav item: `bg-slate-50 text-[#2764FF] border border-slate-200`
+- Inactive: `text-slate-500 hover:bg-slate-50 hover:text-slate-900`
+
+### Buttons
+- Primary: `bg-[#2764FF] text-white` or `bg-[#004bd9] text-white`
+- Secondary: `border border-[#BFCBDA] text-[#30373E]`
+- Danger: `bg-[#ba1a1a] text-white` or `bg-[#F22E75] text-white`
+- Success: `bg-[#3FA46A] text-white`
 
 ### Status Badges
-- Pill shape: `rounded-full px-2 py-0.5 text-[11px] font-bold font-serif`
-- Colors match status (ok, primary, urgent, warn)
+- Pill shape: `rounded-full px-2 py-0.5 text-[11px] font-bold`
+- OK: `bg-[#3FA46A]/10 text-[#3FA46A]`
+- Urgent: `bg-[#FFE7EC] text-[#F22E75]`
+- Processing: `bg-[#2764FF]/10 text-[#2764FF]`
 
-## Layout Rules
-- Max content width: `max-w-[1440px] mx-auto`
-- Page padding: `p-6`
-- Grid gaps: `gap-6`
-- Section spacing: `space-y-6`
-- Sidebar width: `w-60` (240px), main content: `ml-60`
+### Label Caps Pattern
+- `font-serif text-[10px] font-bold tracking-[0.1em] uppercase`
+- Color: `#6B7480` or `#30373E`
 
-## Interaction Patterns
-- Hover transitions: `transition-all duration-200 ease-in-out`
-- Focus rings: `focus-within:ring-2 focus-within:ring-primary-container/20`
-- Button hover: darken or `hover:bg-slate-50`
+---
 
-## General Rules
-- Use Noto Serif everywhere except data/mono values
-- Keep the editorial, clean, serif-first aesthetic
-- Borders over shadows — flat design with subtle depth
-- Status colors are semantic: green=ok, blue=info, pink/red=urgent
-- Uppercase labels for section headers with wide tracking
-- Material Symbols Outlined for all icons (weight 300)
+## Applying the Guidelines
+
+1. **Set the font**: Import `Roboto Serif` from Google Fonts. Declare `font-family: 'Roboto Serif', serif`.
+2. **Build hierarchy**: Use H1–H5 rules strictly. Never invent font sizes.
+3. **Color with intent**: Primary palette dominates. Accent blue (`#2764FF`) for KPIs and highlights. Secondary palette only for nuance.
+4. **Space generously**: Use the spacing scale. Prefer `md` (24px) as default padding.
+5. **Compose with cards**: Default card style is white background, 8px radius, subtle shadow.
+6. **Check contrast**: All text must be legible. Dark text on light backgrounds, light text on dark backgrounds.
+
+---
+
+## Forbidden
+
+- No new or invented colors
+- No custom or non-approved fonts
+- No approximations of the color palette
+- No altered or generated Mirakl logos
+- No overuse of secondary colors
