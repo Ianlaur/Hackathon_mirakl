@@ -16,7 +16,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
     },
     { id: 'calendar', label: 'Calendar', icon: 'Calendar', href: '/calendar' },
     { id: 'leia', label: 'Leia', icon: 'Bot', href: '/actions' },
-    { id: 'orders', label: 'Orders', icon: 'ShoppingCart', href: '/dashboard' },
+    { id: 'orders', label: 'Orders', icon: 'ShoppingCart', href: '/orders' },
     { id: 'stock', label: 'Stock', icon: 'Package', href: '/stock' },
     { id: 'lost', label: 'Losses', icon: 'AlertTriangle', href: '/losses' },
   ],
