@@ -837,12 +837,12 @@ export default function CalendarPageClient() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="space-y-6">
       <section className="dashboard-card p-5 sm:p-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-700">Planning opérationnel</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Calendrier</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Planning opérationnel</p>
+          <h1 className="mt-2 font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Calendrier</h1>
+          <p className="mt-2 max-w-2xl text-sm text-[#6B7480]">
             Suivez les congés, jours fériés et temps forts commerce qui peuvent impacter vos ventes, stocks et
             livraisons.
           </p>
@@ -868,11 +868,11 @@ export default function CalendarPageClient() {
 
       <section className="dashboard-card p-5 sm:p-6">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-sm font-semibold text-slate-950">Prochains événements</p>
-          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100/80 p-0.5">
+          <p className="font-serif text-base font-bold text-[#03182F]">Prochains événements</p>
+          <div className="inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
             {[{ v: 30, l: '30 jours' }, { v: 90, l: '3 mois' }, { v: 180, l: '6 mois' }].map((o) => (
               <button key={o.v} type="button" onClick={() => setTlRange(o.v)}
-                className={`rounded-md px-3 py-1 text-xs font-medium transition ${tlRange === o.v ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`rounded-md px-3 py-1 font-serif text-[13px] font-medium transition ${tlRange === o.v ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
               >{o.l}</button>
             ))}
           </div>
@@ -903,8 +903,8 @@ export default function CalendarPageClient() {
                   onClick={() => { setDetailEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
                   <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} /></div>
                   <div className="mt-1 -translate-x-1/2 w-28">
-                    <p className="text-xs font-semibold text-slate-900 truncate">{evt.title}</p>
-                    <p className="text-[11px] text-slate-400 capitalize">{sd(evt.startDate)}</p>
+                    <p className="font-serif text-xs font-bold text-[#03182F] truncate">{evt.title}</p>
+                    <p className="font-serif text-[11px] text-[#6B7480] capitalize">{sd(evt.startDate)}</p>
                   </div>
                 </div>
               ) })}
@@ -916,10 +916,10 @@ export default function CalendarPageClient() {
 
       <div>
         <section className="dashboard-card overflow-hidden p-4 sm:p-5">
-          <div className="mb-4 inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1">
+          <div className="mb-4 inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
             {[{ value: 'day' as CalendarView, label: 'Jour' }, { value: 'week' as CalendarView, label: 'Semaine' }, { value: 'month' as CalendarView, label: 'Mois' }].map((o) => (
               <button key={o.value} type="button" onClick={() => setCalendarView(o.value)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${calendarView === o.value ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`rounded-md px-4 py-2 font-serif text-[13px] font-medium transition ${calendarView === o.value ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
               >{o.label}</button>
             ))}
           </div>
@@ -936,7 +936,7 @@ export default function CalendarPageClient() {
               )}
             </button>
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold capitalize text-slate-950 sm:text-2xl">
+              <h2 className="font-serif text-lg font-bold capitalize text-[#03182F] sm:text-xl">
                 {calendarView === 'month' && monthLabel(activeMonth)}
                 {calendarView === 'week' && `Semaine du ${parseDateKey(activeWeekStart).getDate()} ${new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(parseDateKey(activeWeekStart))}`}
                 {calendarView === 'day' && new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(parseDateKey(selectedDate))}
@@ -1248,7 +1248,7 @@ export default function CalendarPageClient() {
             {counts.map((kind) => (
               <div key={kind.value} className="flex items-center gap-1.5">
                 <span className={`h-2 w-2 rounded-full ${kind.color}`} />
-                <span className="text-xs text-slate-500">{kind.label}</span>
+                <span className="font-serif text-[12px] text-[#6B7480]">{kind.label}</span>
               </div>
             ))}
           </div>
@@ -1258,31 +1258,31 @@ export default function CalendarPageClient() {
 
       {detailEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setDetailEventId(null)}>
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl bg-white border border-[#DDE5EE] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className={`h-3.5 w-3.5 rounded-full ${getKindStyle(detailEvent.kind).color}`} />
-                <h3 className="text-lg font-semibold text-slate-950">{detailEvent.title}</h3>
+                <h3 className="font-serif text-lg font-bold text-[#03182F]">{detailEvent.title}</h3>
               </div>
-              <button type="button" onClick={() => setDetailEventId(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+              <button type="button" onClick={() => setDetailEventId(null)} className="rounded-lg p-1.5 text-[#6B7480] hover:bg-slate-50 hover:text-[#03182F] transition">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             <div className="mt-4 space-y-3">
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              <div className="flex items-center gap-2 font-serif text-sm text-[#30373E]">
+                <svg className="h-4 w-4 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 <span>{formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}</span>
                 {detailEvent.startTime && (
-                  <span className="text-slate-400">{detailEvent.startTime}{detailEvent.endTime ? ` - ${detailEvent.endTime}` : ''}</span>
+                  <span className="text-[#6B7480]">{detailEvent.startTime}{detailEvent.endTime ? ` - ${detailEvent.endTime}` : ''}</span>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getKindStyle(detailEvent.kind).chip}`}>{getKindStyle(detailEvent.kind).label}</span>
-                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${impactLabels[detailEvent.impact].chip}`}>Impact {impactLabels[detailEvent.impact].label.toLowerCase()}</span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{detailEvent.zone}</span>
+                <span className={`rounded-full px-2.5 py-1 font-serif text-[11px] font-bold ${getKindStyle(detailEvent.kind).chip}`}>{getKindStyle(detailEvent.kind).label}</span>
+                <span className={`rounded-full px-2.5 py-1 font-serif text-[11px] font-bold ${impactLabels[detailEvent.impact].chip}`}>Impact {impactLabels[detailEvent.impact].label.toLowerCase()}</span>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 font-serif text-[11px] font-bold text-[#30373E]">{detailEvent.zone}</span>
               </div>
               {detailEvent.notes && (
-                <p className="rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-600">{detailEvent.notes}</p>
+                <p className="rounded-lg bg-[#F2F8FF] border border-[#DDE5EE] px-3 py-2.5 font-serif text-[13px] leading-6 text-[#30373E]">{detailEvent.notes}</p>
               )}
             </div>
           </div>
