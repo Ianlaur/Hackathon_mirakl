@@ -7,7 +7,12 @@ import ShipmentTooltip from '@/components/map/ShipmentTooltip'
 import TrackerToolbar from '@/components/map/TrackerToolbar'
 import { useShipmentLayers } from '@/hooks/useShipmentLayers'
 import { mockShipments } from '@/lib/mockShipments'
-import { MAP_STYLE_URL, aggregatePorts, midpointCoordinates } from '@/lib/shipmentUtils'
+import {
+  MAP_STYLE_DARK_URL,
+  MAP_STYLE_LIGHT_URL,
+  aggregatePorts,
+  midpointCoordinates,
+} from '@/lib/shipmentUtils'
 import type { PortCluster, Shipment, ShipmentStatus } from '@/types/shipment'
 
 interface GlobalShipmentTrackerProps {
@@ -15,6 +20,7 @@ interface GlobalShipmentTrackerProps {
   selectedShipmentId?: string
   onShipmentSelect?: (id: string) => void
   height?: number | string
+  mapTheme?: 'dark' | 'light'
 }
 
 const INITIAL_MAP_VIEW_STATE: MapViewState = {
@@ -52,6 +58,7 @@ export default function GlobalShipmentTracker({
   selectedShipmentId,
   onShipmentSelect,
   height = 340,
+  mapTheme = 'dark',
 }: GlobalShipmentTrackerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const animationFrameRef = useRef<number | null>(null)
@@ -69,6 +76,7 @@ export default function GlobalShipmentTracker({
 
   const baseShipments = shipments && shipments.length > 0 ? shipments : mockShipments
   const resolvedSelectedId = selectedShipmentId ?? internalSelectedId
+  const mapStyle = mapTheme === 'light' ? MAP_STYLE_LIGHT_URL : MAP_STYLE_DARK_URL
 
   const enrichedShipments = useMemo(
     () =>
@@ -255,14 +263,18 @@ export default function GlobalShipmentTracker({
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden rounded-xl border border-slate-700/70 bg-slate-900"
+      className={`relative overflow-hidden rounded-xl border ${
+        mapTheme === 'dark'
+          ? 'border-slate-700/70 bg-slate-900'
+          : 'border-slate-300 bg-[#EEF3FB]'
+      }`}
       style={{ height: resolvedHeight }}
     >
       <div className="absolute inset-0">
         <MapCanvas
           viewState={mapViewState}
           onViewStateChange={setMapViewState}
-          mapStyle={MAP_STYLE_URL}
+          mapStyle={mapStyle}
           layers={layers}
           onHover={handleHover}
           onClick={handleArcClick}

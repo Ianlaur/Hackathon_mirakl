@@ -1,8 +1,18 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { Send, Mic, Loader2 } from 'lucide-react'
 import { useAudioRecorder } from '@/components/useAudioRecorder'
+import { usePluginContext } from '@/contexts/PluginContext'
+
+const GlobalShipmentTracker = dynamic(
+  () => import('@/components/map/GlobalShipmentTracker'),
+  {
+    ssr: false,
+    loading: () => <div className="h-[380px] animate-pulse rounded-xl bg-slate-900/80" />,
+  }
+)
 
 const orders = [
   { id: 'MK-8829-X', marketplace: 'Amazon US', icon: '🛒', value: '$249.00', status: 'FULFILLED', statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10', time: '14:22:05' },
@@ -21,11 +31,13 @@ type DashboardChatMessage = {
 export default function DashboardPage() {
   const [query, setQuery] = useState('')
   const [transcribing, setTranscribing] = useState(false)
+  const [mapTheme, setMapTheme] = useState<'dark' | 'light'>('dark')
   const [sending, setSending] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<DashboardChatMessage[]>([])
   const recorder = useAudioRecorder()
+  const { isProPluginActive } = usePluginContext()
   const recording = recorder.state === 'recording'
   const starting = recorder.state === 'requesting'
 
@@ -255,6 +267,57 @@ export default function DashboardPage() {
             <div className="flex-1 bg-[#3FA46A] h-10 rounded-sm" />
           </div>
         </div>
+      </div>
+
+      {/* Global Map Card with plugin logic */}
+      <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+        <div className="p-6 border-b border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-lg font-bold text-[#03182F]">Global Shipment Map Pro</h2>
+            <p className="font-serif text-[13px] text-[#6B7480] mt-1">
+              Active en mode plugin complex. Masquée en mode basic.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center rounded-full border border-[#DDE5EE] bg-[#F2F8FF] p-1">
+            <button
+              type="button"
+              onClick={() => setMapTheme('light')}
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                mapTheme === 'light'
+                  ? 'bg-white text-[#03182F] shadow-sm'
+                  : 'text-[#6B7480] hover:text-[#30373E]'
+              }`}
+            >
+              Clair
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapTheme('dark')}
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                mapTheme === 'dark'
+                  ? 'bg-[#03182F] text-white shadow-sm'
+                  : 'text-[#6B7480] hover:text-[#30373E]'
+              }`}
+            >
+              Sombre
+            </button>
+          </div>
+        </div>
+
+        {isProPluginActive ? (
+          <div className={`p-4 ${mapTheme === 'dark' ? 'bg-[#0B1020]' : 'bg-[#EEF3FB]'}`}>
+            <GlobalShipmentTracker height={380} mapTheme={mapTheme} />
+          </div>
+        ) : (
+          <div className="p-6">
+            <div className="rounded-lg border border-dashed border-[#DDE5EE] bg-[#F2F8FF] p-5">
+              <p className="font-serif text-[14px] text-[#30373E]">
+                La carte est désactivée en mode basic. Passe en plugin complex pour l’afficher.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Orders Table */}
