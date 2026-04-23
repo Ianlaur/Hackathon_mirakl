@@ -197,6 +197,69 @@ export const READ_TOOLS: OpenAITool[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'query_marketplace_proposals',
+      description:
+        "Liste les opportunités d'intégration marketplace (table marketplace_proposals, alimentées par Mirakl Connect). Retourne nom, catégorie, match_score, risk_signal, statut, et la checklist de requirements. Utile pour 'Quelle proposition devrais-je accepter ?' ou 'Où en est l'intégration Darty ?'.",
+      parameters: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', description: 'pending | accepted | declined. Défaut: toutes.' },
+          limit: { type: 'number', description: 'Nombre max de lignes (défaut 10, max 50).' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'query_marketplace_dialogues',
+      description:
+        "Conversations actives avec les marketplaces (table marketplace_dialogues + marketplace_messages). Pour chaque dialogue: dernier message, compteur non-lus, derniers messages du fil. Utile pour 'Qu'a dit Darty dernièrement ?' ou 'Quelles conversations sont en attente ?'.",
+      parameters: {
+        type: 'object',
+        properties: {
+          counterpart_name: { type: 'string', description: 'Filtre partiel sur le nom du partenaire, ex: Darty.' },
+          limit: { type: 'number', description: 'Nombre max de dialogues (défaut 5, max 20).' },
+          include_messages: { type: 'boolean', description: 'Si true, inclut les 10 derniers messages par dialogue. Défaut false.' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'query_financial_snapshot',
+      description:
+        "Snapshots financiers (CA, marge, cash flow, créances, dettes) agrégés ou par source. Table financial_snapshots seedée pour la vision produit. Utile pour 'Comment va le cash flow ce mois ?', 'Quel est mon CA 2026 vs 2025 ?', 'Combien ai-je en créances en retard ?'.",
+      parameters: {
+        type: 'object',
+        properties: {
+          period_type: { type: 'string', description: 'month | year. Défaut: retourne les deux plus récents.' },
+          source: { type: 'string', description: 'aggregate (défaut) | amazon | shopify | canal spécifique.' },
+          limit: { type: 'number', description: 'Nombre max de snapshots (défaut 6).' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'query_marketing_analytics',
+      description:
+        "Trafic et taux de conversion quotidiens par canal (table marketing_analytics). Retourne visits, sessions, orders, sales, conversion_pct. Calcule automatiquement un delta vs la période précédente. Utile pour 'Comment évoluent mes visites ?', 'Quel canal convertit le mieux cette semaine ?', 'Pourquoi mon CR est tombé à 0 ?'.",
+      parameters: {
+        type: 'object',
+        properties: {
+          channel: { type: 'string', description: "Canal (all, amazon_fr, etc.). Défaut: 'all'." },
+          period_days: { type: 'number', description: 'Fenêtre en jours depuis aujourd\'hui. Défaut 7.' },
+          include_daily: { type: 'boolean', description: 'Si true, renvoie la série jour par jour. Défaut false.' },
+        },
+      },
+    },
+  },
 ]
 
 type Args = Record<string, any>
@@ -598,6 +661,193 @@ export async function executeReadTool(
     case 'compare_channels': return compareChannels(ctx, args)
     case 'get_top_products': return getTopProducts(ctx, args)
     case 'get_seasonal_patterns': return getSeasonalPatterns(ctx, args)
+    case 'query_marketplace_proposals': return queryMarketplaceProposals(ctx, args)
+    case 'query_marketplace_dialogues': return queryMarketplaceDialogues(ctx, args)
+    case 'query_financial_snapshot': return queryFinancialSnapshot(ctx, args)
+    case 'query_marketing_analytics': return queryMarketingAnalytics(ctx, args)
     default: throw new Error(`Unknown read tool: ${name}`)
+  }
+}
+
+// BigInt doesn't round-trip through JSON.stringify by default. Convert at serialization boundary.
+function bigintToNumber(n: bigint): number {
+  return Number(n)
+}
+
+async function queryMarketplaceProposals(ctx: ReadToolContext, a: Args) {
+  const limit = Math.min(Number(a.limit) || 10, 50)
+  const rows = await ctx.prisma.marketplaceProposal.findMany({
+    where: {
+      user_id: ctx.userId,
+      ...(a.status ? { status: String(a.status) } : {}),
+    },
+    orderBy: [{ status: 'asc' }, { created_at: 'desc' }],
+    take: limit,
+    include: { requirements: { orderBy: { position: 'asc' } } },
+  })
+  return {
+    count: rows.length,
+    proposals: rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      status: r.status,
+      daily_users: r.daily_users,
+      last_year_revenue: r.last_year_revenue,
+      match_score: r.match_score,
+      risk_signal: r.risk_signal,
+      source: r.source,
+      decided_at: r.decided_at?.toISOString() ?? null,
+      about: r.about,
+      requirements: r.requirements.map((req) => ({
+        label: req.label,
+        status: req.status,
+      })),
+    })),
+  }
+}
+
+async function queryMarketplaceDialogues(ctx: ReadToolContext, a: Args) {
+  const limit = Math.min(Number(a.limit) || 5, 20)
+  const includeMessages = a.include_messages === true
+  const rows = await ctx.prisma.marketplaceDialogue.findMany({
+    where: {
+      user_id: ctx.userId,
+      ...(a.counterpart_name
+        ? { counterpart_name: { contains: String(a.counterpart_name), mode: 'insensitive' as const } }
+        : {}),
+    },
+    orderBy: [{ last_message_at: 'desc' }, { created_at: 'desc' }],
+    take: limit,
+    include: includeMessages
+      ? { messages: { orderBy: { created_at: 'desc' }, take: 10 } }
+      : undefined,
+  })
+  return {
+    count: rows.length,
+    dialogues: rows.map((d) => ({
+      id: d.id,
+      counterpart_name: d.counterpart_name,
+      status: d.status,
+      last_message_preview: d.last_message_preview,
+      last_message_at: d.last_message_at?.toISOString() ?? null,
+      unread_count: d.unread_count,
+      messages: includeMessages
+        ? ('messages' in d ? (d.messages as Array<{ sender: string; body: string; autopilot: boolean; created_at: Date }>).map((m) => ({
+            sender: m.sender,
+            body: m.body,
+            autopilot: m.autopilot,
+            created_at: m.created_at.toISOString(),
+          })).reverse() : [])
+        : undefined,
+    })),
+  }
+}
+
+async function queryFinancialSnapshot(ctx: ReadToolContext, a: Args) {
+  const limit = Math.min(Number(a.limit) || 6, 24)
+  const source = a.source ? String(a.source) : 'aggregate'
+  const rows = await ctx.prisma.financialSnapshot.findMany({
+    where: {
+      user_id: ctx.userId,
+      source,
+      ...(a.period_type ? { period_type: String(a.period_type) } : {}),
+    },
+    orderBy: { period_end: 'desc' },
+    take: limit,
+  })
+  return {
+    count: rows.length,
+    source,
+    snapshots: rows.map((r) => {
+      const previous = r.previous_period_revenue_cents ? bigintToNumber(r.previous_period_revenue_cents) : null
+      const current = bigintToNumber(r.revenue_cents)
+      const growth_pct = previous && previous > 0 ? Number((((current - previous) / previous) * 100).toFixed(1)) : null
+      return {
+        period_type: r.period_type,
+        period_start: r.period_start.toISOString().slice(0, 10),
+        period_end: r.period_end.toISOString().slice(0, 10),
+        source: r.source,
+        revenue_eur: bigintToNumber(r.revenue_cents) / 100,
+        cost_eur: bigintToNumber(r.cost_cents) / 100,
+        margin_eur: bigintToNumber(r.margin_cents) / 100,
+        margin_pct: r.margin_pct ? Number(r.margin_pct) : null,
+        cashflow_in_eur: bigintToNumber(r.cashflow_in_cents) / 100,
+        cashflow_out_eur: bigintToNumber(r.cashflow_out_cents) / 100,
+        net_cashflow_eur:
+          (bigintToNumber(r.cashflow_in_cents) - bigintToNumber(r.cashflow_out_cents)) / 100,
+        receivables_eur: bigintToNumber(r.receivables_cents) / 100,
+        payables_eur: bigintToNumber(r.payables_cents) / 100,
+        overdue_receivables_eur: bigintToNumber(r.overdue_receivables_cents) / 100,
+        overdue_payables_eur: bigintToNumber(r.overdue_payables_cents) / 100,
+        previous_revenue_eur: previous !== null ? previous / 100 : null,
+        growth_pct,
+        notes: r.notes,
+      }
+    }),
+  }
+}
+
+async function queryMarketingAnalytics(ctx: ReadToolContext, a: Args) {
+  const channel = a.channel ? String(a.channel) : 'all'
+  const periodDays = Math.min(Number(a.period_days) || 7, 60)
+  const includeDaily = a.include_daily === true
+
+  const now = new Date()
+  const sinceCurrent = new Date(now.getTime() - periodDays * 24 * 3600_000)
+  const sincePrev = new Date(sinceCurrent.getTime() - periodDays * 24 * 3600_000)
+
+  const [currentRows, previousRows] = await Promise.all([
+    ctx.prisma.marketingAnalytic.findMany({
+      where: { user_id: ctx.userId, channel, day: { gte: sinceCurrent } },
+      orderBy: { day: 'asc' },
+    }),
+    ctx.prisma.marketingAnalytic.findMany({
+      where: { user_id: ctx.userId, channel, day: { gte: sincePrev, lt: sinceCurrent } },
+      orderBy: { day: 'asc' },
+    }),
+  ])
+
+  const sum = <T extends { visits: number; sessions: number; orders: number; sales_cents: bigint }>(rows: T[]) => {
+    const totals = { visits: 0, sessions: 0, orders: 0, sales_eur: 0 }
+    for (const r of rows) {
+      totals.visits += r.visits
+      totals.sessions += r.sessions
+      totals.orders += r.orders
+      totals.sales_eur += bigintToNumber(r.sales_cents) / 100
+    }
+    return totals
+  }
+
+  const cur = sum(currentRows)
+  const prev = sum(previousRows)
+  const conv = cur.sessions > 0 ? Number(((cur.orders / cur.sessions) * 100).toFixed(2)) : 0
+  const prevConv = prev.sessions > 0 ? Number(((prev.orders / prev.sessions) * 100).toFixed(2)) : 0
+  const delta = (a: number, b: number) => (b > 0 ? Number((((a - b) / b) * 100).toFixed(1)) : null)
+
+  return {
+    channel,
+    period_days: periodDays,
+    current: { ...cur, conversion_pct: conv },
+    previous: { ...prev, conversion_pct: prevConv },
+    delta_pct: {
+      visits: delta(cur.visits, prev.visits),
+      sessions: delta(cur.sessions, prev.sessions),
+      orders: delta(cur.orders, prev.orders),
+      sales: delta(cur.sales_eur, prev.sales_eur),
+      conversion: delta(conv, prevConv),
+    },
+    ...(includeDaily
+      ? {
+          daily: currentRows.map((r) => ({
+            day: r.day.toISOString().slice(0, 10),
+            visits: r.visits,
+            sessions: r.sessions,
+            orders: r.orders,
+            sales_eur: bigintToNumber(r.sales_cents) / 100,
+            conversion_pct: r.conversion_pct ? Number(r.conversion_pct) : 0,
+          })),
+        }
+      : {}),
   }
 }

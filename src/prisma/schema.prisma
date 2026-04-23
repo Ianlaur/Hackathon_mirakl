@@ -773,3 +773,49 @@ model MarketplaceMessage {
   @@map("marketplace_messages")
   @@schema("public")
 }
+
+model FinancialSnapshot {
+  id                            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                       String    @db.Uuid
+  period_type                   String
+  period_start                  DateTime  @db.Date
+  period_end                    DateTime  @db.Date
+  source                        String    @default("aggregate")
+  revenue_cents                 BigInt    @default(0)
+  cost_cents                    BigInt    @default(0)
+  margin_cents                  BigInt    @default(0)
+  margin_pct                    Decimal?  @db.Decimal(5, 2)
+  cashflow_in_cents             BigInt    @default(0)
+  cashflow_out_cents            BigInt    @default(0)
+  receivables_cents             BigInt    @default(0)
+  payables_cents                BigInt    @default(0)
+  overdue_receivables_cents     BigInt    @default(0)
+  overdue_payables_cents        BigInt    @default(0)
+  previous_period_revenue_cents BigInt?
+  notes                         String?
+  created_at                    DateTime  @default(now())
+  updated_at                    DateTime  @default(now()) @updatedAt
+
+  @@unique([user_id, period_type, period_start, source], map: "ux_financial_snapshots")
+  @@index([user_id, period_end(sort: Desc)])
+  @@map("financial_snapshots")
+  @@schema("public")
+}
+
+model MarketingAnalytic {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.Uuid
+  day            DateTime @db.Date
+  channel        String
+  visits         Int      @default(0)
+  sessions       Int      @default(0)
+  orders         Int      @default(0)
+  sales_cents    BigInt   @default(0)
+  conversion_pct Decimal? @db.Decimal(5, 2)
+  created_at     DateTime @default(now())
+
+  @@unique([user_id, day, channel], map: "ux_marketing_analytics")
+  @@index([user_id, day(sort: Desc)])
+  @@map("marketing_analytics")
+  @@schema("public")
+}
