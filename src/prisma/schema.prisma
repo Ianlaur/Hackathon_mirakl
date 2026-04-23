@@ -614,6 +614,23 @@ model CommercialCalendar {
   @@schema("public")
 }
 
+// MIRA — conversation history. LLM free-form text lives here, NEVER in decision_ledger.
+// Spec invariant: the ledger is template-only; chat transcripts must not leak into it.
+model MiraConversationMessage {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.Uuid
+  session_id     String
+  role           String
+  content        String?
+  tool_calls     Json?
+  tool_call_id   String?
+  created_at     DateTime @default(now())
+
+  @@index([user_id, session_id, created_at])
+  @@map("mira_conversation_history")
+  @@schema("public")
+}
+
 // MIRA — Feature 1 LLM outputs. Separate from decision_ledger on purpose (free-form text
 // does not belong in the template-enforced ledger).
 model CatalogReviewRecord {

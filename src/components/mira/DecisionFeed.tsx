@@ -14,12 +14,29 @@ import {
 import { useMiraLedger, type MiraDecision } from '@/hooks/useMiraLedger'
 
 const STATUS_STYLES: Record<string, { bg: string; label: string; urgent: boolean }> = {
-  auto_executed: { bg: 'bg-[#2764FF]/10 text-[#2764FF]', label: 'Handled', urgent: false },
-  proposed: { bg: 'bg-[#F22E75]/10 text-[#F22E75]', label: 'Needs approval', urgent: true },
-  queued: { bg: 'bg-[#F22E75]/10 text-[#F22E75]', label: 'Queued', urgent: true },
-  rejected: { bg: 'bg-[#03182F]/5 text-[#03182F]/60', label: 'Rejected', urgent: false },
-  overridden: { bg: 'bg-[#03182F]/5 text-[#03182F]/60', label: 'Overridden', urgent: false },
-  skipped: { bg: 'bg-[#03182F]/5 text-[#03182F]/60', label: 'Skipped', urgent: false },
+  auto_executed: { bg: 'bg-[#2764FF]/10 text-[#2764FF]', label: 'Géré par MIRA', urgent: false },
+  proposed: { bg: 'bg-[#F22E75]/10 text-[#F22E75]', label: 'À valider', urgent: true },
+  queued: { bg: 'bg-[#F22E75]/10 text-[#F22E75]', label: 'En file', urgent: true },
+  rejected: { bg: 'bg-[#03182F]/5 text-[#03182F]/60', label: 'Rejetée', urgent: false },
+  overridden: { bg: 'bg-[#03182F]/5 text-[#03182F]/60', label: 'Annulée', urgent: false },
+  skipped: { bg: 'bg-[#03182F]/5 text-[#03182F]/60', label: 'Observée', urgent: false },
+}
+
+const TEMPLATE_LABEL: Record<string, string> = {
+  oversell_risk_v1: 'stock en tension',
+  restock_proposal_v1: 'proposition de réassort',
+  vacation_queue_v1: 'mise en file (vacances)',
+  returns_pattern_v1: 'pattern de retours',
+  reconciliation_variance_v1: 'écart stock',
+  fuse_tripped_v1: 'fusible déclenché',
+  calendar_posture_v1: 'ajustement calendrier',
+  listing_pause_v1: 'listing pausé',
+  listing_resume_v1: 'listing repris',
+  buffer_adjustment_v1: 'buffer ajusté',
+  reputation_shield_v1: 'protection des avis',
+  seasonal_prediction_v1: 'prévision saisonnière',
+  carrier_audit_v1: 'audit transporteur',
+  supplier_scorecard_v1: 'fiche fournisseur',
 }
 
 type SignalTone = 'alert' | 'blue'
@@ -156,7 +173,7 @@ function signalFor(decision: MiraDecision): DecisionSignal {
   return {
     title: sku,
     metric: compactAction(decision.action_type),
-    subMetric: decision.channel || decision.template_id,
+    subMetric: decision.channel || TEMPLATE_LABEL[decision.template_id] || 'action',
     barPct: decision.status === 'auto_executed' ? 100 : 52,
     tone: decision.status === 'auto_executed' ? 'blue' : 'alert',
     direction: decision.status === 'auto_executed' ? 'flat' : 'down',
@@ -230,13 +247,25 @@ function DecisionItem({ decision }: { decision: MiraDecision }) {
         <RiskSparkline tone={signal.tone} direction={signal.direction} />
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[11px] text-[#03182F]/45">
-        <span>{decision.template_id}</span>
-        {decision.channel ? <span>{decision.channel}</span> : null}
-        <span>{decision.id.slice(0, 8)}</span>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-[#03182F]/55">
+        <span>{TEMPLATE_LABEL[decision.template_id] ?? 'action'}</span>
+        {decision.channel ? <span>· {prettyChannel(decision.channel)}</span> : null}
+        {decision.trigger_event_id ? <span>· déclenché par {decision.trigger_event_id}</span> : null}
       </div>
     </Link>
   )
+}
+
+function prettyChannel(channel: string): string {
+  const map: Record<string, string> = {
+    amazon_fr: 'Amazon FR',
+    amazon_it: 'Amazon IT',
+    amazon_de: 'Amazon DE',
+    google_shopping_fr: 'Google Shopping FR',
+    google_shopping_it: 'Google Shopping IT',
+    google_shopping_de: 'Google Shopping DE',
+  }
+  return map[channel] ?? channel
 }
 
 export function MiraDecisionFeed({ limit = 12 }: { limit?: number }) {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getCurrentUserId } from '@/lib/session'
 import { MASCOT_TOOLS, executeTool } from '@/lib/mascot-tools'
+import { prisma } from '@/lib/prisma'
+import { DEFAULT_SESSION_ID, appendConversationMessage } from '@/lib/mira/history'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -24,6 +26,7 @@ const messageSchema = z.object({
 
 const bodySchema = z.object({
   messages: z.array(messageSchema).min(1),
+  session_id: z.string().optional(),
 })
 
 const SYSTEM_PROMPT = `<role>
@@ -234,11 +237,24 @@ export async function POST(request: NextRequest) {
 
     const origin = new URL(request.url).origin
     const today = new Date().toISOString().slice(0, 10)
+    const sessionId = parsed.data.session_id ?? DEFAULT_SESSION_ID
 
     const messages: ChatMessage[] = [
       { role: 'system', content: `${SYSTEM_PROMPT}\n\nAujourd'hui : ${today}.` },
       ...(parsed.data.messages as ChatMessage[]),
     ]
+
+    // Persist the newest user message (last in the client-supplied array).
+    const incoming = parsed.data.messages
+    const lastUser = [...incoming].reverse().find((m) => m.role === 'user')
+    if (lastUser && lastUser.content) {
+      appendConversationMessage(prisma, {
+        userId,
+        sessionId,
+        role: 'user',
+        content: lastUser.content,
+      }).catch((err) => console.error('history persist (user) failed:', err))
+    }
 
     const toolCallsTrace: Array<{ name: string; args: unknown; result: unknown }> = []
 
@@ -289,11 +305,21 @@ export async function POST(request: NextRequest) {
       }
 
       // Pas de tool call → c'est la réponse finale
+      const finalContent = assistantMsg.content ?? ''
+      appendConversationMessage(prisma, {
+        userId,
+        sessionId,
+        role: 'assistant',
+        content: finalContent,
+        toolCalls: toolCallsTrace.length > 0 ? toolCallsTrace : undefined,
+      }).catch((err) => console.error('history persist (assistant) failed:', err))
+
       return NextResponse.json({
         message: {
           role: 'assistant',
-          content: assistantMsg.content ?? '',
+          content: finalContent,
         },
+        session_id: sessionId,
         tool_calls: toolCallsTrace,
       })
     }

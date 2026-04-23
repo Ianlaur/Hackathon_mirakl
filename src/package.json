@@ -14,6 +14,7 @@
     "db:prepare:mira-realtime": "prisma db execute --file scripts/enable-mira-realtime.sql --schema prisma/schema.prisma",
     "db:prepare:mira-templates-v2": "prisma db execute --file scripts/migrate-mira-templates-v2.sql --schema prisma/schema.prisma",
     "db:prepare:mira-trigger-event-id": "prisma db execute --file scripts/migrate-mira-trigger-event-id.sql --schema prisma/schema.prisma",
+    "db:prepare:mira-conversation-history": "prisma db execute --file scripts/migrate-mira-conversation-history.sql --schema prisma/schema.prisma",
     "dust:test:low-stock": "node scripts/test-dust-low-stock-agent.js",
     "start": "next start",
     "test": "vitest run",

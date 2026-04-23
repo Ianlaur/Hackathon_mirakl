@@ -117,7 +117,9 @@ export default function MascotChatDrawer({
   const placeholderActive = open && input.length === 0 && messages.length === 0 && !busy
   const animatedPlaceholder = useTypingPlaceholder(placeholderActive, PLACEHOLDER_PROMPTS)
 
-  // Hydrate depuis sessionStorage au mount
+  // Hydrate depuis sessionStorage au mount (cache rapide), puis merge avec le
+  // serveur (source de vérité — mira_conversation_history). Jamais de lecture
+  // depuis decision_ledger : chat et traces vivent dans des tables séparées.
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY)
@@ -129,6 +131,33 @@ export default function MascotChatDrawer({
       /* noop */
     }
     setHydrated(true)
+
+    const ctrl = new AbortController()
+    ;(async () => {
+      try {
+        const resp = await fetch('/api/mascot/history', { cache: 'no-store', signal: ctrl.signal })
+        if (!resp.ok) return
+        const payload = (await resp.json()) as {
+          messages: Array<{ role: string; content: string | null; tool_calls: unknown }>
+        }
+        const mapped: ChatMessage[] = payload.messages
+          .filter((m) => m.role === 'user' || m.role === 'assistant')
+          .map((m) => ({
+            role: m.role as ChatMessage['role'],
+            content: m.content ?? '',
+            tool_calls:
+              Array.isArray(m.tool_calls)
+                ? (m.tool_calls as ChatMessage['tool_calls'])
+                : undefined,
+          }))
+        if (mapped.length > 0) {
+          setMessages((current) => (current.length < mapped.length ? mapped : current))
+        }
+      } catch {
+        /* server history unavailable — silent fallback */
+      }
+    })()
+    return () => ctrl.abort()
   }, [])
 
   // Persiste dans sessionStorage quand messages change
@@ -164,6 +193,9 @@ export default function MascotChatDrawer({
     } catch {
       /* noop */
     }
+    fetch('/api/mascot/history', { method: 'DELETE' }).catch(() => {
+      /* best-effort server wipe */
+    })
   }
 
   const recorder = useAudioRecorder()

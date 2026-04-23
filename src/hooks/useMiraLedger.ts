@@ -18,6 +18,7 @@ export type MiraDecision = {
   reversible: boolean
   source_agent: string | null
   triggered_by: string | null
+  trigger_event_id: string | null
   created_at: string
   executed_at: string | null
   founder_decision_at: string | null
