@@ -297,7 +297,7 @@ export default function MascotChatDrawer({
         className={`iris-panel ${open ? 'iris-panel--open' : 'iris-panel--closed'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
-        aria-label="Mira"
+        aria-label="Leia"
       >
         <form onSubmit={handleSubmit} className="iris-searchbar">
           <div className="iris-searchbar__glyph">
@@ -317,7 +317,7 @@ export default function MascotChatDrawer({
                   ? 'Transcribing…'
                   : placeholderActive
                     ? animatedPlaceholder || '\u00a0'
-                    : 'Mira'
+                    : 'Leia'
             }
             rows={1}
             className="iris-searchbar__input"
@@ -339,8 +339,8 @@ export default function MascotChatDrawer({
               type="button"
               onClick={handleMicClick}
               disabled={transcribing || isStarting}
-              aria-label={isRecording ? "Stop recording" : 'Talk to Mira'}
-              title={isRecording ? "Stop recording" : 'Talk to Mira'}
+              aria-label={isRecording ? "Stop recording" : 'Talk to Leia'}
+              title={isRecording ? "Stop recording" : 'Talk to Leia'}
               className={`iris-searchbar__mic ${
                 isRecording ? 'iris-searchbar__mic--recording' : ''
               } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
