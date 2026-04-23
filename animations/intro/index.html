@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Intro — Mirakl × Leia</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #0A1528; overflow: hidden; }
+
+    [data-composition-id="intro"] {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background:
+        radial-gradient(ellipse at 50% 46%, rgba(58, 101, 144, 0.42) 0%, rgba(15, 42, 68, 0.15) 38%, rgba(10, 21, 40, 0) 68%),
+        linear-gradient(180deg, #0A1528 0%, #060C18 100%);
+      font-family: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      color: #D6E4F2;
+      perspective: 1800px;
+      perspective-origin: 50% 50%;
+    }
+
+    /* Camera-shake wrapper — GSAP shakes this during the dive */
+    .camera-rig {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+    }
+
+    /* Dashboard behind */
+    .scene-2 {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .dashboard {
+      width: 72%;
+      height: auto;
+      max-height: 80%;
+      object-fit: contain;
+      object-position: center center;
+      transform-origin: center center;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      border-radius: 14px;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(110, 160, 201, 0.18);
+    }
+
+    /* Scene 1: chrome overlay */
+    .scene-1 {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      overflow: hidden;
+      pointer-events: none;
+      transform-style: preserve-3d;
+    }
+
+    .ghost-word {
+      position: absolute;
+      top: 44%;
+      left: 50%;
+      font-weight: 100;
+      font-size: 460px;
+      letter-spacing: 0.02em;
+      color: #6EA0C9;
+      opacity: 0.055;
+      white-space: nowrap;
+      user-select: none;
+      line-height: 1;
+      will-change: transform, opacity;
+    }
+
+    .hairline {
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(214, 228, 242, 0) 0%, rgba(214, 228, 242, 0.55) 50%, rgba(214, 228, 242, 0) 100%);
+      transform-origin: center center;
+      will-change: transform, opacity;
+    }
+    .hairline.top { top: 12%; }
+    .hairline.bottom { bottom: 12%; }
+
+    .kicker {
+      position: absolute;
+      font-size: 16px;
+      font-weight: 300;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: #D6E4F2;
+      opacity: 0.65;
+    }
+    .kicker.top-left  { top: 9%;  left: 12%; }
+    .kicker.top-right { top: 9%;  right: 12%; }
+
+    /* Penrose stage in 3D */
+    .logo-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+    .logo-wrap {
+      position: relative;
+      width: 620px;
+      height: 620px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+      will-change: transform, opacity, filter;
+    }
+    .halo {
+      position: absolute;
+      width: 1100px;
+      height: 1100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(110, 160, 201, 0.68) 0%, rgba(58, 101, 144, 0.26) 36%, rgba(10, 21, 40, 0) 70%);
+      filter: blur(36px);
+      z-index: 1;
+      will-change: transform, opacity;
+    }
+    /* Extra glow streaks that sweep behind the logo during the idle */
+    .glow-streak {
+      position: absolute;
+      width: 1400px;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(110, 160, 201, 0) 0%, rgba(183, 210, 234, 0.55) 50%, rgba(110, 160, 201, 0) 100%);
+      filter: blur(2px);
+      transform-origin: center center;
+      opacity: 0;
+      z-index: 0;
+    }
+    .logo {
+      position: relative;
+      width: 560px;
+      height: auto;
+      z-index: 2;
+      filter: url(#cutout-white)
+              drop-shadow(0 30px 50px rgba(10, 21, 40, 0.65))
+              drop-shadow(0 0 40px rgba(110, 160, 201, 0.35));
+      transform-origin: center center;
+      will-change: transform, opacity, filter;
+    }
+
+    .tagline {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 0.52em;
+      text-transform: uppercase;
+      color: #D6E4F2;
+      white-space: nowrap;
+    }
+
+    .brand-bar {
+      position: absolute;
+      bottom: 7.5%;
+      left: 12%;
+      right: 12%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: rgba(214, 228, 242, 0.55);
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #6EA0C9;
+      filter: blur(1px);
+      box-shadow: 0 0 14px rgba(110, 160, 201, 0.8);
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .flash {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      background: #FFFFFF;
+      pointer-events: none;
+    }
+
+    /* ===== Cursor pointer (macOS-style arrow) — above the drawer so it stays crisp ===== */
+    .cursor-pointer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 36px; height: 44px;
+      z-index: 39;
+      pointer-events: none;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+      will-change: transform, opacity;
+    }
+
+    /* ===== Click ripple ===== */
+    .click-ripple {
+      position: absolute;
+      top: 0; left: 0;
+      width: 120px; height: 120px;
+      margin-left: -60px; margin-top: -60px;
+      border-radius: 50%;
+      border: 2px solid rgba(110, 160, 201, 0.85);
+      box-shadow: 0 0 40px rgba(110, 160, 201, 0.65);
+      z-index: 38;
+      pointer-events: none;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    /* ===== Iris drawer (Spotlight-style search — matches real Iris UI) ===== */
+    .iris-drawer {
+      position: absolute;
+      inset: 0;
+      z-index: 36;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 10%;
+      background: rgba(244, 246, 250, 0.32);
+      backdrop-filter: blur(14px) saturate(110%);
+      -webkit-backdrop-filter: blur(14px) saturate(110%);
+      pointer-events: none;
+      opacity: 0;
+      will-change: opacity;
+    }
+    .iris-searchbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 620px;
+      padding: 14px 20px;
+      background: #FFFFFF;
+      border: 1px solid rgba(99, 102, 241, 0.18);
+      border-radius: 999px;
+      box-shadow:
+        0 18px 60px rgba(15, 23, 42, 0.18),
+        0 4px 12px rgba(15, 23, 42, 0.08),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+      will-change: transform, opacity;
+    }
+    .iris-glyph {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+      padding-left: 2px;
+    }
+    .iris-glyph span {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #6366F1;
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.55);
+      animation: irisGlyphFloat 2.4s ease-in-out infinite;
+    }
+    .iris-glyph span:nth-child(2) { animation-delay: -0.8s; background: #EC4899; box-shadow: 0 0 8px rgba(236, 72, 153, 0.55); }
+    .iris-glyph span:nth-child(3) { animation-delay: -1.6s; background: #6EA0C9; box-shadow: 0 0 8px rgba(110, 160, 201, 0.55); }
+    @keyframes irisGlyphFloat {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-3px) scale(1.15); }
+    }
+    .iris-placeholder {
+      flex: 1;
+      font-family: "Inter", sans-serif;
+      font-size: 18px; font-weight: 400;
+      color: #475569;
+      letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .iris-placeholder .caret {
+      display: inline-block;
+      width: 2px; height: 18px;
+      background: #6366F1;
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: irisCaretBlink 1s steps(1) infinite;
+    }
+    @keyframes irisCaretBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .iris-mic {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #64748B;
+      flex-shrink: 0;
+    }
+    .iris-mic svg { width: 18px; height: 18px; }
+
+    /* ===== Iris response stack (appears below the searchbar) ===== */
+    .iris-response-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-top: 18px;
+      width: 620px;
+    }
+    .iris-tool-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      background: #FFFFFF;
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      border-radius: 999px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.10);
+      font-family: "Inter", monospace;
+      font-size: 14px; font-weight: 500;
+      color: #4F46E5;
+      letter-spacing: 0.01em;
+      will-change: transform, opacity;
+    }
+    .iris-tool-chip .tool-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px;
+      background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+      border-radius: 6px;
+      color: #FFFFFF; font-size: 11px; font-weight: 700;
+    }
+    .iris-tool-chip .tool-check {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #10B981;
+      display: flex; align-items: center; justify-content: center;
+      color: #FFFFFF; font-size: 12px; font-weight: 700;
+      opacity: 0;
+    }
+    .iris-tool-chip .tool-spinner {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid rgba(99, 102, 241, 0.25);
+      border-top-color: #6366F1;
+      animation: toolSpin 0.8s linear infinite;
+    }
+    @keyframes toolSpin { to { transform: rotate(360deg); } }
+
+    .iris-response-card {
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 18px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow:
+        0 22px 60px rgba(15, 23, 42, 0.18),
+        0 4px 12px rgba(15, 23, 42, 0.06);
+      will-change: transform, opacity;
+    }
+    .iris-resp-header {
+      display: flex; align-items: center; gap: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+    .iris-resp-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: #FFFFFF; font-size: 16px; font-weight: 700;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.28);
+    }
+    .iris-resp-title {
+      font-family: "Inter", sans-serif;
+      font-size: 17px; font-weight: 600;
+      color: #0F172A; letter-spacing: -0.01em;
+    }
+    .iris-resp-sub {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: #64748B;
+      margin-top: 2px;
+    }
+    .iris-resp-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: #F8FAFC;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      will-change: transform, opacity;
+    }
+    .iris-resp-sku {
+      font-family: "Inter", sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: #0F172A;
+    }
+    .iris-resp-sku .sku-id {
+      font-weight: 400;
+      color: #94A3B8;
+      font-size: 12px;
+      margin-left: 6px;
+      letter-spacing: 0.02em;
+    }
+    .iris-resp-stock {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .iris-resp-stock.critical { color: #DC2626; }
+    .iris-resp-stock.low      { color: #D97706; }
+    .iris-resp-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-family: "Inter", sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .iris-resp-badge.critical {
+      background: #FEE2E2;
+      color: #B91C1C;
+    }
+    .iris-resp-badge.low {
+      background: #FEF3C7;
+      color: #B45309;
+    }
+
+    /* ===== Iris event card (Act B — calendar event) ===== */
+    .iris-event-card {
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 18px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow:
+        0 22px 60px rgba(15, 23, 42, 0.18),
+        0 4px 12px rgba(15, 23, 42, 0.06);
+      will-change: transform, opacity;
+    }
+    .iris-event-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #38BDF8 0%, #6366F1 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.32);
+      flex-shrink: 0;
+    }
+    .iris-event-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .iris-event-title {
+      font-family: "Inter", sans-serif;
+      font-size: 18px; font-weight: 700;
+      color: #0F172A; letter-spacing: -0.01em;
+    }
+    .iris-event-dates {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: "Inter", sans-serif;
+      font-size: 14px; font-weight: 500;
+      color: #475569;
+    }
+    .iris-event-dates .iris-date {
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: #EEF2FF;
+      color: #4338CA;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .iris-event-dates .iris-date-arrow { color: #94A3B8; font-weight: 600; }
+    .iris-event-duration { color: #64748B; margin-left: 4px; }
+    .iris-event-badge {
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #FEE2E2;
+      color: #B91C1C;
+      font-family: "Inter", sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .iris-tool-icon-cal {
+      background: linear-gradient(135deg, #38BDF8 0%, #6366F1 100%) !important;
+    }
+
+    /* ===== Iris simulation panel (Act C — split: bars + calendar) ===== */
+    .iris-sim {
+      width: 1120px;
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 22px;
+      padding: 24px 26px;
+      background: #FFFFFF;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 20px;
+      box-shadow:
+        0 28px 80px rgba(15, 23, 42, 0.22),
+        0 4px 12px rgba(15, 23, 42, 0.06);
+      will-change: transform, opacity;
+    }
+
+    .sim-left { display: flex; flex-direction: column; gap: 18px; }
+
+    .sim-warning {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.06) 0%, rgba(239, 68, 68, 0) 100%);
+      border-left: 3px solid #DC2626;
+      border-radius: 8px;
+    }
+    .sim-warn-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #F59E0B 0%, #DC2626 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: #FFFFFF; font-size: 18px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .sim-warn-title {
+      font-family: "Inter", sans-serif;
+      font-size: 17px; font-weight: 700;
+      color: #0F172A;
+    }
+    .sim-warn-sub {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: #64748B;
+      margin-top: 2px;
+    }
+
+    .sim-bars { display: flex; flex-direction: column; gap: 14px; }
+    .sim-bar-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 60px;
+      align-items: center;
+      gap: 14px;
+    }
+    .sim-bar-name {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 600;
+      color: #0F172A;
+    }
+    .sim-bar-axis {
+      position: relative;
+      height: 72px;
+      background:
+        linear-gradient(to bottom,
+          rgba(16, 185, 129, 0.08) 0%,
+          rgba(16, 185, 129, 0.08) 34%,
+          rgba(239, 68, 68, 0.06) 34%,
+          rgba(239, 68, 68, 0.06) 100%);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .sim-bar-zero {
+      position: absolute;
+      top: 34%;
+      left: 0; right: 0;
+      height: 1px;
+      background: #94A3B8;
+      z-index: 2;
+    }
+    .sim-bar-fill {
+      position: absolute;
+      top: 34%;
+      left: 20%; right: 20%;
+      height: 66%;
+      border-radius: 0 0 4px 4px;
+      transform: scaleY(0);
+      transform-origin: top center;
+      will-change: transform;
+    }
+    .sim-bar-fill.critical { background: linear-gradient(to bottom, #F87171 0%, #B91C1C 100%); }
+    .sim-bar-fill.high     { background: linear-gradient(to bottom, #FBBF24 0%, #B45309 100%); }
+    .sim-bar-fill.medium   { background: linear-gradient(to bottom, #FB923C 0%, #C2410C 100%); }
+
+    .sim-bar-proj {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 22px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      opacity: 0;
+    }
+    .sim-bar-proj.critical { color: #B91C1C; }
+    .sim-bar-proj.high     { color: #B45309; }
+    .sim-bar-proj.medium   { color: #C2410C; }
+
+    /* Calendar (right half) */
+    .sim-right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 16px;
+      background: #F8FAFC;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+    }
+    .sim-cal-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding-bottom: 4px;
+    }
+    .sim-cal-header span:first-child {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 22px; font-weight: 700;
+      color: #0F172A; letter-spacing: 0.02em;
+    }
+    .sim-cal-year {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 500;
+      color: #64748B;
+    }
+    .sim-cal-days, .sim-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .sim-cal-days span {
+      text-align: center;
+      font-family: "Inter", sans-serif;
+      font-size: 10px; font-weight: 700;
+      color: #94A3B8;
+      letter-spacing: 0.08em;
+    }
+    .sim-cal-cell {
+      aspect-ratio: 1 / 1;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 500;
+      color: #475569;
+      border-radius: 6px;
+      background: #FFFFFF;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      will-change: transform, opacity, background;
+    }
+    .sim-cal-cell.empty {
+      background: transparent;
+      border: 1px dashed rgba(148, 163, 184, 0.18);
+    }
+    .sim-cal-cell.leave {
+      background: #EEF2FF;
+      color: #4338CA;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      font-weight: 700;
+    }
+
+    /* Red pulse overlay over the dashboard when Iris flags the risk */
+    .dashboard-red-pulse {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: radial-gradient(ellipse at 50% 50%, rgba(220, 38, 38, 0.18) 0%, rgba(220, 38, 38, 0) 60%);
+      pointer-events: none;
+      opacity: 0;
+      mix-blend-mode: multiply;
+    }
+
+    /* ===== Iris restock plan card (Act D) ===== */
+    .iris-plan {
+      width: 1120px;
+      margin-top: 180px;
+      background: #FFFFFF;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 20px;
+      padding: 24px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow:
+        0 28px 80px rgba(15, 23, 42, 0.22),
+        0 4px 12px rgba(15, 23, 42, 0.06);
+      will-change: transform, opacity;
+    }
+    .plan-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+    .plan-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.32);
+      flex-shrink: 0;
+    }
+    .plan-title {
+      font-family: "Inter", sans-serif;
+      font-size: 19px; font-weight: 700;
+      color: #0F172A; letter-spacing: -0.01em;
+    }
+    .plan-sub {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: #64748B;
+      margin-top: 3px;
+    }
+    .plan-sub strong {
+      color: #DC2626; font-weight: 700;
+    }
+    .plan-total {
+      text-align: right;
+    }
+    .plan-total-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 32px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #0F172A; letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .plan-total-label {
+      font-family: "Inter", sans-serif;
+      font-size: 12px; font-weight: 500;
+      color: #64748B;
+      margin-top: 4px;
+      letter-spacing: 0.02em;
+    }
+    .plan-rows { display: flex; flex-direction: column; gap: 10px; }
+    .plan-row {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      background: #F8FAFC;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 12px;
+      will-change: transform, opacity;
+    }
+    .plan-sku {
+      font-family: "Inter", sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: #0F172A;
+    }
+    .plan-qty {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: #475569;
+    }
+    .plan-qty strong {
+      color: #0F172A; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .plan-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-family: "Inter", sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .plan-badge.critical { background: #FEE2E2; color: #B91C1C; }
+    .plan-badge.high     { background: #FEF3C7; color: #B45309; }
+    .plan-badge.medium   { background: #FFEDD5; color: #C2410C; }
+
+    .plan-approve {
+      align-self: flex-end;
+      padding: 14px 26px;
+      background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      font-family: "Inter", sans-serif;
+      font-size: 15px; font-weight: 600;
+      letter-spacing: 0.01em;
+      box-shadow: 0 10px 28px rgba(99, 102, 241, 0.48);
+      will-change: transform, box-shadow;
+      cursor: pointer;
+    }
+
+    /* ===== Success toast (Act D close) ===== */
+    .success-toast {
+      position: absolute;
+      bottom: 12%;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 24px;
+      background: #FFFFFF;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 14px;
+      box-shadow:
+        0 20px 60px rgba(16, 185, 129, 0.25),
+        0 4px 12px rgba(15, 23, 42, 0.12);
+      z-index: 37;
+      will-change: transform, opacity;
+    }
+    .success-toast .toast-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: #10B981;
+      display: flex; align-items: center; justify-content: center;
+      color: #FFFFFF;
+      font-size: 18px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .toast-title {
+      font-family: "Inter", sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: #0F172A;
+    }
+    .toast-sub {
+      font-family: "Inter", sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: #64748B;
+      margin-top: 2px;
+    }
+
+    /* ===== Outro — hero frame ===== */
+    .outro {
+      position: absolute;
+      inset: 0;
+      z-index: 38;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 28px;
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(99, 102, 241, 0.28) 0%, rgba(58, 101, 144, 0.14) 32%, rgba(10, 21, 40, 0) 62%),
+        linear-gradient(180deg, #0A1528 0%, #060C18 100%);
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Decorative hairlines */
+    .outro-hairline {
+      position: absolute;
+      left: 18%; right: 18%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(110, 160, 201, 0) 0%, rgba(110, 160, 201, 0.75) 50%, rgba(110, 160, 201, 0) 100%);
+      transform-origin: center center;
+      will-change: transform, opacity;
+    }
+    .outro-hairline.top    { top: 22%; }
+    .outro-hairline.bottom { bottom: 22%; }
+
+    /* Corner kickers */
+    .outro-kicker {
+      position: absolute;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 0.48em;
+      color: rgba(214, 228, 242, 0.78);
+      text-transform: uppercase;
+      will-change: opacity, transform;
+    }
+    .outro-kicker.tl { top: 14%; left: 18%; }
+    .outro-kicker.tr { top: 14%; right: 18%; }
+    .outro-kicker.bl { bottom: 14%; left: 18%; }
+    .outro-kicker.br { bottom: 14%; right: 18%; }
+
+    /* Iris orb — hero version (official mascot-orb asset) */
+    .outro-orb {
+      position: relative;
+      width: 260px; height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      will-change: transform, opacity;
+    }
+    .outro-orb .o-halo {
+      position: absolute; inset: -25%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(110, 160, 201, 0.55) 0%, rgba(99, 102, 241, 0.22) 42%, transparent 72%);
+      filter: blur(34px);
+      z-index: 1;
+      will-change: transform, opacity;
+    }
+    .outro-orb img {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: 2;
+      filter:
+        drop-shadow(0 12px 30px rgba(10, 21, 40, 0.55))
+        drop-shadow(0 0 40px rgba(99, 102, 241, 0.32));
+    }
+
+    .outro-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 128px; font-weight: 700;
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, #EC4899 0%, #6366F1 48%, #6EA0C9 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 40px rgba(99, 102, 241, 0.32));
+      text-transform: uppercase;
+      line-height: 1;
+      will-change: opacity, transform, letter-spacing;
+    }
+    .outro-sub {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 18px; font-weight: 500;
+      letter-spacing: 0.56em;
+      color: #D6E4F2;
+      text-transform: uppercase;
+      text-align: center;
+      will-change: opacity, transform;
+    }
+
+    /* Ambient particles for the outro */
+    .outro-particle {
+      position: absolute;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: #6EA0C9;
+      filter: blur(1px);
+      box-shadow: 0 0 14px rgba(110, 160, 201, 0.8);
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+  </style>
+</head>
+<body>
+  <div data-composition-id="intro" data-start="0" data-duration="30" data-width="1920" data-height="1080">
+
+    <!-- SVG filter: cut white pixels from the PNG -->
+    <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+      <defs>
+        <filter id="cutout-white" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+          <feColorMatrix type="matrix" values="
+            1 0 0 0 0
+            0 1 0 0 0
+            0 0 1 0 0
+            -1 -1 -1 3 0"/>
+        </filter>
+      </defs>
+    </svg>
+
+    <!-- Camera rig — this is what gets shaken during the dive -->
+    <div class="camera-rig">
+
+      <div class="scene-2">
+        <img class="dashboard" src="dashboard.png" alt="Mirakl Connect Dashboard" />
+      </div>
+
+      <div class="logo-stage">
+        <div class="logo-wrap">
+          <div class="halo"></div>
+          <div class="glow-streak" id="streak-1"></div>
+          <div class="glow-streak" id="streak-2"></div>
+          <img class="logo" src="mirakl-logo.png" alt="Mirakl" />
+        </div>
+      </div>
+
+      <div class="scene-1">
+        <div class="ghost-word">MIRAKL</div>
+
+        <div class="hairline top"></div>
+        <div class="hairline bottom"></div>
+
+        <div class="kicker top-left">MIRAKL / CONNECT</div>
+        <div class="kicker top-right">HACKATHON × EUGENIA</div>
+
+        <div class="particle" style="top:18%; left:22%;"></div>
+        <div class="particle" style="top:28%; left:78%;"></div>
+        <div class="particle" style="top:62%; left:18%;"></div>
+        <div class="particle" style="top:72%; left:82%;"></div>
+        <div class="particle" style="top:38%; left:88%;"></div>
+        <div class="particle" style="top:82%; left:48%;"></div>
+        <div class="particle" style="top:14%; left:58%;"></div>
+        <div class="particle" style="top:88%; left:12%;"></div>
+        <div class="particle" style="top:42%; left:12%;"></div>
+        <div class="particle" style="top:56%; left:92%;"></div>
+        <div class="particle" style="top:22%; left:42%;"></div>
+        <div class="particle" style="top:66%; left:64%;"></div>
+
+        <div class="tagline">Powered&nbsp;&nbsp;by&nbsp;&nbsp;Leia</div>
+
+        <div class="brand-bar">
+          <span>Merchant&nbsp;Ops&nbsp;Copilot</span>
+          <span>v0.1 · 2026</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flash"></div>
+
+    <!-- Cursor pointer (SVG arrow) -->
+    <div class="cursor-pointer" id="cursor">
+      <svg viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 3 L4 34 L12 26 L17 38 L21 36.5 L16 24.5 L27 24 Z"
+              fill="#FFFFFF" stroke="#0A1528" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <!-- Click ripple emitted from cursor tip -->
+    <div class="click-ripple" id="ripple"></div>
+
+    <!-- Iris search drawer (matches the real Iris UI: blurred dashboard + white pill searchbar) -->
+    <div class="iris-drawer" id="iris-drawer">
+      <div class="iris-searchbar">
+        <div class="iris-glyph"><span></span><span></span><span></span></div>
+        <div class="iris-placeholder"><span id="iris-query"></span><span class="caret" id="iris-caret"></span></div>
+        <div class="iris-mic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="3" width="6" height="12" rx="3"/>
+            <path d="M5 11a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="18" x2="12" y2="22"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Iris response stack (tool call + answer card) -->
+      <div class="iris-response-stack">
+        <div class="iris-tool-chip" id="iris-tool">
+          <span class="tool-icon">⚡</span>
+          <span>get_stock_summary</span>
+          <span class="tool-spinner" id="tool-spinner"></span>
+          <span class="tool-check" id="tool-check">✓</span>
+        </div>
+        <div class="iris-response-card" id="iris-resp">
+          <div class="iris-resp-header">
+            <div class="iris-resp-icon">!</div>
+            <div>
+              <div class="iris-resp-title">4 produits à surveiller</div>
+              <div class="iris-resp-sub">Stock actuel sur SKUs actifs · alertes remontées par Leia</div>
+            </div>
+          </div>
+          <div class="iris-resp-row">
+            <span class="iris-resp-sku">Walnut Chairs <span class="sku-id">SKU-WAL-07</span></span>
+            <span class="iris-resp-stock critical">2 left</span>
+            <span class="iris-resp-badge critical">Critical</span>
+          </div>
+          <div class="iris-resp-row">
+            <span class="iris-resp-sku">Oak Tables <span class="sku-id">SKU-OAK-01</span></span>
+            <span class="iris-resp-stock low">4 left</span>
+            <span class="iris-resp-badge low">Low stock</span>
+          </div>
+        </div>
+
+        <!-- Act B: calendar event tool call + event card -->
+        <div class="iris-tool-chip" id="iris-tool-2">
+          <span class="tool-icon iris-tool-icon-cal">📅</span>
+          <span>create_calendar_event</span>
+          <span class="tool-spinner" id="tool-spinner-2"></span>
+          <span class="tool-check" id="tool-check-2">✓</span>
+        </div>
+        <div class="iris-event-card" id="iris-event">
+          <div class="iris-event-icon">🏖️</div>
+          <div class="iris-event-body">
+            <div class="iris-event-title">Congés Savoie</div>
+            <div class="iris-event-dates">
+              <span class="iris-date">10 mai</span>
+              <span class="iris-date-arrow">→</span>
+              <span class="iris-date">20 mai</span>
+              <span class="iris-event-duration">· 10 jours</span>
+            </div>
+          </div>
+          <div class="iris-event-badge">Impact élevé</div>
+        </div>
+
+        <!-- Act C: simulation panel -->
+        <div class="iris-sim" id="iris-sim">
+          <div class="sim-left">
+            <div class="sim-warning" id="sim-warning">
+              <span class="sim-warn-icon">⚠</span>
+              <div>
+                <div class="sim-warn-title">3 SKUs iront en rupture</div>
+                <div class="sim-warn-sub">Projection pendant les 10 jours d'absence</div>
+              </div>
+            </div>
+            <div class="sim-bars">
+              <div class="sim-bar-row">
+                <div class="sim-bar-name">Walnut Chairs</div>
+                <div class="sim-bar-axis">
+                  <div class="sim-bar-zero"></div>
+                  <div class="sim-bar-fill critical" id="bar-walnut"></div>
+                </div>
+                <div class="sim-bar-proj critical" id="proj-walnut">&minus;14</div>
+              </div>
+              <div class="sim-bar-row">
+                <div class="sim-bar-name">Oak Tables</div>
+                <div class="sim-bar-axis">
+                  <div class="sim-bar-zero"></div>
+                  <div class="sim-bar-fill high" id="bar-oak"></div>
+                </div>
+                <div class="sim-bar-proj high" id="proj-oak">&minus;8</div>
+              </div>
+              <div class="sim-bar-row">
+                <div class="sim-bar-name">Birch Desks</div>
+                <div class="sim-bar-axis">
+                  <div class="sim-bar-zero"></div>
+                  <div class="sim-bar-fill medium" id="bar-birch"></div>
+                </div>
+                <div class="sim-bar-proj medium" id="proj-birch">&minus;4</div>
+              </div>
+            </div>
+          </div>
+          <div class="sim-right">
+            <div class="sim-cal-header">
+              <span>MAI</span>
+              <span class="sim-cal-year">2026</span>
+            </div>
+            <div class="sim-cal-days">
+              <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+            </div>
+            <div class="sim-cal-grid">
+              <!-- May 2026: May 1 is a Friday (weekday index 4, Mon=0..Sun=6) -->
+              <div class="sim-cal-cell empty"></div><div class="sim-cal-cell empty"></div><div class="sim-cal-cell empty"></div><div class="sim-cal-cell empty"></div>
+              <div class="sim-cal-cell">1</div><div class="sim-cal-cell">2</div><div class="sim-cal-cell">3</div>
+              <div class="sim-cal-cell">4</div><div class="sim-cal-cell">5</div><div class="sim-cal-cell">6</div><div class="sim-cal-cell">7</div><div class="sim-cal-cell">8</div><div class="sim-cal-cell">9</div><div class="sim-cal-cell" data-leave="1">10</div>
+              <div class="sim-cal-cell" data-leave="1">11</div><div class="sim-cal-cell" data-leave="1">12</div><div class="sim-cal-cell" data-leave="1">13</div><div class="sim-cal-cell" data-leave="1">14</div><div class="sim-cal-cell" data-leave="1">15</div><div class="sim-cal-cell" data-leave="1">16</div><div class="sim-cal-cell" data-leave="1">17</div>
+              <div class="sim-cal-cell" data-leave="1">18</div><div class="sim-cal-cell" data-leave="1">19</div><div class="sim-cal-cell" data-leave="1">20</div><div class="sim-cal-cell">21</div><div class="sim-cal-cell">22</div><div class="sim-cal-cell">23</div><div class="sim-cal-cell">24</div>
+              <div class="sim-cal-cell">25</div><div class="sim-cal-cell">26</div><div class="sim-cal-cell">27</div><div class="sim-cal-cell">28</div><div class="sim-cal-cell">29</div><div class="sim-cal-cell">30</div><div class="sim-cal-cell">31</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Act D: restock plan card -->
+        <div class="iris-plan" id="iris-plan">
+          <div class="plan-head">
+            <div class="plan-icon">📦</div>
+            <div>
+              <div class="plan-title">Plan de restock avant congés</div>
+              <div class="plan-sub">Commander avant le <strong>7 mai</strong> · Horizon 10 jours · 4 fournisseurs</div>
+            </div>
+            <div class="plan-total">
+              <div class="plan-total-value">€2,430</div>
+              <div class="plan-total-label">4 commandes estimées</div>
+            </div>
+          </div>
+          <div class="plan-rows">
+            <div class="plan-row">
+              <span class="plan-sku">Walnut Chairs</span>
+              <span class="plan-qty">Commander <strong>50</strong> unités · Scandi Wood</span>
+              <span class="plan-badge critical">Critical</span>
+            </div>
+            <div class="plan-row">
+              <span class="plan-sku">Oak Tables</span>
+              <span class="plan-qty">Commander <strong>30</strong> unités · Nordic Timber</span>
+              <span class="plan-badge high">High</span>
+            </div>
+            <div class="plan-row">
+              <span class="plan-sku">Birch Desks</span>
+              <span class="plan-qty">Commander <strong>18</strong> unités · Baltic Wood Co.</span>
+              <span class="plan-badge medium">Medium</span>
+            </div>
+          </div>
+          <button class="plan-approve" id="plan-approve">Approuver la sélection &nbsp;→</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success toast (Act D close) -->
+    <div class="success-toast" id="success-toast">
+      <span class="toast-icon">✓</span>
+      <div>
+        <div class="toast-title">4 commandes créées</div>
+        <div class="toast-sub">Jean-Charles peut partir en confiance</div>
+      </div>
+    </div>
+
+    <!-- Outro -->
+    <div class="outro" id="outro">
+      <div class="outro-hairline top"></div>
+      <div class="outro-hairline bottom"></div>
+
+      <div class="outro-kicker tl">Mirakl × Eugenia</div>
+      <div class="outro-kicker tr">Hackathon · 2026</div>
+      <div class="outro-kicker bl">Merchant&nbsp;Ops</div>
+      <div class="outro-kicker br">v0.1</div>
+
+      <div class="outro-particle" style="top:30%; left:22%"></div>
+      <div class="outro-particle" style="top:36%; left:78%"></div>
+      <div class="outro-particle" style="top:64%; left:18%"></div>
+      <div class="outro-particle" style="top:68%; left:82%"></div>
+      <div class="outro-particle" style="top:42%; left:12%"></div>
+      <div class="outro-particle" style="top:58%; left:88%"></div>
+      <div class="outro-particle" style="top:26%; left:46%"></div>
+      <div class="outro-particle" style="top:74%; left:54%"></div>
+
+      <div class="outro-orb" id="outro-orb">
+        <div class="o-halo"></div>
+        <img src="mascot-orb.png" alt="Leia" />
+      </div>
+
+      <div class="outro-title">LEIA</div>
+    </div>
+
+
+    <!-- Red pulse over the dashboard (Act C impact) -->
+    <div class="dashboard-red-pulse" id="red-pulse"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* Streak elements — center them and give each a starting angle */
+      gsap.set("#streak-1", { xPercent: -50, yPercent: -50, top: "50%", left: "50%", rotation: -22 });
+      gsap.set("#streak-2", { xPercent: -50, yPercent: -50, top: "50%", left: "50%", rotation:  18 });
+
+      /* ---- Initial states ---- */
+      tl.set(".dashboard",   { opacity: 0, scale: 1 }, 0);
+      tl.set(".scene-2",     { opacity: 0 }, 0);
+      tl.set(".flash",       { opacity: 0 }, 0);
+      tl.set(".camera-rig",  { x: 0, y: 0, scale: 1, rotation: 0 }, 0);
+      tl.set(".scene-1",     { opacity: 1 }, 0);
+      tl.set(".ghost-word",  { xPercent: -50, yPercent: -50, opacity: 0, scale: 0.94, y: 20, rotation: 0 }, 0);
+      tl.set(".hairline",    { scaleX: 0, opacity: 0 }, 0);
+      tl.set(".kicker",      { opacity: 0, y: -8 }, 0);
+      tl.set(".brand-bar",   { opacity: 0, y: 12 }, 0);
+      tl.set(".tagline",     { xPercent: -50, opacity: 0, y: 18, letterSpacing: "0.72em" }, 0);
+      tl.set(".particle",    { opacity: 0, scale: 0, x: 0, y: 0 }, 0);
+      tl.set(".logo-wrap",   { opacity: 0, scale: 0.62, rotationY: -22, rotationX: 8, rotation: -8, z: -260 }, 0);
+      tl.set(".halo",        { opacity: 0, scale: 0.55 }, 0);
+      tl.set(".logo",        { opacity: 0, y: 18, rotation: 0 }, 0);
+
+      /* ================================================================
+         BUILD (0.3 – 2.4s)
+         ================================================================ */
+
+      tl.to(".hairline.top",    { scaleX: 1, opacity: 1, duration: 1.2, ease: "power3.out" }, 0.35);
+      tl.to(".hairline.bottom", { scaleX: 1, opacity: 1, duration: 1.2, ease: "power3.out" }, 0.45);
+
+      tl.to(".kicker", { opacity: 0.65, y: 0, duration: 0.9, ease: "sine.out", stagger: 0.08 }, 0.55);
+      tl.to(".ghost-word", { opacity: 0.055, scale: 1, y: 0, duration: 1.8, ease: "sine.inOut" }, 0.4);
+
+      // Halo blooms
+      tl.to(".halo", { opacity: 0.88, scale: 1, duration: 1.6, ease: "power2.out" }, 0.55);
+
+      // Logo-wrap: settles in 3D with a subtle barrel roll
+      tl.to(".logo-wrap", {
+        opacity: 1,
+        scale: 1,
+        rotationY: 0,
+        rotationX: 0,
+        rotation: 0,
+        z: 0,
+        duration: 1.5,
+        ease: "expo.out"
+      }, 0.7);
+
+      tl.to(".logo", { opacity: 1, y: 0, duration: 1.1, ease: "power2.out" }, 0.9);
+
+      tl.to(".tagline", { opacity: 0.9, y: 0, letterSpacing: "0.52em", duration: 1.2, ease: "power2.out" }, 1.5);
+      tl.to(".brand-bar", { opacity: 1, y: 0, duration: 0.9, ease: "sine.out" }, 1.6);
+      tl.to(".particle", { opacity: 0.6, scale: 1, duration: 0.6, ease: "power2.out", stagger: 0.07 }, 1.0);
+
+      /* ================================================================
+         BREATHE (0 – 4.5s) — the logo is ALIVE
+         ================================================================ */
+
+      // SLOW continuous Z-rotation on the logo itself (the PNG turns in-plane)
+      // Total rotation across 4.6s = ~80° (gentle)
+      tl.to(".logo", { rotation: 80, duration: 4.6, ease: "none" }, 0);
+
+      // Logo-wrap does a subtle 3D sway (Y-axis tilt oscillation)
+      tl.to(".logo-wrap", {
+        rotationY: 14, rotationX: -3,
+        duration: 2.1, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 2.4);
+
+      // Halo breath
+      tl.to(".halo", { scale: 1.1, opacity: 1, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.4);
+
+      // Float
+      tl.to(".logo-wrap", { y: -16, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.3);
+
+      // Ghost word drifts vertically — no rotation (it's the fixed backdrop)
+      tl.to(".ghost-word", { y: -14, duration: 3.0, ease: "sine.inOut", yoyo: true, repeat: 1, overwrite: "auto" }, 2.2);
+
+      // Glow streaks fade in and sweep rotationally behind the logo
+      tl.to("#streak-1", { opacity: 0.7, duration: 0.8, ease: "power2.out" }, 1.4);
+      tl.to("#streak-2", { opacity: 0.55, duration: 0.8, ease: "power2.out" }, 1.6);
+      tl.to("#streak-1", { rotation: 128, duration: 3.2, ease: "sine.inOut" }, 1.4);
+      tl.to("#streak-2", { rotation: -142, duration: 3.2, ease: "sine.inOut" }, 1.6);
+
+      // Particles orbit slightly — each one drifts toward a random direction
+      tl.to(".particle", {
+        x: "random(-40, 40)",
+        y: "random(-40, 40)",
+        duration: 2.4,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 1,
+        stagger: { each: 0.08, from: "random" }
+      }, 1.2);
+
+      /* ================================================================
+         PRE-DIVE WIND-UP (4.0 – 4.6s) — anticipation
+         ================================================================ */
+
+      // Logo briefly pulls BACK and tilts — anticipation before the dive
+      tl.to(".logo-wrap", {
+        scale: 0.92,
+        z: -120,
+        rotationY: -12,
+        duration: 0.4,
+        ease: "power2.in",
+        overwrite: "auto"
+      }, 4.1);
+
+      // Halo dims during wind-up
+      tl.to(".halo", { opacity: 0.5, scale: 0.95, duration: 0.4, ease: "power2.in", overwrite: "auto" }, 4.1);
+
+      /* ================================================================
+         DIVE (4.5 – 5.85s) — aggressive, spinning, dynamic
+         ================================================================ */
+
+      // Big forward dive with a barrel spin: scale explodes, Z punches forward,
+      // rotationY twists through +38°, the logo itself spins 260° on Z (in-plane)
+      tl.to(".logo-wrap", {
+        scale: 22,
+        rotationY: 38,
+        rotationX: -6,
+        z: 1100,
+        duration: 1.3,
+        ease: "power3.in",
+        overwrite: "auto"
+      }, 4.5);
+
+      // Aggressive Z-spin on the PNG itself during the dive
+      tl.to(".logo", {
+        rotation: 340,
+        filter: "url(#cutout-white) blur(4px) drop-shadow(0 0 60px rgba(110, 160, 201, 0.7))",
+        duration: 1.3,
+        ease: "power3.in",
+        overwrite: "auto"
+      }, 4.5);
+
+      // Halo explodes outward
+      tl.to(".halo", {
+        scale: 4.5,
+        opacity: 0,
+        duration: 1.15,
+        ease: "power2.in",
+        overwrite: "auto"
+      }, 4.55);
+
+      // Streaks accelerate and fade
+      tl.to("#streak-1", { rotation: "+=420", opacity: 0, duration: 1.1, ease: "power3.in", overwrite: "auto" }, 4.5);
+      tl.to("#streak-2", { rotation: "-=420", opacity: 0, duration: 1.1, ease: "power3.in", overwrite: "auto" }, 4.5);
+
+      // Particles streak toward the center then explode outward through the camera
+      tl.to(".particle", {
+        x: "random(-960, 960)",
+        y: "random(-540, 540)",
+        scale: 2.4,
+        opacity: 0,
+        duration: 0.9,
+        ease: "power2.in",
+        stagger: { each: 0.02, from: "random" },
+        overwrite: "auto"
+      }, 4.8);
+
+      // Ghost word zooms out (no rotation — stays flat like a fixed backdrop)
+      tl.to(".ghost-word", {
+        scale: 3.6,
+        opacity: 0,
+        duration: 1.1,
+        ease: "power3.in",
+        overwrite: "auto"
+      }, 4.55);
+
+      // Hairlines EXPLODE sideways — each edge shoots off-frame
+      tl.to(".hairline.top",    { x: -260, scaleX: 1.4, opacity: 0, duration: 0.7, ease: "power3.in" }, 4.7);
+      tl.to(".hairline.bottom", { x:  260, scaleX: 1.4, opacity: 0, duration: 0.7, ease: "power3.in" }, 4.7);
+
+      // Kickers & brand-bar fly away
+      tl.to(".kicker.top-left",  { x: -180, opacity: 0, duration: 0.55, ease: "power2.in" }, 4.75);
+      tl.to(".kicker.top-right", { x:  180, opacity: 0, duration: 0.55, ease: "power2.in" }, 4.75);
+      tl.to(".brand-bar", { y: 60, opacity: 0, duration: 0.55, ease: "power2.in" }, 4.75);
+      tl.to(".tagline",   { y: -30, opacity: 0, duration: 0.55, ease: "power2.in" }, 4.75);
+
+      // Camera-shake during the dive — small random-feeling jitter via keyframes
+      tl.to(".camera-rig", {
+        keyframes: {
+          x:        [0, -6,  4, -8,  6, -4,  0],
+          y:        [0,  4, -6,  2, -8,  5,  0],
+          rotation: [0, -0.4, 0.5, -0.6, 0.3, -0.2, 0]
+        },
+        duration: 1.0,
+        ease: "power1.in"
+      }, 4.6);
+
+      // Camera zoom-in push on the full rig (accentuates velocity)
+      tl.to(".camera-rig", { scale: 1.08, duration: 1.1, ease: "power3.in" }, 4.55);
+
+      // Logo fades right before impact
+      tl.to(".logo", { opacity: 0, duration: 0.35, ease: "power2.in", overwrite: "auto" }, 5.4);
+
+      /* ================================================================
+         IMPACT (5.4 – 5.85s)
+         ================================================================ */
+
+      // Preload dashboard silently at t=4 (invisible, but decoded and uploaded to GPU)
+      // so the flash reveal has no first-paint hiccup.
+      tl.set(".scene-2",   { opacity: 0.01 }, 4.0);
+      tl.set(".dashboard", { opacity: 0.01 }, 4.0);
+
+      // Fast flash impact — short peak, no plateau
+      tl.to(".flash", { opacity: 1, duration: 0.18, ease: "power2.in" }, 5.45);
+
+      // Dashboard becomes fully visible instantly at peak flash, scale snaps to final
+      tl.set(".scene-2",   { opacity: 1 }, 5.6);
+      tl.set(".dashboard", { opacity: 1, scale: 1 }, 5.6);
+
+      // Everything else — gone instantly under the flash
+      tl.set(".scene-1",    { opacity: 0 }, 5.6);
+      tl.set(".logo-stage", { opacity: 0 }, 5.6);
+      tl.set(".camera-rig", { scale: 1, x: 0, y: 0, rotation: 0 }, 5.6);
+
+      // Flash fades quickly, no lingering white
+      tl.to(".flash", { opacity: 0, duration: 0.28, ease: "power2.out" }, 5.63);
+
+      /* =================================================================
+         ACT — Iris zoom + cursor click + search drawer (6.1 – 11s)
+         ================================================================= */
+
+      // Cursor + ripple + drawer initial state (done once via tl.set at t=0)
+      tl.set("#cursor",       { x: 280, y: 1160, scale: 1, opacity: 0 }, 0);
+      tl.set("#ripple",       { x: 0, y: 0, scale: 0.3, opacity: 0 }, 0);
+      tl.set("#iris-drawer",  { opacity: 0 }, 0);
+      tl.set(".iris-searchbar", { y: -60, scale: 0.94, opacity: 0 }, 0);
+      tl.set("#iris-tool",    { opacity: 0, y: -10, scale: 0.94 }, 0);
+      tl.set("#tool-check",   { opacity: 0, scale: 0.5 }, 0);
+      tl.set("#iris-resp",    { opacity: 0, y: -24, scale: 0.96 }, 0);
+      tl.set(".iris-resp-row", { opacity: 0, x: -18 }, 0);
+      tl.set("#iris-tool-2",  { opacity: 0, y: -10, scale: 0.94 }, 0);
+      tl.set("#tool-check-2", { opacity: 0, scale: 0.5 }, 0);
+      tl.set("#iris-event",   { opacity: 0, y: -24, scale: 0.96 }, 0);
+      tl.set("#iris-sim",     { opacity: 0, y: 60, scale: 0.96 }, 0);
+      tl.set("#sim-warning",  { opacity: 0, x: -16 }, 0);
+      tl.set(".sim-bar-row",  { opacity: 0, y: 12 }, 0);
+      tl.set(".sim-bar-fill", { scaleY: 0 }, 0);
+      tl.set(".sim-bar-proj", { opacity: 0 }, 0);
+      tl.set(".sim-cal-cell", { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#red-pulse",    { opacity: 0 }, 0);
+
+      // Act D init
+      tl.set("#iris-plan",    { opacity: 0, y: 40, scale: 0.96 }, 0);
+      tl.set(".plan-row",     { opacity: 0, x: -16 }, 0);
+      tl.set("#plan-approve", { opacity: 0, y: 10, scale: 0.94 }, 0);
+      tl.set("#success-toast",{ xPercent: -50, opacity: 0, y: 60, scale: 0.9 }, 0);
+      tl.set("#outro",        { opacity: 0 }, 0);
+      tl.set(".outro-title",  { opacity: 0, y: 20, letterSpacing: "0.28em" }, 0);
+      tl.set(".outro-sub",    { opacity: 0, y: 14 }, 0);
+      tl.set(".outro-hairline", { scaleX: 0, opacity: 0 }, 0);
+      tl.set(".outro-kicker", { opacity: 0, y: -8 }, 0);
+      tl.set("#outro-orb",    { opacity: 0, scale: 0.55, y: 18 }, 0);
+      tl.set(".outro-orb .o-halo", { opacity: 0, scale: 0.55 }, 0);
+      tl.set(".outro-orb img", { opacity: 0, scale: 0.75, rotation: -10 }, 0);
+      tl.set(".outro-particle", { opacity: 0, scale: 0 }, 0);
+
+
+      // Camera zoom-pan onto the Iris orb (bottom-right of the dashboard).
+      // Dashboard is 72% wide, centered. The orb sits roughly at (x=88%, y=86%)
+      // of the dashboard image. We scale 2.1x and translate so the orb lands
+      // at frame center (960, 540).
+      tl.to(".dashboard", {
+        scale: 2.1,
+        x: -1050,
+        y: -520,
+        duration: 1.6,
+        ease: "power3.inOut"
+      }, 6.3);
+
+      // Cursor enters from bottom-left, curves up to the orb (now centered)
+      tl.to("#cursor", { opacity: 1, duration: 0.3, ease: "power2.out" }, 7.3);
+      tl.to("#cursor", {
+        keyframes: {
+          x: [280,  680,  1080, 1220],
+          y: [1160, 820,  620,  560]
+        },
+        duration: 1.1,
+        ease: "power2.inOut"
+      }, 7.4);
+
+      // Click — cursor presses down then springs back
+      tl.to("#cursor", { scale: 0.80, duration: 0.09, ease: "power2.in" }, 8.55);
+      tl.to("#cursor", { scale: 1, duration: 0.18, ease: "back.out(2)" }, 8.64);
+
+      // Ripple emits from the click point (aligned with cursor tip on Iris orb)
+      tl.set("#ripple", { x: 1232, y: 560, scale: 0.3, opacity: 0.9 }, 8.6);
+      tl.to("#ripple", { scale: 3.2, opacity: 0, duration: 0.75, ease: "power2.out" }, 8.6);
+
+      // Cursor slides out to bottom-right as the drawer takes over
+      tl.to("#cursor", { x: 1800, y: 1100, opacity: 0, duration: 0.5, ease: "power2.in" }, 8.9);
+
+      // Drawer opens — overlay fades in, searchbar descends
+      tl.to("#iris-drawer", { opacity: 1, duration: 0.35, ease: "power2.out" }, 8.85);
+      tl.to(".iris-searchbar", {
+        y: 0, scale: 1, opacity: 1,
+        duration: 0.7, ease: "expo.out"
+      }, 8.95);
+
+      // Typewriter — "Combien j'ai de stock au total ?"
+      const irisQuery = "Combien j'ai de stock au total ?";
+      tl.to({ i: 0 }, {
+        i: irisQuery.length,
+        duration: 1.4,
+        ease: "none",
+        onUpdate: function () {
+          const n = Math.round(this.targets()[0].i);
+          const el = document.getElementById("iris-query");
+          if (el) el.textContent = irisQuery.slice(0, n);
+        }
+      }, 9.55);
+
+      // Subtle idle breathing on the searchbar
+      tl.to(".iris-searchbar", {
+        keyframes: { scale: [1, 1.008, 1] },
+        duration: 1.2, ease: "sine.inOut"
+      }, 10.2);
+
+      /* =================================================================
+         ACT A — Iris answers "Combien j'ai de stock au total ?" (11 – 14s)
+         ================================================================= */
+
+      // Caret disappears (query "submitted")
+      tl.to("#iris-caret", { opacity: 0, duration: 0.15, ease: "power1.out" }, 10.95);
+
+      // Tool chip appears with spinner
+      tl.to("#iris-tool", { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.3)" }, 11.05);
+
+      // Spinner → check mark after "thinking"
+      tl.to("#tool-spinner", { opacity: 0, scale: 0.4, duration: 0.2, ease: "power2.in" }, 11.75);
+      tl.to("#tool-check",   { opacity: 1, scale: 1,   duration: 0.35, ease: "back.out(2)" }, 11.80);
+
+      // Response card slides in below the searchbar
+      tl.to("#iris-resp", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "expo.out" }, 11.85);
+
+      // Rows stagger in
+      tl.to(".iris-resp-row", {
+        opacity: 1, x: 0,
+        duration: 0.45, ease: "power3.out",
+        stagger: 0.14
+      }, 12.15);
+
+      // Subtle pulse on the critical badge to grab the eye
+      tl.to(".iris-resp-badge.critical", {
+        keyframes: {
+          boxShadow: [
+            "0 0 0 0 rgba(220, 38, 38, 0)",
+            "0 0 0 8px rgba(220, 38, 38, 0.25)",
+            "0 0 0 0 rgba(220, 38, 38, 0)"
+          ]
+        },
+        duration: 1.1, ease: "power1.inOut"
+      }, 12.75);
+
+      /* =================================================================
+         ACT B — Pivot to "Je pars en congés du 10 au 20 mai" (14 – 17s)
+         ================================================================= */
+
+      // Old answer fades out (stock summary + first tool chip)
+      tl.to("#iris-resp", { opacity: 0, y: -14, duration: 0.4, ease: "power2.in" }, 13.85);
+      tl.to("#iris-tool", { opacity: 0, y: -8,  duration: 0.35, ease: "power2.in" }, 13.95);
+
+      // Pull them out of the layout flow so everything after (tool-2, event card, sim panel)
+      // snaps up to the same vertical slot as the original get_stock_summary.
+      tl.set("#iris-tool", { display: "none" }, 14.30);
+      tl.set("#iris-resp", { display: "none" }, 14.30);
+
+      // Caret comes back, ready to receive new query
+      tl.to("#iris-caret", { opacity: 1, duration: 0.15, ease: "power1.out" }, 14.15);
+
+      // Reverse typewriter — erase previous query
+      const oldQuery = "Combien j'ai de stock au total ?";
+      tl.to({ i: oldQuery.length }, {
+        i: 0,
+        duration: 0.5,
+        ease: "power2.in",
+        onUpdate: function () {
+          const n = Math.round(this.targets()[0].i);
+          const el = document.getElementById("iris-query");
+          if (el) el.textContent = oldQuery.slice(0, n);
+        }
+      }, 14.2);
+
+      // Short pause (caret blinking), then new typewriter
+      const newQuery = "Je pars en congés du 10 au 20 mai";
+      tl.to({ i: 0 }, {
+        i: newQuery.length,
+        duration: 1.3,
+        ease: "none",
+        onUpdate: function () {
+          const n = Math.round(this.targets()[0].i);
+          const el = document.getElementById("iris-query");
+          if (el) el.textContent = newQuery.slice(0, n);
+        }
+      }, 14.85);
+
+      // Submit: caret fades
+      tl.to("#iris-caret", { opacity: 0, duration: 0.15, ease: "power1.out" }, 16.2);
+
+      // Tool chip 2 — create_calendar_event
+      tl.to("#iris-tool-2", { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.3)" }, 16.3);
+
+      // Spinner → check
+      tl.to("#tool-spinner-2", { opacity: 0, scale: 0.4, duration: 0.2, ease: "power2.in" }, 16.70);
+      tl.to("#tool-check-2",   { opacity: 1, scale: 1,   duration: 0.30, ease: "back.out(2)" }, 16.75);
+
+      // Event card slides in
+      tl.to("#iris-event", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "expo.out" }, 16.60);
+
+      // Subtle pulse on the "Impact élevé" badge
+      tl.to(".iris-event-badge", {
+        keyframes: {
+          boxShadow: [
+            "0 0 0 0 rgba(185, 28, 28, 0)",
+            "0 0 0 8px rgba(185, 28, 28, 0.22)",
+            "0 0 0 0 rgba(185, 28, 28, 0)"
+          ]
+        },
+        duration: 1.0, ease: "power1.inOut"
+      }, 16.95);
+
+      /* =================================================================
+         ACT C — Iris simulates the impact (17 – 21s)
+         split panel: stock projection (bars) + calendar (days 10-20 filled)
+         ================================================================= */
+
+      // Old tool chip fades (keep the event card as context)
+      tl.to("#iris-tool-2", { opacity: 0, y: -8, duration: 0.35, ease: "power2.in" }, 17.1);
+
+      // Simulation panel slides up into view
+      tl.to("#iris-sim", {
+        opacity: 1, y: 0, scale: 1,
+        duration: 0.7, ease: "expo.out"
+      }, 17.3);
+
+      // Warning header slides in from left
+      tl.to("#sim-warning", { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 17.65);
+
+      // Bar rows stagger in (rows visible first, then bars fill)
+      tl.to(".sim-bar-row", {
+        opacity: 1, y: 0,
+        duration: 0.45, ease: "power3.out",
+        stagger: 0.10
+      }, 17.85);
+
+      // Bars fill downward (into the red zone = stock negative)
+      // Walnut -14 (deepest), Oak -8 (medium), Birch -4 (shallow)
+      tl.to("#bar-walnut", { scaleY: 0.95, duration: 0.8, ease: "power3.out" }, 18.1);
+      tl.to("#bar-oak",    { scaleY: 0.62, duration: 0.75, ease: "power3.out" }, 18.22);
+      tl.to("#bar-birch",  { scaleY: 0.32, duration: 0.70, ease: "power3.out" }, 18.34);
+
+      // Projection numbers fade in as bars reach depth
+      tl.to("#proj-walnut", { opacity: 1, duration: 0.3, ease: "power2.out" }, 18.65);
+      tl.to("#proj-oak",    { opacity: 1, duration: 0.3, ease: "power2.out" }, 18.77);
+      tl.to("#proj-birch",  { opacity: 1, duration: 0.3, ease: "power2.out" }, 18.89);
+
+      // Calendar cells fade in (stagger from top-left, fast)
+      tl.to(".sim-cal-cell", {
+        opacity: 1, scale: 1,
+        duration: 0.35, ease: "power2.out",
+        stagger: { amount: 0.85, grid: [6, 7], from: "start" }
+      }, 17.7);
+
+      // Leave cells (10-20) pulse to highlight
+      tl.to(".sim-cal-cell[data-leave='1']", {
+        keyframes: {
+          backgroundColor: ["#EEF2FF", "#C7D2FE", "#EEF2FF"],
+          scale: [1, 1.08, 1]
+        },
+        duration: 0.9,
+        ease: "power2.inOut",
+        stagger: 0.05
+      }, 18.85);
+
+      // Dashboard red pulse — Iris flags the risk visually
+      tl.to("#red-pulse", {
+        keyframes: { opacity: [0, 0.8, 0] },
+        duration: 0.9, ease: "power2.inOut"
+      }, 19.85);
+
+      // Subtle pulse on the warning left-border (keeps the tension)
+      tl.to(".sim-warning", {
+        keyframes: { boxShadow: [
+          "inset 3px 0 0 #DC2626, 0 0 0 0 rgba(220, 38, 38, 0)",
+          "inset 3px 0 0 #DC2626, 0 0 0 10px rgba(220, 38, 38, 0.18)",
+          "inset 3px 0 0 #DC2626, 0 0 0 0 rgba(220, 38, 38, 0)"
+        ]},
+        duration: 1.0, ease: "power1.inOut"
+      }, 20.0);
+
+      /* =================================================================
+         ACT D — Plan + approve + close (21 – 26s)
+         ================================================================= */
+
+      // Sim panel + event card + tool-2 fade out, then collapse (remove from flow)
+      tl.to("#iris-sim",    { opacity: 0, y: 20, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 21.0);
+      tl.to("#iris-event",  { opacity: 0, y: -10, duration: 0.4, ease: "power2.in", overwrite: "auto" }, 21.05);
+      tl.set("#iris-sim",   { display: "none" }, 21.5);
+      tl.set("#iris-event", { display: "none" }, 21.5);
+      tl.set("#iris-tool-2",{ display: "none" }, 21.5);
+
+      // Restock plan card slides up into the cleared space
+      tl.to("#iris-plan", { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out" }, 21.55);
+
+      // Rows stagger
+      tl.to(".plan-row", {
+        opacity: 1, x: 0,
+        duration: 0.45, ease: "power3.out",
+        stagger: 0.12
+      }, 21.9);
+
+      // Approve button appears with soft bounce + pulse
+      tl.to("#plan-approve", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 22.45);
+      tl.to("#plan-approve", {
+        keyframes: {
+          boxShadow: [
+            "0 10px 28px rgba(99, 102, 241, 0.48)",
+            "0 14px 44px rgba(99, 102, 241, 0.75)",
+            "0 10px 28px rgba(99, 102, 241, 0.48)"
+          ]
+        },
+        duration: 1.0, ease: "sine.inOut", overwrite: "auto"
+      }, 22.95);
+
+      // Cursor returns from bottom-right, curves toward the Approve button
+      tl.to("#cursor", { opacity: 1, duration: 0.3, ease: "power2.out", overwrite: "auto" }, 22.7);
+      tl.to("#cursor", {
+        keyframes: {
+          x: [1800, 1760, 1680, 1630],
+          y: [1100, 910,  790,  680]
+        },
+        duration: 1.0, ease: "power2.inOut"
+      }, 23.05);
+
+      // Click: cursor press + button press + ripple
+      tl.to("#cursor", { scale: 0.80, duration: 0.09, ease: "power2.in", overwrite: "auto" }, 24.15);
+      tl.to("#cursor", { scale: 1, duration: 0.18, ease: "back.out(2)", overwrite: "auto" }, 24.24);
+      tl.to("#plan-approve", { scale: 0.96, duration: 0.09, ease: "power2.in", overwrite: "auto" }, 24.15);
+      tl.to("#plan-approve", { scale: 1, duration: 0.2, ease: "back.out(2)" }, 24.24);
+
+      // Second ripple from the button
+      tl.set("#ripple", { x: 1640, y: 680, scale: 0.3, opacity: 0.9 }, 24.2);
+      tl.to("#ripple", { scale: 3.5, opacity: 0, duration: 0.8, ease: "power2.out" }, 24.2);
+
+      // Button success state: turn green briefly
+      tl.to("#plan-approve", {
+        background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+        boxShadow: "0 12px 34px rgba(16, 185, 129, 0.55)",
+        duration: 0.35, ease: "power2.out", overwrite: "auto"
+      }, 24.35);
+
+      // Soft flash on screen to mark the action
+      tl.to(".flash", { opacity: 0.35, duration: 0.12, ease: "power2.in" }, 24.3);
+      tl.to(".flash", { opacity: 0, duration: 0.4, ease: "power2.out" }, 24.42);
+
+      // Cursor exits
+      tl.to("#cursor", { opacity: 0, duration: 0.3, ease: "power1.in" }, 24.45);
+
+      // Success toast slides up from the bottom
+      tl.to("#success-toast", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.3)" }, 24.55);
+
+      // Drawer (blurred overlay) fades to give the toast room
+      tl.to("#iris-drawer",  { opacity: 0, duration: 0.8, ease: "power2.inOut" }, 25.4);
+      tl.to("#iris-plan",    { opacity: 0, y: 18, duration: 0.6, ease: "power2.in", overwrite: "auto" }, 25.4);
+
+      // Dashboard fades out with the drawer — no return to the full view
+      tl.to(".scene-2", { opacity: 0, duration: 0.7, ease: "power2.inOut" }, 25.4);
+
+      // Success toast fades
+      tl.to("#success-toast", { opacity: 0, y: 20, duration: 0.5, ease: "power2.in", overwrite: "auto" }, 26.0);
+
+      // Outro: structural chrome first (hairlines + kickers), then orb + tagline
+      tl.to("#outro", { opacity: 1, duration: 0.8, ease: "power2.out" }, 26.0);
+
+      // Hairlines scale out from center
+      tl.to(".outro-hairline", { scaleX: 1, opacity: 1, duration: 0.9, ease: "power3.out", stagger: 0.08 }, 26.2);
+
+      // Kickers fade in at the 4 corners
+      tl.to(".outro-kicker", { opacity: 0.78, y: 0, duration: 0.7, ease: "sine.out", stagger: 0.05 }, 26.35);
+
+      // Particles twinkle
+      tl.to(".outro-particle", { opacity: 0.6, scale: 1, duration: 0.5, ease: "power2.out", stagger: 0.05 }, 26.4);
+
+      // Orb materializes — hero
+      tl.to("#outro-orb", { opacity: 1, scale: 1, y: 0, duration: 1.1, ease: "expo.out" }, 26.45);
+      tl.to(".outro-orb .o-halo", { opacity: 0.9, scale: 1, duration: 1.0, ease: "power2.out" }, 26.55);
+      tl.to(".outro-orb img", {
+        opacity: 1, scale: 1, rotation: 0,
+        duration: 1.0, ease: "back.out(1.2)"
+      }, 26.65);
+
+      // Title with gradient arrives
+      tl.to(".outro-title", {
+        opacity: 1, y: 0, letterSpacing: "0.02em",
+        duration: 1.0, ease: "expo.out"
+      }, 27.0);
+
+      // Subtitle slides in below
+      tl.to(".outro-sub", { opacity: 0.9, y: 0, duration: 0.8, ease: "power3.out" }, 27.3);
+
+      // Ambient life while outro holds — slower + longer breaths to fill the 2 extra seconds
+      tl.to("#outro-orb", { y: -10, duration: 1.3, ease: "sine.inOut", yoyo: true, repeat: 1, overwrite: "auto" }, 27.4);
+      tl.to(".outro-orb .o-halo", { scale: 1.08, opacity: 1, duration: 1.3, ease: "sine.inOut", yoyo: true, repeat: 1, overwrite: "auto" }, 27.4);
+      tl.to(".outro-particle", { y: "-=18", duration: 1.3, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: { each: 0.05, from: "random" } }, 27.4);
+
+      // Gentle final breath right before the fade — the scene stays alive to the last frame
+      tl.to("#outro-orb", { scale: 1.04, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 28.3);
+      tl.to(".outro-title", { opacity: 0.92, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 28.0);
+
+      // Subtle fade-out in the last 0.8s so the cut doesn't feel brutal
+      tl.to("#outro", { opacity: 0.85, duration: 0.8, ease: "power1.inOut" }, 29.2);
+
+
+      window.__timelines["intro"] = tl;
+
+      // Standalone preview helper
+      if (typeof window !== "undefined" && window.location && window.location.search.indexOf("play=1") !== -1) {
+        tl.eventCallback("onComplete", function () {
+          setTimeout(function () { tl.restart(); }, 400);
+        });
+        tl.play(0);
+      }
+    </script>
+  </div>
+</body>
+</html>

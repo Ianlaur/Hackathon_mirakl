@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pitch — Mirakl × Mira</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #0A1528; overflow: hidden; }
+
+    [data-composition-id="pitch"] {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background:
+        radial-gradient(ellipse at 50% 46%, rgba(58, 101, 144, 0.42) 0%, rgba(15, 42, 68, 0.15) 38%, rgba(10, 21, 40, 0) 68%),
+        linear-gradient(180deg, #0A1528 0%, #060C18 100%);
+      font-family: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      color: #D6E4F2;
+      perspective: 1800px;
+      perspective-origin: 50% 50%;
+    }
+
+    .camera-rig { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+
+    /* ===== Ghost layer (persistent, changes text per act) ===== */
+    .ghost-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+    .ghost-word {
+      position: absolute; top: 44%; left: 50%;
+      font-weight: 100; font-size: 460px; letter-spacing: 0.02em;
+      color: #6EA0C9; opacity: 0.055; white-space: nowrap;
+      user-select: none; line-height: 1; will-change: transform, opacity;
+    }
+
+    /* ===== Particles (persistent) ===== */
+    .particles { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+    .particle {
+      position: absolute; width: 4px; height: 4px; border-radius: 50%;
+      background: #6EA0C9; filter: blur(1px);
+      box-shadow: 0 0 14px rgba(110, 160, 201, 0.8);
+      opacity: 0; will-change: transform, opacity;
+    }
+
+    /* ===== Chrome (hairlines + kickers + brand-bar) ===== */
+    .chrome { position: absolute; inset: 0; z-index: 11; pointer-events: none; }
+    .hairline {
+      position: absolute; left: 12%; right: 12%; height: 1px;
+      background: linear-gradient(90deg, rgba(214, 228, 242, 0) 0%, rgba(214, 228, 242, 0.55) 50%, rgba(214, 228, 242, 0) 100%);
+      transform-origin: center center; will-change: transform, opacity;
+    }
+    .hairline.top { top: 12%; }
+    .hairline.bottom { bottom: 12%; }
+    .kicker {
+      position: absolute; font-size: 16px; font-weight: 300;
+      letter-spacing: 0.42em; text-transform: uppercase;
+      color: #D6E4F2; opacity: 0.65;
+    }
+    .kicker.top-left  { top: 9%; left: 12%; }
+    .kicker.top-right { top: 9%; right: 12%; }
+    .brand-bar {
+      position: absolute; bottom: 7.5%; left: 12%; right: 12%;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; font-weight: 300; letter-spacing: 0.42em;
+      text-transform: uppercase; color: rgba(214, 228, 242, 0.55);
+    }
+
+    /* ===== ACT 1 — Mirakl logo reveal ===== */
+    .act-1 { position: absolute; inset: 0; z-index: 8; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d; pointer-events: none; }
+    .logo-wrap {
+      position: relative; width: 620px; height: 620px;
+      display: flex; align-items: center; justify-content: center;
+      transform-style: preserve-3d; will-change: transform, opacity, filter;
+    }
+    .halo {
+      position: absolute; width: 1100px; height: 1100px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(110, 160, 201, 0.68) 0%, rgba(58, 101, 144, 0.26) 36%, rgba(10, 21, 40, 0) 70%);
+      filter: blur(36px); z-index: 1;
+    }
+    .logo {
+      position: relative; width: 560px; height: auto; z-index: 2;
+      filter: url(#cutout-white)
+              drop-shadow(0 30px 50px rgba(10, 21, 40, 0.65))
+              drop-shadow(0 0 40px rgba(110, 160, 201, 0.35));
+      transform-origin: center center; will-change: transform, opacity, filter;
+    }
+    .tagline {
+      position: absolute; bottom: 18%; left: 50%;
+      font-size: 22px; font-weight: 300; letter-spacing: 0.52em;
+      text-transform: uppercase; color: #D6E4F2; white-space: nowrap;
+      z-index: 9;
+    }
+
+    /* ===== Dashboard (background for acts 2, 3, 4) ===== */
+    .dashboard-layer {
+      position: absolute; inset: 0; z-index: 2;
+      background: #F4F6FA; overflow: hidden;
+    }
+    .dashboard {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      transform-origin: 82% 88%;  /* zoom anchor: bottom-right (where the orb lives) */
+    }
+
+    /* ===== ACT 2 — Mira orb awakens ===== */
+    .act-2 { position: absolute; inset: 0; z-index: 9; pointer-events: none; }
+    .mira-orb-stage {
+      position: absolute; top: 50%; left: 50%;
+      display: flex; flex-direction: column; align-items: center; gap: 36px;
+    }
+    .mira-orb {
+      position: relative; width: 320px; height: 320px; border-radius: 50%;
+      isolation: isolate; overflow: visible; will-change: transform;
+    }
+    .mira-orb .orb-core {
+      position: absolute; inset: 24%; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.18) 0%, rgba(99,102,241,0.55) 30%, rgba(58,101,144,0.85) 70%);
+      box-shadow: inset 0 0 40px rgba(99, 102, 241, 0.35);
+      z-index: 5;
+    }
+    .mira-orb .orb-halo {
+      position: absolute; inset: -18%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(110,160,201,0.55) 0%, rgba(99,102,241,0.22) 40%, transparent 70%);
+      filter: blur(24px); z-index: 1;
+    }
+    .mira-orb .blob {
+      position: absolute; inset: 10%; border-radius: 50%;
+      filter: blur(28px); z-index: 2; mix-blend-mode: screen;
+      will-change: transform, opacity;
+    }
+    .mira-orb .blob-pink   { background: radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.85) 0%, transparent 60%); }
+    .mira-orb .blob-blue   { background: radial-gradient(circle at 60% 40%, rgba(99, 102, 241, 0.85) 0%, transparent 60%); }
+    .mira-orb .blob-violet { background: radial-gradient(circle at 45% 60%, rgba(139, 92, 246, 0.80) 0%, transparent 60%); }
+    .mira-orb .blob-cyan   { background: radial-gradient(circle at 60% 60%, rgba(110, 160, 201, 0.85) 0%, transparent 60%); }
+
+    .mira-label {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 56px; font-weight: 300; letter-spacing: 0.12em;
+      color: #D6E4F2; text-align: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(214, 228, 242, 0.45);
+    }
+    .chips { display: flex; gap: 14px; }
+    .chip {
+      font-family: Inter, sans-serif;
+      font-size: 15px; font-weight: 500;
+      padding: 10px 20px; border-radius: 999px;
+      background: rgba(214, 228, 242, 0.08);
+      border: 1px solid rgba(214, 228, 242, 0.18);
+      color: #D6E4F2; backdrop-filter: blur(6px);
+      letter-spacing: 0.02em;
+    }
+
+    /* ===== ACT 3 — Drawer + prompt + event card ===== */
+    .act-3 { position: absolute; inset: 0; z-index: 12; pointer-events: none; }
+    .drawer {
+      position: absolute; top: 9%; left: 50%;
+      width: 980px;
+      background: rgba(10, 21, 40, 0.88);
+      backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid rgba(110, 160, 201, 0.22);
+      border-radius: 24px;
+      padding: 28px 32px;
+      display: flex; flex-direction: column; gap: 22px;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+    }
+    .searchbar {
+      display: flex; align-items: center; gap: 18px;
+      padding: 18px 22px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.22);
+      border-radius: 16px;
+      font-family: Inter, sans-serif; font-size: 22px; color: #D6E4F2;
+    }
+    .search-glyph { display: flex; gap: 6px; }
+    .search-glyph span {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #6366F1;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.55);
+    }
+    .search-text { flex: 1; min-height: 30px; white-space: pre; }
+    .search-cursor {
+      width: 2px; height: 26px; background: #6EA0C9; opacity: 0;
+    }
+    .tool-chip {
+      align-self: flex-start;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 18px;
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid rgba(99, 102, 241, 0.38);
+      border-radius: 999px;
+      font-family: Inter, sans-serif; font-size: 15px; color: #D6E4F2;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .tool-spinner {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 2px solid rgba(99, 102, 241, 0.3);
+      border-top-color: #6366F1;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .event-card {
+      background: rgba(214, 228, 242, 0.04);
+      border: 1px solid rgba(110, 160, 201, 0.25);
+      border-radius: 18px;
+      padding: 20px 24px;
+      display: flex; justify-content: space-between; align-items: center; gap: 24px;
+    }
+    .event-head { display: flex; align-items: center; gap: 18px; }
+    .event-emoji { font-size: 42px; line-height: 1; }
+    .event-title {
+      font-family: Inter, sans-serif; font-size: 22px; font-weight: 600;
+      color: #D6E4F2; letter-spacing: -0.01em;
+    }
+    .event-sub {
+      font-family: Inter, sans-serif; font-size: 15px; font-weight: 400;
+      color: rgba(214, 228, 242, 0.65); margin-top: 4px;
+    }
+    .event-action {
+      font-family: Inter, sans-serif; font-size: 14px; font-weight: 600;
+      color: #A5A7F8; letter-spacing: 0.02em;
+    }
+
+    /* ===== ACT 4 — Actions / plan ===== */
+    .act-4 { position: absolute; inset: 0; z-index: 13; pointer-events: none; }
+    .wipe-divider {
+      position: absolute; top: 0; bottom: 0; left: 0;
+      width: 4px; background: #6366F1;
+      box-shadow: 0 0 60px rgba(99, 102, 241, 0.6);
+      transform-origin: left center; z-index: 25;
+    }
+    .reco-card {
+      position: absolute; top: 50%; left: 50%;
+      width: 1100px;
+      background: rgba(10, 21, 40, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(110, 160, 201, 0.28);
+      border-radius: 24px;
+      padding: 36px 44px;
+      display: flex; flex-direction: column; gap: 26px;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6);
+    }
+    .reco-head { display: flex; align-items: center; gap: 20px; }
+    .reco-icon {
+      font-size: 48px; line-height: 1;
+      filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.4));
+    }
+    .reco-title {
+      font-family: Inter, sans-serif; font-size: 30px; font-weight: 600;
+      color: #D6E4F2; letter-spacing: -0.015em;
+    }
+    .reco-sub {
+      font-family: Inter, sans-serif; font-size: 16px; font-weight: 400;
+      color: rgba(214, 228, 242, 0.65); margin-top: 4px;
+    }
+    .reco-badge {
+      margin-left: auto;
+      padding: 8px 16px; border-radius: 999px;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #F59E0B;
+      font-family: Inter, sans-serif; font-size: 13px; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .reco-counters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .counter-block {
+      background: rgba(214, 228, 242, 0.04);
+      border: 1px solid rgba(110, 160, 201, 0.18);
+      border-radius: 14px;
+      padding: 22px 24px;
+    }
+    .counter-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 54px; font-weight: 600;
+      color: #D6E4F2; letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .counter-value.deadline { color: #F43F5E; }
+    .counter-label {
+      margin-top: 10px;
+      font-family: Inter, sans-serif; font-size: 13px; font-weight: 600;
+      color: rgba(214, 228, 242, 0.82);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    .reco-table { display: flex; flex-direction: column; gap: 10px; }
+    .reco-table .row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 16px; align-items: center;
+      padding: 14px 18px;
+      background: rgba(214, 228, 242, 0.08);
+      border: 1px solid rgba(110, 160, 201, 0.2);
+      border-radius: 12px;
+      font-family: Inter, sans-serif; font-size: 16px; font-weight: 500;
+      color: #E8EEF6;
+      will-change: transform, opacity;
+    }
+    .reco-table .stock-neg { color: #FB7185; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .reco-table .qty { font-variant-numeric: tabular-nums; color: rgba(214, 228, 242, 0.9); font-weight: 500; }
+    .priority {
+      justify-self: end;
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .priority.critical { background: rgba(244, 63, 94, 0.18); color: #F43F5E; border: 1px solid rgba(244, 63, 94, 0.35); }
+    .priority.high     { background: rgba(245, 158, 11, 0.18); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .priority.medium   { background: rgba(110, 160, 201, 0.18); color: #6EA0C9; border: 1px solid rgba(110, 160, 201, 0.35); }
+
+    .approve-btn {
+      align-self: flex-end;
+      padding: 16px 32px;
+      background: #6366F1;
+      color: #FFFFFF;
+      border: none; border-radius: 12px;
+      font-family: Inter, sans-serif; font-size: 16px; font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
+      will-change: transform, box-shadow;
+    }
+
+    /* ===== ACT 5 — Close + outro ===== */
+    .act-5 { position: absolute; inset: 0; z-index: 14; pointer-events: none; }
+    .confirm-toast {
+      position: absolute; bottom: 18%; left: 50%;
+      padding: 18px 28px;
+      background: rgba(16, 185, 129, 0.92);
+      color: #FFFFFF;
+      border-radius: 14px;
+      font-family: Inter, sans-serif; font-size: 18px; font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: 0 12px 32px rgba(16, 185, 129, 0.45);
+    }
+    .outro-stage {
+      position: absolute; top: 50%; left: 50%;
+      display: flex; flex-direction: column; align-items: center; gap: 32px;
+    }
+    .outro-orb {
+      position: relative; width: 180px; height: 180px; border-radius: 50%;
+      isolation: isolate;
+    }
+    .outro-orb .orb-core {
+      position: absolute; inset: 18%; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.2) 0%, rgba(99,102,241,0.6) 30%, rgba(58,101,144,0.9) 70%);
+      z-index: 5;
+    }
+    .outro-orb .blob {
+      position: absolute; inset: 8%; border-radius: 50%;
+      filter: blur(22px); z-index: 2; mix-blend-mode: screen;
+    }
+    .outro-orb .blob-pink   { background: radial-gradient(circle, rgba(236, 72, 153, 0.9) 0%, transparent 60%); }
+    .outro-orb .blob-blue   { background: radial-gradient(circle, rgba(99, 102, 241, 0.9) 0%, transparent 60%); }
+    .outro-orb .blob-violet { background: radial-gradient(circle, rgba(139, 92, 246, 0.9) 0%, transparent 60%); }
+    .outro-orb .blob-cyan   { background: radial-gradient(circle, rgba(110, 160, 201, 0.9) 0%, transparent 60%); }
+    .outro-baseline {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 24px; font-weight: 300; letter-spacing: 0.32em;
+      text-transform: uppercase; color: #D6E4F2; text-align: center;
+    }
+    .outro-year {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 13px; font-weight: 500; letter-spacing: 0.5em;
+      color: rgba(214, 228, 242, 0.78); margin-top: 10px;
+    }
+
+    /* ===== Flash overlay (transitions) ===== */
+    .flash {
+      position: absolute; inset: 0; z-index: 40;
+      background: #FFFFFF; pointer-events: none;
+    }
+    .act5-fade {
+      position: absolute; inset: 0; z-index: 15;
+      background: radial-gradient(ellipse at 50% 50%, rgba(10, 21, 40, 0) 0%, rgba(10, 21, 40, 1) 70%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div data-composition-id="pitch" data-start="0" data-duration="25" data-width="1920" data-height="1080">
+
+    <!-- SVG filter: strips white from the PNG (alpha = -R -G -B + 3A). -->
+    <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+      <defs>
+        <filter id="cutout-white" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+          <feColorMatrix type="matrix" values="
+            1 0 0 0 0
+            0 1 0 0 0
+            0 0 1 0 0
+            -1 -1 -1 3 0"/>
+        </filter>
+      </defs>
+    </svg>
+
+    <div class="camera-rig">
+
+      <!-- Dashboard background (acts 2-4) -->
+      <div class="dashboard-layer">
+        <img class="dashboard" src="dashboard.png" alt="Mirakl Connect Dashboard" />
+      </div>
+
+      <!-- Persistent ghost layer -->
+      <div class="ghost-layer">
+        <div class="ghost-word" id="ghost-word">MIRAKL</div>
+      </div>
+
+      <!-- Persistent particles -->
+      <div class="particles">
+        <div class="particle" style="top:18%; left:22%;"></div>
+        <div class="particle" style="top:28%; left:78%;"></div>
+        <div class="particle" style="top:62%; left:18%;"></div>
+        <div class="particle" style="top:72%; left:82%;"></div>
+        <div class="particle" style="top:38%; left:88%;"></div>
+        <div class="particle" style="top:82%; left:48%;"></div>
+        <div class="particle" style="top:14%; left:58%;"></div>
+        <div class="particle" style="top:88%; left:12%;"></div>
+        <div class="particle" style="top:42%; left:12%;"></div>
+        <div class="particle" style="top:56%; left:92%;"></div>
+        <div class="particle" style="top:22%; left:42%;"></div>
+        <div class="particle" style="top:66%; left:64%;"></div>
+      </div>
+
+      <!-- ===== ACT 1 — Mirakl logo reveal ===== -->
+      <div class="act-1">
+        <div class="logo-wrap">
+          <div class="halo"></div>
+          <img class="logo" src="mirakl-logo.png" alt="Mirakl" />
+        </div>
+        <div class="tagline">Powered&nbsp;&nbsp;by&nbsp;&nbsp;Mira</div>
+      </div>
+
+      <!-- ===== ACT 2 — Mira orb ===== -->
+      <div class="act-2">
+        <div class="mira-orb-stage">
+          <div class="mira-orb">
+            <div class="orb-halo"></div>
+            <div class="blob blob-pink"></div>
+            <div class="blob blob-blue"></div>
+            <div class="blob blob-violet"></div>
+            <div class="blob blob-cyan"></div>
+            <div class="orb-core"></div>
+          </div>
+          <div class="mira-label">Mira</div>
+          <div class="chips">
+            <span class="chip">Stock</span>
+            <span class="chip">Calendrier</span>
+            <span class="chip">Actions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ACT 3 — Drawer + prompt + event ===== -->
+      <div class="act-3">
+        <div class="drawer">
+          <div class="searchbar">
+            <div class="search-glyph"><span></span><span></span><span></span></div>
+            <div class="search-text" id="prompt-text"></div>
+            <div class="search-cursor"></div>
+          </div>
+          <div class="tool-chip">
+            <span>⚡</span>
+            <span>create_calendar_event</span>
+            <span class="tool-spinner"></span>
+          </div>
+          <div class="event-card">
+            <div class="event-head">
+              <span class="event-emoji">🏖️</span>
+              <div>
+                <div class="event-title">Congés Savoie</div>
+                <div class="event-sub">10 → 20 mai · 10 jours · impact élevé</div>
+              </div>
+            </div>
+            <div class="event-action">Voir le plan restock →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ACT 4 — Actions / plan ===== -->
+      <div class="act-4">
+        <div class="wipe-divider"></div>
+        <div class="reco-card">
+          <div class="reco-head">
+            <span class="reco-icon">📦</span>
+            <div>
+              <div class="reco-title">Plan de restock avant congés</div>
+              <div class="reco-sub">5 SKUs projetés en rupture · horizon 10 jours · 4 fournisseurs</div>
+            </div>
+            <span class="reco-badge">À valider</span>
+          </div>
+          <div class="reco-counters">
+            <div class="counter-block">
+              <div class="counter-value" id="counter-sku">0</div>
+              <div class="counter-label">SKUs à risque</div>
+            </div>
+            <div class="counter-block">
+              <div class="counter-value" id="counter-cost">€0</div>
+              <div class="counter-label">Coût estimé</div>
+            </div>
+            <div class="counter-block">
+              <div class="counter-value deadline" id="counter-deadline">—</div>
+              <div class="counter-label">Deadline commande</div>
+            </div>
+          </div>
+          <div class="reco-table">
+            <div class="row r-1">
+              <span>Chaise Oslo · NKS-00042</span>
+              <span class="stock-neg">stock &minus;14</span>
+              <span class="qty">cmd 50 u.</span>
+              <span class="priority critical">Critical</span>
+            </div>
+            <div class="row r-2">
+              <span>Étagère Lofoten · NKS-00088</span>
+              <span class="stock-neg">stock &minus;8</span>
+              <span class="qty">cmd 30 u.</span>
+              <span class="priority high">High</span>
+            </div>
+            <div class="row r-3">
+              <span>Table Bergen · NKS-00121</span>
+              <span class="stock-neg">stock &minus;4</span>
+              <span class="qty">cmd 18 u.</span>
+              <span class="priority medium">Medium</span>
+            </div>
+          </div>
+          <button class="approve-btn">Approuver la sélection &nbsp;→</button>
+        </div>
+      </div>
+
+      <!-- ===== ACT 5 — Close + outro ===== -->
+      <div class="act-5">
+        <div class="confirm-toast">✓ 4 commandes créées</div>
+        <div class="act5-fade"></div>
+        <div class="outro-stage">
+          <div class="outro-orb">
+            <div class="blob blob-pink"></div>
+            <div class="blob blob-blue"></div>
+            <div class="blob blob-violet"></div>
+            <div class="blob blob-cyan"></div>
+            <div class="orb-core"></div>
+          </div>
+          <div>
+            <div class="outro-baseline">Mira — Powered&nbsp;by&nbsp;Mirakl × Eugenia</div>
+            <div class="outro-year">MERCHANT&nbsp;&nbsp;OPS&nbsp;&nbsp;COPILOT · 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Persistent chrome — always on top of content except flash -->
+      <div class="chrome">
+        <div class="hairline top"></div>
+        <div class="hairline bottom"></div>
+        <div class="kicker top-left">MIRAKL / CONNECT</div>
+        <div class="kicker top-right">HACKATHON × EUGENIA</div>
+        <div class="brand-bar">
+          <span>Merchant&nbsp;Ops&nbsp;Copilot</span>
+          <span>v0.1 · 2026</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flash"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* ===== Initial states — everything invisible, content positioned for its hero frame ===== */
+      tl.set(".flash", { opacity: 0 }, 0);
+      tl.set(".camera-rig", { x: 0, y: 0, scale: 1, rotation: 0 }, 0);
+
+      // Ghost word — positioned + text "MIRAKL"
+      tl.set(".ghost-word", { xPercent: -50, yPercent: -50, opacity: 0, scale: 0.94, y: 20 }, 0);
+
+      // Particles + chrome
+      tl.set(".particle", { opacity: 0, scale: 0, x: 0, y: 0 }, 0);
+      tl.set(".hairline", { scaleX: 0, opacity: 0 }, 0);
+      tl.set(".kicker", { opacity: 0, y: -8 }, 0);
+      tl.set(".brand-bar", { opacity: 0, y: 12 }, 0);
+
+      // Dashboard hidden initially
+      tl.set(".dashboard-layer", { opacity: 0 }, 0);
+      tl.set(".dashboard", { scale: 1.14 }, 0);
+
+      // Act 1
+      tl.set(".logo-wrap", { opacity: 0, scale: 0.62, rotationY: -22, rotationX: 8, rotation: -8, z: -260 }, 0);
+      tl.set(".halo", { opacity: 0, scale: 0.55 }, 0);
+      tl.set(".logo", { opacity: 0, y: 18, rotation: 0 }, 0);
+      tl.set(".tagline", { xPercent: -50, opacity: 0, y: 18, letterSpacing: "0.72em" }, 0);
+
+      // Act 2
+      tl.set(".mira-orb-stage", { xPercent: -50, yPercent: -50, opacity: 0, scale: 0.6 }, 0);
+      tl.set(".mira-orb .blob", { opacity: 0, scale: 0.2 }, 0);
+      tl.set(".mira-orb .orb-core", { opacity: 0, scale: 0.5 }, 0);
+      tl.set(".mira-orb .orb-halo", { opacity: 0, scale: 0.6 }, 0);
+      tl.set(".mira-label", { opacity: 0, y: 16 }, 0);
+      tl.set(".chips", { opacity: 0 }, 0);
+      tl.set(".chip", { opacity: 0, y: 14, scale: 0.9 }, 0);
+
+      // Act 3
+      tl.set(".drawer", { xPercent: -50, opacity: 0, y: -40, scale: 0.96 }, 0);
+      tl.set(".tool-chip", { opacity: 0, y: 10 }, 0);
+      tl.set(".event-card", { opacity: 0, y: 20 }, 0);
+      tl.set(".search-cursor", { opacity: 0 }, 0);
+
+      // Act 4
+      tl.set(".wipe-divider", { scaleX: 0, opacity: 0 }, 0);
+      tl.set(".reco-card", { xPercent: -50, yPercent: -50, opacity: 0, y: 30, scale: 0.96 }, 0);
+      tl.set(".reco-head", { opacity: 0, y: 12 }, 0);
+      tl.set(".counter-block", { opacity: 0, y: 18 }, 0);
+      tl.set(".reco-table .row", { opacity: 0, x: -20 }, 0);
+      tl.set(".approve-btn", { opacity: 0, y: 12, scale: 0.95 }, 0);
+
+      // Act 5
+      tl.set(".confirm-toast", { xPercent: -50, opacity: 0, y: 40 }, 0);
+      tl.set(".act5-fade", { opacity: 0 }, 0);
+      tl.set(".outro-stage", { xPercent: -50, yPercent: -50, opacity: 0, scale: 0.9 }, 0);
+      tl.set(".outro-orb .blob", { opacity: 0, scale: 0.3 }, 0);
+      tl.set(".outro-orb .orb-core", { opacity: 0, scale: 0.5 }, 0);
+
+
+      /* =================================================================
+         ACT 1 — Mirakl logo reveal (0 – 6s)
+         ================================================================= */
+
+      // Chrome
+      tl.to(".hairline.top",    { scaleX: 1, opacity: 1, duration: 1.2, ease: "power3.out" }, 0.35);
+      tl.to(".hairline.bottom", { scaleX: 1, opacity: 1, duration: 1.2, ease: "power3.out" }, 0.45);
+      tl.to(".kicker", { opacity: 0.65, y: 0, duration: 0.9, ease: "sine.out", stagger: 0.08 }, 0.55);
+      tl.to(".brand-bar", { opacity: 1, y: 0, duration: 0.9, ease: "sine.out" }, 1.6);
+
+      // Ghost word
+      tl.to(".ghost-word", { opacity: 0.055, scale: 1, y: 0, duration: 1.8, ease: "sine.inOut" }, 0.4);
+
+      // Halo + logo
+      tl.to(".halo", { opacity: 0.88, scale: 1, duration: 1.6, ease: "power2.out" }, 0.55);
+      tl.to(".logo-wrap", { opacity: 1, scale: 1, rotationY: 0, rotationX: 0, rotation: 0, z: 0, duration: 1.5, ease: "expo.out" }, 0.7);
+      tl.to(".logo", { opacity: 1, y: 0, duration: 1.1, ease: "power2.out" }, 0.9);
+      tl.to(".tagline", { opacity: 0.9, y: 0, letterSpacing: "0.52em", duration: 1.2, ease: "power2.out" }, 1.5);
+
+      // Particles
+      tl.to(".particle", { opacity: 0.6, scale: 1, duration: 0.6, ease: "power2.out", stagger: 0.07 }, 1.0);
+
+      // Slow continuous rotation of logo
+      tl.to(".logo", { rotation: 70, duration: 4.0, ease: "none" }, 0.9);
+
+      // Idle 3D sway
+      tl.to(".logo-wrap", { rotationY: 14, rotationX: -3, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.2);
+      tl.to(".halo", { scale: 1.1, opacity: 1, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.2);
+      tl.to(".logo-wrap", { y: -16, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.2);
+
+      // Wind-up
+      tl.to(".logo-wrap", { scale: 0.92, z: -120, rotationY: -12, duration: 0.35, ease: "power2.in", overwrite: "auto" }, 4.0);
+
+      // Dive
+      tl.to(".logo-wrap", { scale: 22, rotationY: 38, rotationX: -6, z: 1100, duration: 1.2, ease: "power3.in", overwrite: "auto" }, 4.35);
+      tl.to(".logo", { rotation: 340, filter: "url(#cutout-white) blur(4px) drop-shadow(0 0 60px rgba(110,160,201,0.7))", duration: 1.2, ease: "power3.in", overwrite: "auto" }, 4.35);
+      tl.to(".halo", { scale: 4.5, opacity: 0, duration: 1.1, ease: "power2.in", overwrite: "auto" }, 4.35);
+
+      // Camera shake on impact
+      tl.to(".camera-rig", {
+        keyframes: { x: [0, -6, 4, -8, 6, -4, 0], y: [0, 4, -6, 2, -8, 5, 0], rotation: [0, -0.4, 0.5, -0.6, 0.3, -0.2, 0] },
+        duration: 1.0, ease: "power1.in"
+      }, 4.5);
+
+      // Logo fades, flash, dashboard reveal
+      tl.to(".logo", { opacity: 0, duration: 0.3, ease: "power2.in", overwrite: "auto" }, 5.2);
+      tl.to(".tagline", { opacity: 0, duration: 0.4, ease: "power2.in" }, 5.0);
+      tl.to(".flash", { opacity: 1, duration: 0.25, ease: "power2.in" }, 5.25);
+
+      // Dashboard appears
+      tl.to(".dashboard-layer", { opacity: 1, duration: 0.3, ease: "power1.out" }, 5.35);
+      tl.to(".dashboard", { scale: 1, duration: 1.2, ease: "power3.out" }, 5.35);
+
+      tl.to(".flash", { opacity: 0, duration: 0.55, ease: "power2.out" }, 5.55);
+
+      /* =================================================================
+         ACT 2 — Mira orb awakens (6 – 10.5s)
+         ================================================================= */
+
+      // Swap ghost word text: MIRAKL → MIRA
+      tl.call(() => { document.getElementById("ghost-word").textContent = "MIRA"; }, [], 6.0);
+
+      // Dashboard zooms/pans toward the Mira orb corner (bottom-right)
+      tl.to(".dashboard", { scale: 1.8, x: -360, y: -240, duration: 1.5, ease: "power3.inOut", overwrite: "auto" }, 6.0);
+
+      // Mira orb materializes at center
+      tl.to(".mira-orb-stage", { opacity: 1, scale: 1, duration: 1.2, ease: "expo.out" }, 6.6);
+      tl.to(".mira-orb .orb-halo", { opacity: 1, scale: 1, duration: 1.3, ease: "power2.out" }, 6.7);
+      tl.to(".mira-orb .orb-core", { opacity: 1, scale: 1, duration: 1.0, ease: "back.out(1.1)" }, 6.9);
+
+      // Blobs animate in with different delays (ref: iris-drift pattern from src/globals.css)
+      tl.to(".mira-orb .blob-pink",   { opacity: 0.85, scale: 1, duration: 1.0, ease: "power2.out" }, 6.8);
+      tl.to(".mira-orb .blob-blue",   { opacity: 0.85, scale: 1, duration: 1.0, ease: "power2.out" }, 6.95);
+      tl.to(".mira-orb .blob-violet", { opacity: 0.8,  scale: 1, duration: 1.0, ease: "power2.out" }, 7.10);
+      tl.to(".mira-orb .blob-cyan",   { opacity: 0.85, scale: 1, duration: 1.0, ease: "power2.out" }, 7.25);
+
+      // Each blob drifts on its own schedule — feels alive, not synchronized
+      tl.to(".mira-orb .blob-pink",   { x:  22, y: -18, duration: 3.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.4);
+      tl.to(".mira-orb .blob-blue",   { x: -24, y: -14, duration: 3.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.6);
+      tl.to(".mira-orb .blob-violet", { x:  16, y:  22, duration: 3.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.8);
+      tl.to(".mira-orb .blob-cyan",   { x: -20, y:  18, duration: 3.1, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.0);
+
+      // Orb breath
+      tl.to(".mira-orb", { scale: 1.08, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.5);
+
+      // Label + chips
+      tl.to(".mira-label", { opacity: 1, y: 0, duration: 0.9, ease: "expo.out" }, 7.8);
+      tl.to(".chips", { opacity: 1, duration: 0.1 }, 8.2);
+      tl.to(".chip", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.2)", stagger: 0.1 }, 8.2);
+
+      /* =================================================================
+         ACT 3 — The ask (10.5 – 15s)
+         ================================================================= */
+
+      // Orb explodes outward, fades
+      tl.to(".mira-orb", { scale: 2.4, opacity: 0, duration: 0.7, ease: "power2.in" }, 10.5);
+      tl.to(".mira-label", { opacity: 0, y: -12, duration: 0.4, ease: "power2.in" }, 10.5);
+      tl.to(".chip", { opacity: 0, y: 10, duration: 0.3, ease: "power2.in", stagger: 0.04 }, 10.5);
+
+      // Dashboard dezooms back
+      tl.to(".dashboard", { scale: 1.4, x: -180, y: -120, duration: 1.0, ease: "power3.inOut" }, 10.4);
+
+      // Drawer slides down from top
+      tl.to(".drawer", { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "expo.out" }, 10.8);
+
+      // Cursor blink starts
+      tl.to(".search-cursor", { opacity: 1, duration: 0.1 }, 11.2);
+      tl.to(".search-cursor", {
+        opacity: 0.2,
+        duration: 0.5,
+        ease: "steps(1)",
+        yoyo: true,
+        repeat: 4
+      }, 11.3);
+
+      // Typewriter — "Je pars en congés du 10 au 20 mai"
+      const promptText = "Je pars en congés du 10 au 20 mai";
+      tl.to({ i: 0 }, {
+        i: promptText.length,
+        duration: 1.7,
+        ease: "none",
+        onUpdate: function () {
+          const n = Math.round(this.targets()[0].i);
+          const el = document.getElementById("prompt-text");
+          if (el) el.textContent = promptText.slice(0, n);
+        }
+      }, 11.35);
+
+      // Tool chip appears after prompt completes
+      tl.to(".tool-chip", { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 13.1);
+
+      // Event recap card slides in
+      tl.to(".event-card", { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 13.6);
+
+      /* =================================================================
+         ACT 4 — The plan (15 – 21s)
+         ================================================================= */
+
+      // Wipe divider
+      tl.to(".wipe-divider", { opacity: 1, duration: 0.05 }, 14.9);
+      tl.fromTo(".wipe-divider", { scaleX: 1 }, {
+        scaleX: 1,
+        x: "+=1920",
+        duration: 0.7,
+        ease: "power3.inOut"
+      }, 15.0);
+      // Hide old stuff mid-wipe
+      tl.to(".drawer",     { opacity: 0, duration: 0.3, ease: "power1.in" }, 15.3);
+      tl.to(".dashboard-layer", { opacity: 0, duration: 0.3, ease: "power1.in" }, 15.3);
+      tl.to(".wipe-divider", { opacity: 0, duration: 0.3, ease: "power2.out" }, 15.6);
+
+      // Swap ghost word: MIRA → PLAN
+      tl.call(() => { document.getElementById("ghost-word").textContent = "PLAN"; }, [], 15.4);
+
+      // Reco card appears
+      tl.to(".reco-card", { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "expo.out" }, 15.7);
+      tl.to(".reco-head", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 15.9);
+
+      // Counters stagger in
+      tl.to(".counter-block", { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.12 }, 16.4);
+
+      // Count up — SKUs
+      tl.to({ v: 0 }, {
+        v: 5, duration: 1.0, ease: "power2.out",
+        onUpdate: function () {
+          const el = document.getElementById("counter-sku");
+          if (el) el.textContent = Math.round(this.targets()[0].v);
+        }
+      }, 16.7);
+
+      // Count up — Cost
+      tl.to({ v: 0 }, {
+        v: 2430, duration: 1.2, ease: "power2.out",
+        onUpdate: function () {
+          const el = document.getElementById("counter-cost");
+          if (el) el.textContent = "€" + Math.round(this.targets()[0].v).toLocaleString("fr-FR");
+        }
+      }, 16.8);
+
+      // Deadline — appears with flash
+      tl.to({ v: 0 }, {
+        v: 1, duration: 0.4, ease: "power2.out",
+        onUpdate: function () {
+          const el = document.getElementById("counter-deadline");
+          if (el && el.textContent === "—") el.textContent = "7 mai";
+        }
+      }, 17.0);
+      tl.to(".counter-value.deadline", {
+        keyframes: { opacity: [1, 0.6, 1, 0.6, 1] },
+        duration: 0.8, ease: "power1.inOut"
+      }, 17.4);
+
+      // Table rows stagger in
+      tl.to(".reco-table .row", { opacity: 1, x: 0, duration: 0.5, ease: "expo.out", stagger: 0.12 }, 18.4);
+
+      // Approve button appears + pulse
+      tl.to(".approve-btn", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.2)" }, 19.6);
+      tl.to(".approve-btn", {
+        keyframes: { scale: [1, 1.04, 1], boxShadow: ["0 8px 24px rgba(99,102,241,0.45)", "0 12px 40px rgba(99,102,241,0.75)", "0 8px 24px rgba(99,102,241,0.45)"] },
+        duration: 1.1, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 20.1);
+
+      /* =================================================================
+         ACT 5 — Close + outro (21 – 25s)
+         ================================================================= */
+
+      // Simulated click on approve button
+      tl.to(".approve-btn", { scale: 0.95, duration: 0.1, ease: "power2.in", overwrite: "auto" }, 21.0);
+      tl.to(".approve-btn", { scale: 1, duration: 0.2, ease: "power3.out" }, 21.1);
+      tl.to(".flash", { opacity: 0.75, duration: 0.15, ease: "power2.in" }, 21.1);
+      tl.to(".flash", { opacity: 0, duration: 0.35, ease: "power2.out" }, 21.3);
+
+      // Confirmation toast
+      tl.to(".confirm-toast", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.2)" }, 21.3);
+
+      // Fade the reco-card + chrome out
+      tl.to(".reco-card", { opacity: 0, y: 20, duration: 0.6, ease: "power2.in" }, 21.9);
+      tl.to(".confirm-toast", { opacity: 0, y: 20, duration: 0.5, ease: "power2.in" }, 22.3);
+      tl.to(".hairline", { opacity: 0, duration: 0.5, ease: "power1.in" }, 22.1);
+      tl.to(".kicker", { opacity: 0, duration: 0.5, ease: "power1.in" }, 22.1);
+      tl.to(".brand-bar", { opacity: 0, duration: 0.5, ease: "power1.in" }, 22.1);
+      tl.to(".particle", { opacity: 0, duration: 0.5, ease: "power1.in" }, 22.1);
+
+      // Vignette fade
+      tl.to(".act5-fade", { opacity: 1, duration: 0.8, ease: "power2.out" }, 22.0);
+
+      // Ghost word fades
+      tl.to(".ghost-word", { opacity: 0, duration: 0.6, ease: "power2.in" }, 22.2);
+
+      // Outro orb appears
+      tl.to(".outro-stage", { opacity: 1, scale: 1, duration: 1.0, ease: "expo.out" }, 22.7);
+      tl.to(".outro-orb .orb-core", { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.1)" }, 22.8);
+      tl.to(".outro-orb .blob-pink",   { opacity: 0.9, scale: 1, duration: 0.8, ease: "power2.out" }, 22.85);
+      tl.to(".outro-orb .blob-blue",   { opacity: 0.9, scale: 1, duration: 0.8, ease: "power2.out" }, 22.95);
+      tl.to(".outro-orb .blob-violet", { opacity: 0.9, scale: 1, duration: 0.8, ease: "power2.out" }, 23.05);
+      tl.to(".outro-orb .blob-cyan",   { opacity: 0.9, scale: 1, duration: 0.8, ease: "power2.out" }, 23.15);
+
+      // Outro orb gentle breath
+      tl.to(".outro-orb", { scale: 1.06, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 23.5);
+
+      window.__timelines["pitch"] = tl;
+
+      // Standalone preview helper — open index.html?play=1 for auto-play & loop.
+      if (typeof window !== "undefined" && window.location && window.location.search.indexOf("play=1") !== -1) {
+        tl.eventCallback("onComplete", function () {
+          setTimeout(function () { tl.restart(); }, 600);
+        });
+        tl.play(0);
+      }
+    </script>
+  </div>
+</body>
+</html>
