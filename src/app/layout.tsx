@@ -1,7 +1,23 @@
 import './globals.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Metadata } from 'next'
+import { JetBrains_Mono, Roboto_Serif } from 'next/font/google'
 import AppShell from '@/components/AppShell'
+
+const robotoSerif = Roboto_Serif({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-roboto-serif',
+  display: 'swap',
+})
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'MIRAKL CONNECT',
@@ -15,11 +31,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-      </head>
-      <body className="bg-[#F2F8FF] font-serif text-[#03182F] antialiased">
+      <head />
+      <body className={`${robotoSerif.variable} ${jetBrainsMono.variable} bg-[#F2F8FF] font-serif text-[#03182F] antialiased`}>
         <AppShell>{children}</AppShell>
       </body>
     </html>

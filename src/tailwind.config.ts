@@ -53,8 +53,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ['Roboto Serif', 'Georgia', 'serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        serif: ['var(--font-roboto-serif)', 'serif'],
+        mono: ['var(--font-jetbrains-mono)', 'monospace'],
       },
       borderRadius: {
         DEFAULT: '8px',

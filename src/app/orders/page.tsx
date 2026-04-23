@@ -24,15 +24,15 @@ import {
 
 const stats = [
   { label: 'PENDING ACTION', value: '14', color: 'text-[#F22E75]', badge: '+2h', badgeBg: 'bg-[#F22E75]/10 text-[#F22E75]' },
-  { label: 'IN TRANSIT', value: '128', color: 'text-[#004bd9]', badge: '89%', badgeBg: 'bg-[#004bd9]/10 text-[#004bd9]' },
+  { label: 'IN TRANSIT', value: '128', color: 'text-[#2764FF]', badge: '89%', badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]' },
   { label: 'DELIVERED (24H)', value: '342', color: 'text-[#3FA46A]', badge: '↑4%', badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]' },
-  { label: 'PROCESSING', value: '56', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-slate-100 text-[#6B7480]' },
+  { label: 'PROCESSING', value: '56', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-[#F2F8FF] text-[#6B7480]' },
 ]
 
 const orders = [
   {
     marketplace: 'Amazon DE',
-    mpColor: 'bg-orange-500',
+    mpColor: 'bg-[#03182F]',
     mpCode: 'AMZ',
     orderId: '#ORD-99210-XC',
     date: 'Today, 10:24 AM',
@@ -48,13 +48,13 @@ const orders = [
     orderId: '#ORD-88271-AA',
     date: 'Yesterday, 4:15 PM',
     status: 'Shipped',
-    statusStyle: 'bg-[#e8f1ff] text-[#004bd9]',
+    statusStyle: 'bg-[#F2F8FF] text-[#2764FF]',
     items: 1,
     value: '€89.50',
   },
   {
     marketplace: 'Zalando FR',
-    mpColor: 'bg-black',
+    mpColor: 'bg-[#770031]',
     mpCode: 'ZLD',
     orderId: '#ORD-77112-ZZ',
     date: 'Nov 14, 2023',
@@ -65,12 +65,12 @@ const orders = [
   },
   {
     marketplace: 'Amazon FR',
-    mpColor: 'bg-orange-500',
+    mpColor: 'bg-[#03182F]',
     mpCode: 'AMZ',
     orderId: '#ORD-66231-PP',
     date: 'Nov 14, 2023',
     status: 'Processing',
-    statusStyle: 'bg-slate-100 text-[#6B7480]',
+    statusStyle: 'bg-[#F2F8FF] text-[#6B7480]',
     items: 1,
     value: '€55.00',
   },
@@ -79,7 +79,7 @@ const orders = [
 const logFeed = [
   { color: 'bg-[#3FA46A]', time: '14:02:11', text: 'Carrier picked up #ORD-88271-AA from Warehouse A.', pulse: false },
   { color: 'bg-[#F22E75]', time: '13:58:45', text: 'Payment verification failed for #ORD-99210-XC (AMZ DE).', pulse: true },
-  { color: 'bg-[#004bd9]', time: '13:45:02', text: 'Label generated for #ORD-22109-BY via DHL Express.', pulse: false },
+  { color: 'bg-[#2764FF]', time: '13:45:02', text: 'Label generated for #ORD-22109-BY via DHL Express.', pulse: false },
 ]
 
 const headlineKpis = [
@@ -171,23 +171,23 @@ const trafficTrendData = [
 ]
 
 const marketplaceRevenueData = [
-  { name: 'Amazon', revenue: 12800, fill: '#004BD9' },
+  { name: 'Amazon', revenue: 12800, fill: '#2764FF' },
   { name: 'Bol.com', revenue: 6900, fill: '#3FA46A' },
   { name: 'Zalando', revenue: 4300, fill: '#E0A93A' },
-  { name: 'Fnac', revenue: 2800, fill: '#A5B4FC' },
+  { name: 'Fnac', revenue: 2800, fill: '#F22E75' },
 ]
 
 const amazonStats = [
   { label: 'PENDING ACTION', value: '9', color: 'text-[#F22E75]', badge: '+1h', badgeBg: 'bg-[#F22E75]/10 text-[#F22E75]' },
-  { label: 'IN TRANSIT', value: '64', color: 'text-[#004bd9]', badge: '92%', badgeBg: 'bg-[#004bd9]/10 text-[#004bd9]' },
+  { label: 'IN TRANSIT', value: '64', color: 'text-[#2764FF]', badge: '92%', badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]' },
   { label: 'DELIVERED (24H)', value: '144', color: 'text-[#3FA46A]', badge: '↑7%', badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]' },
-  { label: 'PROCESSING', value: '21', color: 'text-[#03182F]', badge: 'FAST', badgeBg: 'bg-slate-100 text-[#6B7480]' },
+  { label: 'PROCESSING', value: '21', color: 'text-[#03182F]', badge: 'FAST', badgeBg: 'bg-[#F2F8FF] text-[#6B7480]' },
 ]
 
 const amazonOrders = [
   {
     marketplace: 'Amazon DE',
-    mpColor: 'bg-orange-500',
+    mpColor: 'bg-[#03182F]',
     mpCode: 'AMZ',
     orderId: '#AMZ-15423',
     date: 'Today, 11:08 AM',
@@ -198,67 +198,67 @@ const amazonOrders = [
   },
   {
     marketplace: 'Amazon FR',
-    mpColor: 'bg-orange-500',
+    mpColor: 'bg-[#03182F]',
     mpCode: 'AMZ',
     orderId: '#AMZ-15422',
     date: 'Today, 09:41 AM',
     status: 'Processing',
-    statusStyle: 'bg-slate-100 text-[#6B7480]',
+    statusStyle: 'bg-[#F2F8FF] text-[#6B7480]',
     items: 1,
     value: '€58.90',
   },
   {
     marketplace: 'Amazon ES',
-    mpColor: 'bg-orange-500',
+    mpColor: 'bg-[#03182F]',
     mpCode: 'AMZ',
     orderId: '#AMZ-15418',
     date: 'Yesterday, 5:21 PM',
     status: 'Shipped',
-    statusStyle: 'bg-[#e8f1ff] text-[#004bd9]',
+    statusStyle: 'bg-[#F2F8FF] text-[#2764FF]',
     items: 3,
     value: '€341.45',
   },
 ]
 
 const amazonLogFeed = [
-  { color: 'bg-[#004bd9]', time: '14:12:03', text: 'Amazon FR label generated for #AMZ-15423.', pulse: false },
+  { color: 'bg-[#2764FF]', time: '14:12:03', text: 'Amazon FR label generated for #AMZ-15423.', pulse: false },
   { color: 'bg-[#F22E75]', time: '13:56:40', text: 'Amazon DE payment issue detected for #AMZ-15422.', pulse: true },
   { color: 'bg-[#3FA46A]', time: '13:32:18', text: 'Amazon ES parcel handed to DHL.', pulse: false },
 ]
 
 const shopifyStats = [
   { label: 'PENDING ACTION', value: '5', color: 'text-[#F22E75]', badge: '+45m', badgeBg: 'bg-[#F22E75]/10 text-[#F22E75]' },
-  { label: 'IN TRANSIT', value: '41', color: 'text-[#004bd9]', badge: '94%', badgeBg: 'bg-[#004bd9]/10 text-[#004bd9]' },
+  { label: 'IN TRANSIT', value: '41', color: 'text-[#2764FF]', badge: '94%', badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]' },
   { label: 'DELIVERED (24H)', value: '88', color: 'text-[#3FA46A]', badge: '↑11%', badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]' },
-  { label: 'PROCESSING', value: '12', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-slate-100 text-[#6B7480]' },
+  { label: 'PROCESSING', value: '12', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-[#F2F8FF] text-[#6B7480]' },
 ]
 
 const shopifyOrders = [
   {
     marketplace: 'Shopify FR',
-    mpColor: 'bg-[#2A9D57]',
+    mpColor: 'bg-[#3FA46A]',
     mpCode: 'SHP',
     orderId: '#SHP-20431',
     date: 'Today, 10:02 AM',
     status: 'Processing',
-    statusStyle: 'bg-slate-100 text-[#6B7480]',
+    statusStyle: 'bg-[#F2F8FF] text-[#6B7480]',
     items: 2,
     value: '€124.00',
   },
   {
     marketplace: 'Shopify US',
-    mpColor: 'bg-[#2A9D57]',
+    mpColor: 'bg-[#3FA46A]',
     mpCode: 'SHP',
     orderId: '#SHP-20430',
     date: 'Today, 8:47 AM',
     status: 'Shipped',
-    statusStyle: 'bg-[#e8f1ff] text-[#004bd9]',
+    statusStyle: 'bg-[#F2F8FF] text-[#2764FF]',
     items: 1,
     value: '€72.99',
   },
   {
     marketplace: 'Shopify UK',
-    mpColor: 'bg-[#2A9D57]',
+    mpColor: 'bg-[#3FA46A]',
     mpCode: 'SHP',
     orderId: '#SHP-20426',
     date: 'Yesterday, 6:13 PM',
@@ -271,7 +271,7 @@ const shopifyOrders = [
 
 const shopifyLogFeed = [
   { color: 'bg-[#3FA46A]', time: '14:09:27', text: 'Shopify FR order #SHP-20431 confirmed and packed.', pulse: false },
-  { color: 'bg-[#004bd9]', time: '13:43:59', text: 'Tracking pushed to Shopify for #SHP-20430.', pulse: false },
+  { color: 'bg-[#2764FF]', time: '13:43:59', text: 'Tracking pushed to Shopify for #SHP-20430.', pulse: false },
   { color: 'bg-[#F22E75]', time: '13:19:08', text: 'Address validation requested for #SHP-20426.', pulse: true },
 ]
 
@@ -339,10 +339,10 @@ const SOURCE_DATA = {
       { date: '23 Apr', current: 24, previous: 21 },
     ],
     marketplaceRevenueData: [
-      { name: 'Amazon DE', revenue: 19200, fill: '#FF9900' },
-      { name: 'Amazon FR', revenue: 15300, fill: '#FFB84D' },
-      { name: 'Amazon ES', revenue: 9800, fill: '#FFD699' },
-      { name: 'Amazon IT', revenue: 6300, fill: '#FFEACC' },
+      { name: 'Amazon DE', revenue: 19200, fill: '#03182F' },
+      { name: 'Amazon FR', revenue: 15300, fill: '#2764FF' },
+      { name: 'Amazon ES', revenue: 9800, fill: '#3FA46A' },
+      { name: 'Amazon IT', revenue: 6300, fill: '#E0A93A' },
     ],
     currentPeriodLabel: 'Amazon: 24 Mar to 23 Apr 2026',
     previousPeriodLabel: 'Amazon: 21 Feb to 23 Mar 2026',
@@ -389,10 +389,10 @@ const SOURCE_DATA = {
       { date: '23 Apr', current: 12, previous: 7 },
     ],
     marketplaceRevenueData: [
-      { name: 'Shopify FR', revenue: 11800, fill: '#2A9D57' },
-      { name: 'Shopify US', revenue: 9200, fill: '#5ABF85' },
-      { name: 'Shopify UK', revenue: 7600, fill: '#8AD9AE' },
-      { name: 'Shopify EU', revenue: 5400, fill: '#BDEFD2' },
+      { name: 'Shopify FR', revenue: 11800, fill: '#3FA46A' },
+      { name: 'Shopify US', revenue: 9200, fill: '#2764FF' },
+      { name: 'Shopify UK', revenue: 7600, fill: '#E0A93A' },
+      { name: 'Shopify EU', revenue: 5400, fill: '#F22E75' },
     ],
     currentPeriodLabel: 'Shopify: 24 Mar to 23 Apr 2026',
     previousPeriodLabel: 'Shopify: 21 Feb to 23 Mar 2026',
@@ -466,7 +466,7 @@ export default function OrdersPage() {
                   type="button"
                   onClick={() => setSelectedSource(source.key)}
                   className={`h-8 rounded-full px-3 font-serif text-[12px] font-bold transition-colors ${
-                    active ? 'bg-[#004bd9] text-white' : 'bg-white text-[#42556A] border border-[#DDE5EE] hover:bg-[#F2F8FF]'
+                    active ? 'bg-[#2764FF] text-white' : 'bg-white text-[#30373E] border border-[#DDE5EE] hover:bg-[#F2F8FF]'
                   }`}
                 >
                   {source.label}
@@ -477,18 +477,18 @@ export default function OrdersPage() {
         </div>
         <div className="flex flex-wrap gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737687]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7480]" />
             <input
-              className="pl-10 pr-4 h-9 w-64 bg-white border border-[#DDE5EE] rounded font-serif text-[13px] focus:ring-1 focus:ring-[#004bd9] focus:border-[#004bd9] outline-none"
+              className="pl-10 pr-4 h-9 w-64 bg-white border border-[#DDE5EE] rounded font-serif text-[13px] focus:ring-1 focus:ring-[#2764FF] focus:border-[#2764FF] outline-none"
               placeholder={`Search ${selectedData.sourceLabel.toLowerCase()} orders...`}
               type="text"
             />
           </div>
-          <button className="h-9 px-4 border border-[#BFCBDA] rounded flex items-center gap-2 bg-white font-serif text-[13px] font-bold hover:bg-[#f3f2ff] transition-colors">
+          <button className="h-9 px-4 border border-[#BFCBDA] rounded flex items-center gap-2 bg-white font-serif text-[13px] font-bold hover:bg-[#F2F8FF] transition-colors">
             <SlidersHorizontal className="h-4 w-4" />
             Filter
           </button>
-          <button className="h-9 px-4 bg-[#004bd9] text-white rounded font-serif text-[13px] font-bold hover:opacity-90 transition-opacity">
+          <button className="h-9 px-4 bg-[#2764FF] text-white rounded font-serif text-[13px] font-bold hover:opacity-90 transition-opacity">
             Export Report
           </button>
         </div>
@@ -502,7 +502,7 @@ export default function OrdersPage() {
               const isPositive = kpi.delta > 0
               const isNegative = kpi.delta < 0
               return (
-                <div key={kpi.label} className="rounded-xl border border-[#E5EAF1] bg-[#F8FAFD] p-4">
+                <div key={kpi.label} className="rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] p-4">
                   <p className="font-serif text-[12px] font-bold text-[#30373E]">{kpi.label}</p>
                   <div className="mt-3 flex items-end gap-3">
                     <span className="font-serif text-[40px] leading-none font-bold tracking-tight text-[#03182F]">
@@ -511,7 +511,7 @@ export default function OrdersPage() {
                     </span>
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
-                        isPositive ? 'text-[#2A9D57] bg-[#2A9D57]/10' : isNegative ? 'text-[#D94A3A] bg-[#D94A3A]/10' : 'text-[#6B7480] bg-slate-100'
+                        isPositive ? 'text-[#3FA46A] bg-[#3FA46A]/10' : isNegative ? 'text-[#ba1a1a] bg-[#ba1a1a]/10' : 'text-[#6B7480] bg-[#F2F8FF]'
                       }`}
                     >
                       {isPositive ? <ArrowUpRight className="h-3 w-3" /> : null}
@@ -527,7 +527,7 @@ export default function OrdersPage() {
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={selectedData.trafficTrendData} margin={{ top: 12, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#E5EAF1" vertical={false} />
+                <CartesianGrid strokeDasharray="4 4" stroke="#DDE5EE" vertical={false} />
                 <XAxis dataKey="date" stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
                 <YAxis stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={36} />
                 <Tooltip
@@ -539,24 +539,24 @@ export default function OrdersPage() {
                     return (
                       <div className="rounded-lg border border-[#DDE5EE] bg-white px-3 py-2 shadow-sm">
                         <p className="font-serif text-[12px] font-bold text-[#03182F]">{label}</p>
-                        <p className="font-serif text-[12px] text-[#004BD9]">Current: {current}</p>
-                        <p className="font-serif text-[12px] text-[#7BBCE5]">Previous: {previous}</p>
+                        <p className="font-serif text-[12px] text-[#2764FF]">Current: {current}</p>
+                        <p className="font-serif text-[12px] text-[#6B7480]">Previous: {previous}</p>
                       </div>
                     )
                   }}
                 />
-                <Line type="monotone" dataKey="current" stroke="#00A0FF" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
-                <Line type="monotone" dataKey="previous" stroke="#8CC9EA" strokeWidth={3} strokeDasharray="5 6" dot={false} />
+                <Line type="monotone" dataKey="current" stroke="#2764FF" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
+                <Line type="monotone" dataKey="previous" stroke="#6B7480" strokeWidth={3} strokeDasharray="5 6" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-1 flex flex-wrap gap-6 px-2">
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#00A0FF]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#2764FF]" />
               <span className="font-serif text-[12px] text-[#6B7480]">{selectedData.currentPeriodLabel}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#8CC9EA]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#6B7480]" />
               <span className="font-serif text-[12px] text-[#6B7480]">{selectedData.previousPeriodLabel}</span>
             </div>
           </div>
@@ -572,11 +572,11 @@ export default function OrdersPage() {
                   <div key={kpi.title} className="rounded-xl border border-dashed border-[#DDE5EE] p-4">
                     <p className="font-serif text-[13px] text-[#30373E]">{kpi.title}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#4FAF5A]">{formatAmount(kpi.value)}</span>
+                      <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#3FA46A]">{formatAmount(kpi.value)}</span>
                       {kpi.subRatio ? <span className="font-serif text-[16px] text-[#30373E]">({kpi.subRatio})</span> : null}
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[12px] font-bold ${
-                          positive ? 'bg-[#4FAF5A]/10 text-[#2A9D57]' : 'bg-[#F22E75]/10 text-[#D94A3A]'
+                          positive ? 'bg-[#3FA46A]/10 text-[#3FA46A]' : 'bg-[#FFE7EC] text-[#ba1a1a]'
                         }`}
                       >
                         {positive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
@@ -598,11 +598,11 @@ export default function OrdersPage() {
             <div className="h-[290px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={selectedData.marketplaceRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EFF3F8" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#DDE5EE" />
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={38} />
                   <Tooltip
-                    cursor={{ fill: '#F8FAFD' }}
+                    cursor={{ fill: '#F2F8FF' }}
                     formatter={(value: number) => formatCurrency(value)}
                     labelFormatter={(label: string) => `${label}`}
                   />
@@ -623,7 +623,7 @@ export default function OrdersPage() {
             return (
               <div key={item.label} className="bg-white border border-dashed border-[#DDE5EE] rounded-xl p-4 sm:p-6">
                 <p className="font-serif text-[17px] text-[#30373E]">{item.label}</p>
-                <p className={`mt-2 font-serif text-[56px] leading-none tracking-tight font-bold ${positive ? 'text-[#4FAF5A]' : 'text-[#E35D4C]'}`}>
+                <p className={`mt-2 font-serif text-[56px] leading-none tracking-tight font-bold ${positive ? 'text-[#3FA46A]' : 'text-[#ba1a1a]'}`}>
                   {formatAmount(item.value)}
                 </p>
                 <p className="mt-2 font-serif text-[14px] text-[#6B7480]">
@@ -639,13 +639,13 @@ export default function OrdersPage() {
             <div key={item.label} className="bg-white border border-dashed border-[#DDE5EE] rounded-xl p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <p className="font-serif text-[17px] text-[#30373E]">{item.label}</p>
-                <button className="font-serif text-[13px] text-[#1C86E6] hover:underline">View all</button>
+                <button className="font-serif text-[13px] text-[#2764FF] hover:underline">View all</button>
               </div>
               <div className="mt-3 flex flex-wrap items-end gap-3">
-                <span className={`font-serif text-[58px] leading-none tracking-tight font-bold ${item.tone === 'primary' ? 'text-[#5B77E5]' : 'text-[#6583E6]'}`}>
+                <span className="font-serif text-[58px] leading-none tracking-tight font-bold text-[#2764FF]">
                   {formatAmount(item.value)}
                 </span>
-                <span className="font-serif text-[36px] leading-none tracking-tight text-[#E89B92]">
+                <span className="font-serif text-[36px] leading-none tracking-tight text-[#F22E75]">
                   {item.overdueLabel}: {formatAmount(item.overdueValue)}
                 </span>
               </div>
@@ -672,7 +672,7 @@ export default function OrdersPage() {
       {/* Orders Table */}
       <div className="bg-white border border-[#DDE5EE] rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-[#f3f2ff] border-b border-[#DDE5EE]">
+          <thead className="bg-[#F2F8FF] border-b border-[#DDE5EE]">
             <tr>
               {['Marketplace', 'Order ID & Date', 'Status', 'Items', 'Value'].map((h, i) => (
                 <th key={h} className={`px-6 py-4 font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase ${i === 4 ? 'text-right' : ''}`}>
@@ -681,9 +681,9 @@ export default function OrdersPage() {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-[#DDE5EE]">
             {selectedData.orders.map((o) => (
-              <tr key={o.orderId} className="hover:bg-slate-50/50 transition-colors cursor-pointer">
+              <tr key={o.orderId} className="hover:bg-[#F2F8FF] transition-colors cursor-pointer">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded ${o.mpColor} flex items-center justify-center text-[8px] text-white font-bold`}>
@@ -694,7 +694,7 @@ export default function OrdersPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="font-mono text-[12px] font-bold text-[#191b24]">{o.orderId}</span>
+                    <span className="font-mono text-[12px] font-bold text-[#03182F]">{o.orderId}</span>
                     <span className="font-serif text-[12px] text-[#6B7480]">{o.date}</span>
                   </div>
                 </td>
@@ -705,9 +705,9 @@ export default function OrdersPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center -space-x-2">
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-200" />
+                    <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF]" />
                     {o.items > 1 && (
-                      <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF] flex items-center justify-center">
                         <span className="text-[10px] font-mono text-[#6B7480]">+{o.items - 1}</span>
                       </div>
                     )}
@@ -727,13 +727,13 @@ export default function OrdersPage() {
             Showing <span className="font-bold">1-{selectedData.orders.length}</span> of <span className="font-bold">{formatNumber(selectedData.ordersCount, 0)}</span> orders
           </span>
           <div className="flex gap-1">
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-slate-50 transition-colors">
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <button className="w-8 h-8 rounded bg-[#004bd9] text-white text-[11px] font-bold">1</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-slate-50 transition-colors">2</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-slate-50 transition-colors">3</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-slate-50 transition-colors">
+            <button className="w-8 h-8 rounded bg-[#2764FF] text-white text-[11px] font-bold">1</button>
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">2</button>
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">3</button>
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -746,14 +746,14 @@ export default function OrdersPage() {
         <div className="col-span-8 bg-white border border-[#DDE5EE] rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-serif text-base font-bold text-[#03182F]">Logistics Feed</h3>
-            <span className="text-[10px] font-mono uppercase text-[#004bd9] bg-[#004bd9]/5 px-2 py-1 rounded">Live Syncing</span>
+            <span className="text-[10px] font-mono uppercase text-[#2764FF] bg-[#F2F8FF] px-2 py-1 rounded">Live Syncing</span>
           </div>
           <div className="space-y-3">
             {selectedData.logFeed.map((l, i) => (
-              <div key={i} className="flex items-center h-8 border-b border-slate-50">
+              <div key={i} className="flex items-center h-8 border-b border-[#DDE5EE]">
                 <span className={`w-2 h-2 rounded-full ${l.color} mr-4 ${l.pulse ? 'animate-pulse' : ''}`} />
                 <span className="font-mono text-[10px] text-[#6B7480] w-20">{l.time}</span>
-                <span className="font-serif text-[13px] text-[#191b24]">{l.text}</span>
+                <span className="font-serif text-[13px] text-[#03182F]">{l.text}</span>
               </div>
             ))}
           </div>
@@ -764,11 +764,11 @@ export default function OrdersPage() {
           <div>
             <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-2">QUICK DECISION</span>
             <h4 className="font-serif text-base font-bold mb-2">{selectedData.quickDecisionTitle}</h4>
-            <p className="font-serif text-[12px] text-slate-300">{selectedData.quickDecisionText}</p>
+            <p className="font-serif text-[12px] text-[#DDE5EE]">{selectedData.quickDecisionText}</p>
           </div>
           <div className="mt-4 space-y-2">
-            <button className="w-full h-9 bg-[#004bd9] text-white rounded font-serif text-[13px] font-bold hover:opacity-90">Auto-Replenish</button>
-            <button className="w-full h-9 bg-transparent border border-slate-700 text-white rounded font-serif text-[13px] font-bold hover:bg-white/5">Snooze Alert</button>
+            <button className="w-full h-9 bg-[#2764FF] text-white rounded font-serif text-[13px] font-bold hover:opacity-90">Auto-Replenish</button>
+            <button className="w-full h-9 bg-transparent border border-[#BFCBDA] text-white rounded font-serif text-[13px] font-bold hover:bg-[#F2F8FF]/10">Snooze Alert</button>
           </div>
         </div>
       </div>
