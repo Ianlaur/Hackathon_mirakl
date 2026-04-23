@@ -18,7 +18,6 @@ import {
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useAudioRecorder } from './useAudioRecorder'
-import { SimulatedBadge } from './SimulatedBadge'
 
 const STORAGE_KEY = 'iris_chat_history_v1'
 
@@ -118,9 +117,7 @@ export default function MascotChatDrawer({
   const placeholderActive = open && input.length === 0 && messages.length === 0 && !busy
   const animatedPlaceholder = useTypingPlaceholder(placeholderActive, PLACEHOLDER_PROMPTS)
 
-  // Hydrate depuis sessionStorage au mount (cache rapide), puis merge avec le
-  // serveur (source de vérité — mira_conversation_history). Jamais de lecture
-  // depuis decision_ledger : chat et traces vivent dans des tables séparées.
+  // Hydrate depuis sessionStorage au mount
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY)
@@ -132,33 +129,6 @@ export default function MascotChatDrawer({
       /* noop */
     }
     setHydrated(true)
-
-    const ctrl = new AbortController()
-    ;(async () => {
-      try {
-        const resp = await fetch('/api/mascot/history', { cache: 'no-store', signal: ctrl.signal })
-        if (!resp.ok) return
-        const payload = (await resp.json()) as {
-          messages: Array<{ role: string; content: string | null; tool_calls: unknown }>
-        }
-        const mapped: ChatMessage[] = payload.messages
-          .filter((m) => m.role === 'user' || m.role === 'assistant')
-          .map((m) => ({
-            role: m.role as ChatMessage['role'],
-            content: m.content ?? '',
-            tool_calls:
-              Array.isArray(m.tool_calls)
-                ? (m.tool_calls as ChatMessage['tool_calls'])
-                : undefined,
-          }))
-        if (mapped.length > 0) {
-          setMessages((current) => (current.length < mapped.length ? mapped : current))
-        }
-      } catch {
-        /* server history unavailable — silent fallback */
-      }
-    })()
-    return () => ctrl.abort()
   }, [])
 
   // Persiste dans sessionStorage quand messages change
@@ -194,9 +164,6 @@ export default function MascotChatDrawer({
     } catch {
       /* noop */
     }
-    fetch('/api/mascot/history', { method: 'DELETE' }).catch(() => {
-      /* best-effort server wipe */
-    })
   }
 
   const recorder = useAudioRecorder()
@@ -688,7 +655,6 @@ function EmailDraftCard({ draft }: { draft: EmailDraft }) {
             {draft.items_count} SKU · {draft.total_units} unités · {draft.total_cost_eur.toFixed(0)} €
           </p>
         </div>
-        <SimulatedBadge title="Brouillon préparé — aucun envoi réel tant que tu ne cliques pas 'Ouvrir dans Gmail'." />
       </div>
       <div className="iris-email__subject">{draft.subject}</div>
       <pre className="iris-email__body">{draft.body}</pre>
