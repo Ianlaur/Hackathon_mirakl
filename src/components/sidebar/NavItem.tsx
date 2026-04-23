@@ -10,6 +10,7 @@ import {
   ChevronDown,
   GitBranch,
   Grid,
+  History,
   Inbox,
   LayoutDashboard,
   Package,
@@ -22,16 +23,7 @@ import {
 } from 'lucide-react'
 import NavSubItem from '@/components/sidebar/NavSubItem'
 import type { NavItem as NavItemType } from '@/types/navigation'
-
-function LeiaIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="1 6 22 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="13" r="5" />
-      <ellipse cx="5.5" cy="11" rx="2.5" ry="2" />
-      <ellipse cx="18.5" cy="11" rx="2.5" ry="2" />
-    </svg>
-  )
-}
+import LeiaIcon from '@/components/LeiaIcon'
 
 const ICONS: Record<string, ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -49,6 +41,7 @@ const ICONS: Record<string, ComponentType<{ className?: string }>> = {
   Truck,
   Warehouse,
   TrendingDown,
+  History,
 }
 
 function resolveIcon(iconName?: string) {

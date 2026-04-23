@@ -19,6 +19,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
     { id: 'orders', label: 'Orders', icon: 'ShoppingCart', href: '/orders' },
     { id: 'stock', label: 'Stock', icon: 'Package', href: '/stock' },
     { id: 'lost', label: 'Losses', icon: 'AlertTriangle', href: '/losses' },
+    { id: 'activity', label: 'Activity', icon: 'History', href: '/activity' },
   ],
   bottomItems: [
     { id: 'appstore', label: 'App Store', icon: 'Grid', href: '/app-store' },

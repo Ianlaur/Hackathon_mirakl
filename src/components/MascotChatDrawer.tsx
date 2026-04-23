@@ -20,10 +20,12 @@ import remarkGfm from 'remark-gfm'
 import { useAudioRecorder } from './useAudioRecorder'
 
 const STORAGE_KEY = 'iris_chat_history_v1'
+const SESSION_KEY = 'iris_chat_session_v1'
 
 type ChatMessage = {
   role: 'user' | 'assistant'
   content: string
+  reasoning_summary?: string
   tool_calls?: Array<{ name: string; args: unknown; result: unknown }>
 }
 
@@ -111,6 +113,7 @@ export default function MascotChatDrawer({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hydrated, setHydrated] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -125,6 +128,8 @@ export default function MascotChatDrawer({
         const parsed = JSON.parse(raw) as ChatMessage[]
         if (Array.isArray(parsed)) setMessages(parsed)
       }
+      const storedSession = sessionStorage.getItem(SESSION_KEY)
+      if (storedSession) setSessionId(storedSession)
     } catch {
       /* noop */
     }
@@ -159,8 +164,10 @@ export default function MascotChatDrawer({
     setMessages([])
     setInput('')
     setError(null)
+    setSessionId(null)
     try {
       sessionStorage.removeItem(STORAGE_KEY)
+      sessionStorage.removeItem(SESSION_KEY)
     } catch {
       /* noop */
     }
@@ -297,7 +304,7 @@ export default function MascotChatDrawer({
         className={`iris-panel ${open ? 'iris-panel--open' : 'iris-panel--closed'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
-        aria-label="Mira"
+        aria-label="Leia"
       >
         <form onSubmit={handleSubmit} className="iris-searchbar">
           <div className="iris-searchbar__glyph">
@@ -516,6 +523,11 @@ function MessageBubble({
           </ReactMarkdown>
         )}
       </div>
+      {!isUser && message.reasoning_summary ? (
+        <p className="mt-2 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2 font-serif text-[12px] text-[#30373E]">
+          {message.reasoning_summary}
+        </p>
+      ) : null}
       {calendarCreated && (
         <EventRecapCard event={calendarCreated} onNavigate={onNavigate} />
       )}

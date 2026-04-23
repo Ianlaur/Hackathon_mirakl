@@ -1,7 +1,9 @@
+// Adapter endpoint: exposes MIRA decision_ledger in the RecommendationDTO shape
+// expected by ActionsPageClient. Keeps the UI component contract unchanged.
+
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
-import ActionsPageClient from './ActionsPageClient'
-import type { RecommendationDTO } from './types'
 import {
   decisionToRecommendation,
   type DecisionRecordInput,
@@ -9,7 +11,6 @@ import {
 
 export const dynamic = 'force-dynamic'
 
-// proposed/queued surface first — that's where the founder's attention goes.
 const PRIORITY_STATUS_ORDER: Record<string, number> = {
   proposed: 0,
   queued: 1,
@@ -20,12 +21,10 @@ const PRIORITY_STATUS_ORDER: Record<string, number> = {
   skipped: 6,
 }
 
-export default async function ActionsPage() {
-  const userId = await getCurrentUserId()
-
-  let serialized: RecommendationDTO[] = []
-
+export async function GET(_request: NextRequest) {
   try {
+    const userId = await getCurrentUserId()
+
     const decisions = await prisma.decisionRecord.findMany({
       where: { user_id: userId },
       take: 50,
@@ -55,10 +54,14 @@ export default async function ActionsPage() {
       return b.created_at.getTime() - a.created_at.getTime()
     })
 
-    serialized = sorted.map((d) => decisionToRecommendation(d as DecisionRecordInput))
-  } catch (error) {
-    console.error('Error loading MIRA decisions:', error)
-  }
+    const recommendations = sorted.map((d) => decisionToRecommendation(d as DecisionRecordInput))
 
-  return <ActionsPageClient initialRecommendations={serialized} />
+    return NextResponse.json({ count: recommendations.length, recommendations })
+  } catch (error) {
+    console.error('actions adapter error:', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to load actions' },
+      { status: 500 },
+    )
+  }
 }

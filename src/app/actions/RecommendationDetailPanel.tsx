@@ -16,9 +16,155 @@ export function RecommendationDetailPanel({
   recommendation: RecommendationDTO
   onStatusChange: (next: RecommendationDTO) => void
 }) {
-  const payload = recommendation.action_payload
+  // MIRA decision_ledger rows carry evidence but no action_payload.
+  // Route to the simplified panel so they render correctly.
+  if (!recommendation.action_payload) {
+    return <MiraDecisionPanel recommendation={recommendation} onStatusChange={onStatusChange} />
+  }
+  return <RichCopilotPanel recommendation={recommendation} onStatusChange={onStatusChange} />
+}
+
+function MiraDecisionPanel({
+  recommendation,
+  onStatusChange,
+}: {
+  recommendation: RecommendationDTO
+  onStatusChange: (next: RecommendationDTO) => void
+}) {
   const isPending = recommendation.status === 'pending_approval'
-  const items = payload?.items ?? []
+  const isExecuted = recommendation.status === 'approved' // auto_executed collapses into approved via the adapter
+  const [reason, setReason] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const evidence = recommendation.evidence_payload ?? []
+  const scenario = recommendation.scenario_type
+
+  const submit = async (action: 'approve' | 'reject' | 'override') => {
+    if (action === 'override' && !reason.trim()) {
+      setError('Une raison est requise pour annuler.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    try {
+      const body: Record<string, unknown> = { action }
+      if (reason.trim()) body.reason = reason.trim()
+
+      const response = await fetch(`/api/mira/decisions/${recommendation.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data?.error ?? 'Request failed')
+
+      // Map the returned decision status back through the same rules as the adapter.
+      const backendStatus = (data?.decision?.status ?? '') as string
+      const uiStatus =
+        backendStatus === 'proposed' || backendStatus === 'queued'
+          ? 'pending_approval'
+          : backendStatus === 'auto_executed' || backendStatus === 'approved'
+            ? 'approved'
+            : backendStatus === 'overridden' || backendStatus === 'rejected'
+              ? 'rejected'
+              : recommendation.status
+
+      onStatusChange({ ...recommendation, status: uiStatus })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      <header className="border-b border-slate-200 pb-4">
+        <p className="text-[10px] uppercase tracking-[0.1em] text-[#6B7480]">{scenario.replace(/_/g, ' ')}</p>
+        <h2 className="mt-1 font-serif text-xl font-semibold text-[#03182F]">{recommendation.title}</h2>
+        {recommendation.reasoning_summary ? (
+          <p className="mt-3 whitespace-pre-wrap font-serif text-sm text-[#30373E]">
+            {recommendation.reasoning_summary}
+          </p>
+        ) : null}
+      </header>
+
+      {evidence.length > 0 ? (
+        <section className="mt-5">
+          <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+            Preuves
+          </p>
+          <dl className="mt-3 grid grid-cols-2 gap-3">
+            {evidence.map((e, i) => (
+              <div key={`${e.label}-${i}`} className="rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2">
+                <dt className="text-[10px] font-bold uppercase tracking-wide text-[#6B7480]">{e.label}</dt>
+                <dd className="mt-0.5 font-mono text-sm text-[#03182F]">{e.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
+
+      <div className="mt-auto border-t border-slate-200 pt-4">
+        {error ? <p className="mb-3 font-serif text-sm text-[#F22E75]">{error}</p> : null}
+        {(isPending || isExecuted) && (
+          <div className="space-y-3">
+            <input
+              type="text"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder={isExecuted ? 'Raison (obligatoire pour annuler)' : 'Raison (facultative)'}
+              className="w-full rounded border border-[#DDE5EE] bg-white px-3 py-2 font-serif text-sm text-[#03182F] outline-none focus:border-[#2764FF]"
+            />
+            <div className="flex items-center justify-end gap-2">
+              {isPending ? (
+                <>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => submit('reject')}
+                    className="rounded border border-[#BFCBDA] bg-white px-4 py-2 font-serif text-sm font-medium text-[#30373E] hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    Rejeter
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => submit('approve')}
+                    className="rounded bg-[#2764FF] px-4 py-2 font-serif text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    Approuver
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => submit('override')}
+                  className="rounded bg-[#F22E75] px-4 py-2 font-serif text-sm font-semibold text-white hover:bg-[#d62766] disabled:opacity-50"
+                >
+                  Annuler la décision
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function RichCopilotPanel({
+  recommendation,
+  onStatusChange,
+}: {
+  recommendation: RecommendationDTO
+  onStatusChange: (next: RecommendationDTO) => void
+}) {
+  const payload = recommendation.action_payload!
+  const isPending = recommendation.status === 'pending_approval'
+  const items = payload.items ?? []
 
   const [checked, setChecked] = useState<Set<string>>(
     () => new Set(items.map((item) => item.product_id))
@@ -76,14 +222,6 @@ export function RecommendationDetailPanel({
     } finally {
       setBusy(false)
     }
-  }
-
-  if (!payload) {
-    return (
-      <p className="text-sm text-[#6B7480]">
-        No details available for this action.
-      </p>
-    )
   }
 
   return (

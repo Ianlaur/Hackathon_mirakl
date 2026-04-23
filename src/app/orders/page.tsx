@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -9,6 +9,50 @@ import {
   Search,
   SlidersHorizontal,
 } from 'lucide-react'
+import SimulatedBadge from '@/components/SimulatedBadge'
+
+type LiveOrder = {
+  id: string
+  external_id: string | null
+  channel: string
+  channel_label?: string
+  sku: string | null
+  status: string
+  amount_cents: number
+  currency: string
+  occurred_at: string | null
+  has_pending_decision: boolean
+}
+
+type LiveAggregate = {
+  pending_action: number
+  in_transit: number
+  delivered_24h: number
+  processing: number
+}
+
+const SOURCE_TO_CHANNELS: Record<string, string[]> = {
+  all: ['amazon_fr', 'amazon_it', 'amazon_de', 'google_shopping_fr', 'google_shopping_it', 'google_shopping_de'],
+  amazon: ['amazon_fr', 'amazon_it', 'amazon_de'],
+  shopify: [],
+}
+
+const CHANNEL_DISPLAY: Record<string, { label: string; mpColor: string; mpCode: string }> = {
+  amazon_fr: { label: 'Amazon FR', mpColor: 'bg-[#03182F]', mpCode: 'AMZ' },
+  amazon_it: { label: 'Amazon IT', mpColor: 'bg-[#03182F]', mpCode: 'AMZ' },
+  amazon_de: { label: 'Amazon DE', mpColor: 'bg-[#03182F]', mpCode: 'AMZ' },
+  google_shopping_fr: { label: 'Google Shopping FR', mpColor: 'bg-[#2764FF]', mpCode: 'GSH' },
+  google_shopping_it: { label: 'Google Shopping IT', mpColor: 'bg-[#2764FF]', mpCode: 'GSH' },
+  google_shopping_de: { label: 'Google Shopping DE', mpColor: 'bg-[#2764FF]', mpCode: 'GSH' },
+}
+
+const LIVE_STATUS_DISPLAY: Record<string, { label: string; style: string }> = {
+  action_required: { label: 'Action Required', style: 'bg-[#FFE7EC] text-[#F22E75]' },
+  in_transit: { label: 'Shipped', style: 'bg-[#F2F8FF] text-[#2764FF]' },
+  delivered: { label: 'Delivered', style: 'bg-[#3FA46A]/10 text-[#3FA46A] border border-[#3FA46A]/10' },
+  processing: { label: 'Processing', style: 'bg-[#F2F8FF] text-[#6B7480]' },
+  cancelled: { label: 'Cancelled', style: 'bg-[#DDE5EE] text-[#6B7480]' },
+}
 import {
   Bar,
   BarChart,
@@ -447,6 +491,163 @@ export default function OrdersPage() {
   const [selectedSource, setSelectedSource] = useState<SourceKey>('all')
   const selectedData = SOURCE_DATA[selectedSource]
 
+  const [liveOrders, setLiveOrders] = useState<LiveOrder[] | null>(null)
+  const [liveAggregate, setLiveAggregate] = useState<LiveAggregate | null>(null)
+  const [liveLoading, setLiveLoading] = useState(false)
+
+  type FeedItem = { id: string; color: string; time: string; text: string; pulse: boolean }
+  const [liveFeed, setLiveFeed] = useState<FeedItem[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/mira/ledger?limit=8')
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((data) => {
+        if (cancelled || !data?.decisions) return
+        type LedgerDecision = {
+          id: string
+          sku: string | null
+          channel: string | null
+          template_id: string | null
+          logical_inference: string | null
+          status: string
+          created_at: string
+        }
+        const mapped: FeedItem[] = (data.decisions as LedgerDecision[]).map((d) => {
+          const color =
+            d.status === 'proposed' || d.status === 'queued'
+              ? 'bg-[#F22E75]'
+              : d.status === 'auto_executed' || d.status === 'approved'
+                ? 'bg-[#3FA46A]'
+                : 'bg-[#2764FF]'
+          const pulse = d.status === 'proposed' || d.status === 'queued'
+          const time = new Date(d.created_at).toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })
+          const text = d.logical_inference?.split('\n')[0] ?? `${d.template_id ?? 'decision'} · ${d.sku ?? ''}`
+          return { id: d.id, color, time, text, pulse }
+        })
+        setLiveFeed(mapped)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [selectedSource])
+
+  const channels = SOURCE_TO_CHANNELS[selectedSource] ?? []
+  const canFetchLive = channels.length > 0 || selectedSource === 'shopify'
+
+  useEffect(() => {
+    if (!canFetchLive) {
+      setLiveOrders(null)
+      setLiveAggregate(null)
+      return
+    }
+    let cancelled = false
+    setLiveLoading(true)
+
+    const url =
+      selectedSource === 'shopify'
+        ? '/api/integrations/shopify/orders?limit=10&aggregate=true'
+        : (() => {
+            const qs = new URLSearchParams({
+              channel: channels.join(','),
+              limit: '10',
+              aggregate: 'true',
+            })
+            return `/api/mira/orders-recent?${qs.toString()}`
+          })()
+
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((data) => {
+        if (cancelled || !data) {
+          if (!cancelled) setLiveLoading(false)
+          return
+        }
+        if (Array.isArray(data.orders)) setLiveOrders(data.orders as LiveOrder[])
+        if (data.aggregate) setLiveAggregate(data.aggregate as LiveAggregate)
+        setLiveLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSource])
+
+  const liveStats = useMemo(() => {
+    if (!liveAggregate) return null
+    return [
+      {
+        label: 'IN TRANSIT',
+        value: String(liveAggregate.in_transit),
+        color: 'text-[#2764FF]',
+        badge: 'LIVE',
+        badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]',
+      },
+      {
+        label: 'DELIVERED (24H)',
+        value: String(liveAggregate.delivered_24h),
+        color: 'text-[#3FA46A]',
+        badge: 'LIVE',
+        badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]',
+      },
+      {
+        label: 'PROCESSING',
+        value: String(liveAggregate.processing),
+        color: 'text-[#03182F]',
+        badge: 'LIVE',
+        badgeBg: 'bg-[#F2F8FF] text-[#6B7480]',
+      },
+      {
+        label: 'ACTION REQUIRED',
+        value: String(liveAggregate.pending_action),
+        color: 'text-[#F22E75]',
+        badge: 'LIVE',
+        badgeBg: 'bg-[#FFE7EC] text-[#F22E75]',
+      },
+    ]
+  }, [liveAggregate])
+
+  const statsToRender = liveStats ?? selectedData.stats
+
+  const ordersToRender = useMemo(() => {
+    if (!liveOrders || liveOrders.length === 0) return selectedData.orders
+    return liveOrders.map((o) => {
+      const fallbackMeta = o.channel.startsWith('shopify:')
+        ? { label: o.channel_label ?? 'Shopify', mpColor: 'bg-[#3FA46A]', mpCode: 'SHP' }
+        : { label: o.channel_label ?? o.channel, mpColor: 'bg-[#6B7480]', mpCode: 'MKT' }
+      const meta = CHANNEL_DISPLAY[o.channel] ?? fallbackMeta
+      const statusMeta = LIVE_STATUS_DISPLAY[o.status] ?? LIVE_STATUS_DISPLAY.processing
+      const euros = (o.amount_cents || 0) / 100
+      return {
+        marketplace: meta.label,
+        mpColor: meta.mpColor,
+        mpCode: meta.mpCode,
+        orderId: o.external_id ? `#${o.external_id}` : `#${o.id.slice(0, 8)}`,
+        date: o.occurred_at
+          ? new Date(o.occurred_at).toLocaleString('fr-FR', {
+              day: '2-digit',
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : '—',
+        status: statusMeta.label,
+        statusStyle: statusMeta.style,
+        items: 1,
+        value: `€${euros.toFixed(2)}`,
+      }
+    })
+  }, [liveOrders, selectedData.orders])
+
+  const ordersTotal = liveOrders ? liveOrders.length : selectedData.orders.length
+  const ordersCountLabel = liveOrders ? liveOrders.length : selectedData.ordersCount
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -561,7 +762,10 @@ export default function OrdersPage() {
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
           <div className="xl:col-span-8 bg-white border border-[#DDE5EE] rounded-xl p-4 sm:p-6">
-            <h3 className="font-serif text-[18px] font-bold text-[#03182F] mb-4">Financial Highlights</h3>
+            <div className="flex items-center gap-3 mb-4">
+              <h3 className="font-serif text-[18px] font-bold text-[#03182F]">Financial Highlights</h3>
+              <SimulatedBadge />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {selectedData.financialKpis.map((kpi) => {
                 const positive = kpi.delta >= 0
@@ -614,6 +818,10 @@ export default function OrdersPage() {
           </div>
         </div>
 
+        <div className="flex items-center gap-3">
+          <h3 className="font-serif text-[14px] font-bold text-[#03182F] uppercase tracking-wide">Cash flow</h3>
+          <SimulatedBadge />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {selectedData.cashFlowKpis.map((item) => {
             const positive = item.tone === 'positive'
@@ -631,6 +839,10 @@ export default function OrdersPage() {
           })}
         </div>
 
+        <div className="flex items-center gap-3">
+          <h3 className="font-serif text-[14px] font-bold text-[#03182F] uppercase tracking-wide">Outstanding balances</h3>
+          <SimulatedBadge />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {selectedData.outstandingBalances.map((item) => (
             <div key={item.label} className="bg-white border border-dashed border-[#DDE5EE] rounded-xl p-4 sm:p-6">
@@ -653,7 +865,7 @@ export default function OrdersPage() {
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {selectedData.stats.map((s) => (
+        {statsToRender.map((s) => (
           <div key={s.label} className="p-6 bg-white border border-[#DDE5EE] rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
             <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">{s.label}</span>
             <div className="flex items-end justify-between">
@@ -679,7 +891,7 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#DDE5EE]">
-            {selectedData.orders.map((o) => (
+            {ordersToRender.map((o) => (
               <tr key={o.orderId} className="hover:bg-[#F2F8FF] transition-colors cursor-pointer">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -721,7 +933,8 @@ export default function OrdersPage() {
         {/* Pagination */}
         <div className="px-6 py-4 bg-white border-t border-[#DDE5EE] flex items-center justify-between">
           <span className="font-serif text-[12px] text-[#6B7480]">
-            Showing <span className="font-bold">1-{selectedData.orders.length}</span> of <span className="font-bold">{formatNumber(selectedData.ordersCount, 0)}</span> orders
+            Showing <span className="font-bold">1-{ordersTotal}</span> of <span className="font-bold">{formatNumber(ordersCountLabel, 0)}</span> orders
+            {liveLoading ? <span className="ml-2 text-[#2764FF]">· syncing…</span> : null}
           </span>
           <div className="flex gap-1">
             <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">
@@ -742,17 +955,28 @@ export default function OrdersPage() {
         {/* Logistics Feed */}
         <div className="col-span-8 bg-white border border-[#DDE5EE] rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-serif text-base font-bold text-[#03182F]">Logistics Feed</h3>
-            <span className="text-[10px] font-mono uppercase text-[#2764FF] bg-[#F2F8FF] px-2 py-1 rounded">Live Syncing</span>
+            <div className="flex items-center gap-3">
+              <h3 className="font-serif text-base font-bold text-[#03182F]">Logistics Feed</h3>
+              {!liveFeed ? <SimulatedBadge /> : null}
+            </div>
+            <span className="text-[10px] font-mono uppercase text-[#2764FF] bg-[#F2F8FF] px-2 py-1 rounded">
+              {liveFeed ? 'Live · decision ledger' : 'Live Syncing'}
+            </span>
           </div>
           <div className="space-y-3">
-            {selectedData.logFeed.map((l, i) => (
-              <div key={i} className="flex items-center h-8 border-b border-[#DDE5EE]">
-                <span className={`w-2 h-2 rounded-full ${l.color} mr-4 ${l.pulse ? 'animate-pulse' : ''}`} />
-                <span className="font-mono text-[10px] text-[#6B7480] w-20">{l.time}</span>
-                <span className="font-serif text-[13px] text-[#03182F]">{l.text}</span>
-              </div>
-            ))}
+            {(liveFeed && liveFeed.length > 0 ? liveFeed : selectedData.logFeed).map((l, i) => {
+              const key = 'id' in l && typeof l.id === 'string' ? l.id : String(i)
+              return (
+                <div key={key} className="flex items-center h-8 border-b border-[#DDE5EE]">
+                  <span className={`w-2 h-2 rounded-full ${l.color} mr-4 ${l.pulse ? 'animate-pulse' : ''}`} />
+                  <span className="font-mono text-[10px] text-[#6B7480] w-20">{l.time}</span>
+                  <span className="font-serif text-[13px] text-[#03182F]">{l.text}</span>
+                </div>
+              )
+            })}
+            {liveFeed && liveFeed.length === 0 ? (
+              <p className="text-sm text-[#6B7480] italic">Aucune décision récente dans le ledger.</p>
+            ) : null}
           </div>
         </div>
 

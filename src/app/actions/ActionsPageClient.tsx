@@ -57,7 +57,7 @@ export default function ActionsPageClient({
   )
 
   const handleRefresh = async () => {
-    const resp = await fetch('/api/copilot/recommendations', { cache: 'no-store' })
+    const resp = await fetch('/api/actions', { cache: 'no-store' })
     if (!resp.ok) return
     const data = await resp.json()
     if (Array.isArray(data.recommendations)) {

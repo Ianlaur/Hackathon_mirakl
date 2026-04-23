@@ -699,3 +699,77 @@ model ShopifyOrder {
   @@map("shopify_orders")
   @@schema("public")
 }
+
+model MarketplaceProposal {
+  id                 String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id            String                   @db.Uuid
+  name               String
+  category           String?
+  daily_users        String?
+  last_year_revenue  String?
+  status             String                   @default("pending")
+  about              String?
+  logo_url           String?
+  match_score        Int?
+  risk_signal        String?
+  source             String                   @default("manual")
+  external_ref       String?
+  decided_at         DateTime?
+  created_at         DateTime                 @default(now())
+  updated_at         DateTime                 @default(now()) @updatedAt
+  requirements       MarketplaceRequirement[]
+  dialogues          MarketplaceDialogue[]
+
+  @@index([user_id, status, created_at(sort: Desc)])
+  @@map("marketplace_proposals")
+  @@schema("public")
+}
+
+model MarketplaceRequirement {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposal_id String              @db.Uuid
+  label       String
+  status      String              @default("pending")
+  position    Int                 @default(0)
+  notes       String?
+  created_at  DateTime            @default(now())
+  updated_at  DateTime            @default(now()) @updatedAt
+  proposal    MarketplaceProposal @relation(fields: [proposal_id], references: [id], onDelete: Cascade)
+
+  @@index([proposal_id, position])
+  @@map("marketplace_requirements")
+  @@schema("public")
+}
+
+model MarketplaceDialogue {
+  id                    String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id               String                @db.Uuid
+  proposal_id           String?               @db.Uuid
+  counterpart_name      String
+  last_message_preview  String?
+  last_message_at       DateTime?
+  unread_count          Int                   @default(0)
+  status                String                @default("open")
+  created_at            DateTime              @default(now())
+  updated_at            DateTime              @default(now()) @updatedAt
+  proposal              MarketplaceProposal?  @relation(fields: [proposal_id], references: [id], onDelete: SetNull)
+  messages              MarketplaceMessage[]
+
+  @@index([user_id, status, last_message_at(sort: Desc)])
+  @@map("marketplace_dialogues")
+  @@schema("public")
+}
+
+model MarketplaceMessage {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dialogue_id String              @db.Uuid
+  sender      String
+  body        String
+  autopilot   Boolean             @default(false)
+  created_at  DateTime            @default(now())
+  dialogue    MarketplaceDialogue @relation(fields: [dialogue_id], references: [id], onDelete: Cascade)
+
+  @@index([dialogue_id, created_at])
+  @@map("marketplace_messages")
+  @@schema("public")
+}
