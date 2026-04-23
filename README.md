@@ -1,355 +1,136 @@
-# Hackathon Mirakl
+# MIRA Supply OS
 
-Application Next.js 14 utilisée pour prototyper un cockpit opérationnel autour des flux marketplace, stock, entrepôt, transport, calendrier métier et suivi des pertes.
+MIRA Supply OS is a conversational AI agent for a solo French furniture
+seller operating 200 SKUs across 6 storefronts (Amazon FR/IT/DE, Google
+Shopping FR/IT/DE). The founder — "Marie" — talks to MIRA via chat or
+voice. MIRA reads operational data, predicts demand, and acts under a
+strict governance layer (template-enforced decisions, per-action-type
+autonomy, audit-trail ledger) while keeping the founder visibly in
+control at all times.
 
-Le projet est actuellement branché sur une base Supabase partagée. Les données métier de départ viennent du dossier `docs/data`.
-
-## État Fonctionnel
-
-Modules visibles dans le menu :
-
-- `Dashboard` : vue d'accueil des modules disponibles.
-- `Paramètres` : profil et configuration.
-- `Stock` : catalogue produits et mouvements de stock.
-- `Entrepôt` : zones, bacs, contenu de bacs et picking.
-- `Transport` : suivi colis et transporteurs.
-- `Calendrier` : événements métiers, jours fériés, temps forts commerce, congés.
-- `Suivi des pertes` : analyse V1 des pertes de stock par étape, cause, produit, commande et transporteur.
+Hackathon: Mirakl UC1, Topic 2 (Order Processing & Supply).
 
 ## Stack
 
-- Next.js 14 App Router
-- TypeScript
-- Tailwind CSS
-- Prisma
-- Supabase Postgres
-- Zod pour les validations API
+- **Next.js 14** App Router + TypeScript
+- **Supabase Postgres** + Realtime
+- **OpenAI GPT-4o** (function calling, Whisper for voice)
+- **Prisma** + Zod
+- **Tailwind CSS** (Mirakl brand tokens)
 
-Le code applicatif est dans `src/`.
+## Features (F1–F6)
 
-## Installation
+- **F1 Flash Onboarding** — drop a supplier CSV, GPT-4o maps columns to
+  Mirakl taxonomies, founder approves. Reasoning stored in
+  `catalog_review_records` (never in the decision ledger).
+- **F2 Smart Calendar + Reputation Shield** — when the founder enters
+  Vacation / Sick state, buffers inflate ×1.25, lead times ×1.4, and the
+  Reputation Shield auto-protects the primary storefront by reducing
+  exposure on the others.
+- **F3 White Supply Atlas** — the home screen. Minimalist map of FR / IT
+  / DE with animated supply pulses between storefronts, per-region
+  badges (orders, revenue, pending, handled), and Intent-Based Shielding
+  ripple when an oversell is detected.
+- **F4 Predictive Seasonality (N-1)** — for each upcoming commercial
+  calendar event, attempt year-over-year comparison and fall back to a
+  magnitude-based growth factor labelled `seasonal_assumption`. All math
+  through `tools_math`.
+- **F5 MIRA RADAR** — plugin tab with carrier damage audit, supplier
+  scorecard, and Profit Recovery estimate.
+- **F6 The Orb** — always-on governance control. Per-action-type mode
+  (Watching / Ask me / Handle it) with a one-tap "Tout passer en veille".
 
-Depuis la racine du repo :
+## Invariants
+
+- **No LLM math.** Every number in a decision ledger row comes from
+  `src/lib/mira/tools_math.ts` (`calculateVelocity`, `calculateStockoutDays`,
+  `calculateReorderQty`, etc.). Covered by `npm run test:mira-math` (15/15).
+- **Template-only ledger.** `decision_ledger` only accepts rows whose
+  `template_id` is in the allowed registry. Enforced by a Postgres
+  `BEFORE INSERT` trigger and by `npm run test:mira-invariant`.
+- **Free-form LLM text stays out of the ledger.** Chat transcripts live
+  in `mira_conversation_history`; F1 catalog reasoning in
+  `catalog_review_records`.
+- **Re-playability.** Every ledger row links back to the operational
+  object that triggered it via `trigger_event_id`.
+
+## Quickstart
 
 ```bash
 cd src
+cp .env.example .env            # fill in DATABASE_URL, DIRECT_URL,
+                                # OPENAI_API_KEY, SUPABASE_*
 npm install
-```
-
-Puis lancer le dashboard :
-
-```bash
+npm run db:prepare:mira                          # create MIRA tables
+npm run db:prepare:mira-templates-v2             # template allowlist v2
+npm run db:prepare:mira-trigger-event-id         # ledger trigger_event_id
+npm run db:prepare:mira-conversation-history     # chat persistence
+npm run db:prepare:mira-realtime                 # enable Supabase Realtime
+npm run db:seed:mira-calendar                    # seed 2026 events
+npm run db:seed:mira-stock-state                 # derive stock_state per SKU
+npm run db:seed:mira-returns                     # seeded return signals
+npm run mira:ingest                              # ingest JSONL fixtures
 npm run dev
 ```
 
-Application locale :
+Open `http://localhost:3000/dashboard`.
 
-```text
-http://localhost:3000
-```
-
-Pages utiles :
-
-```text
-http://localhost:3000/dashboard
-http://localhost:3000/calendar
-http://localhost:3000/losses
-```
-
-## Variables D'Environnement
-
-Créer `src/.env` ou `src/.env.local` à partir de `src/.env.example`.
-
-Variables attendues :
+## Required environment
 
 ```bash
-DATABASE_URL="postgresql://postgres.<project-ref>:<password>@aws-...pooler.supabase.com:5432/postgres"
-DIRECT_URL="postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres"
-HACKATHON_USER_ID="<uuid utilisateur>"
+DATABASE_URL=...                       # Supabase pooler
+DIRECT_URL=...                         # Supabase direct
+HACKATHON_USER_ID=...                  # UUID scoping everything
+OPENAI_API_KEY=...                     # gpt-4o + whisper-1
+MIRA_MODEL=gpt-4o
+NEXT_PUBLIC_SUPABASE_URL=...           # browser Realtime
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-Notes :
-
-- `DATABASE_URL` pointe vers Supabase via le pooler.
-- `DIRECT_URL` pointe vers la connexion directe Supabase.
-- `HACKATHON_USER_ID` force l'utilisateur utilisé par les pages serveur et APIs.
-- Les fichiers `.env` et `.env.local` ne doivent pas être commit.
-
-## Commandes Utiles
-
-Depuis `src/` :
+## Tests
 
 ```bash
-npm run dev
-npm run build
-npm run lint
-npm run prisma:generate
+npm run test:mira-math            # tools_math unit tests (15/15)
+npm run test:mira-invariant       # TS ↔ DB ↔ ledger template consistency
+npm run test:mira-decision-mutations
+npm run test:dashboard-mira-only
 ```
 
-Attention :
+## Scale
 
-```bash
-npm run db:push
+What breaks at 10K SKUs and how we fix it is documented in
+[`docs/mira-scale-notes.md`](docs/mira-scale-notes.md) — covers Atlas
+aggregation cost, ledger pagination, Realtime throughput, scheduler,
+ingestion batching, token budget, and multi-tenant RLS.
+
+## Repository layout
+
 ```
-
-Cette commande lance actuellement `prisma db push --accept-data-loss`. Ne pas l'utiliser sans vérifier le diff Prisma, car certaines tables de données ont été créées manuellement dans Supabase et ne sont pas toutes représentées dans `schema.prisma`. Un `db push` non relu peut proposer de supprimer des tables utiles.
-
-Pour ce projet, privilégier :
-
-```bash
-npm run prisma:generate
+src/app/                     # Next.js App Router
+  dashboard/                 # Atlas home (F3)
+  activity/                  # ledger viewer
+  actions/                   # pending decisions inbox
+  catalog/                   # F1 CSV upload + mapping review
+  radar/                     # F5 plugin
+  api/mascot/                # unified chat endpoint + Whisper
+  api/mira/                  # atlas, ledger, briefing, autonomy,
+                             # decisions, catalog-mapping, radar
+src/components/
+  atlas/                     # AtlasHome, MorningBriefingCard
+  orb/                       # OrbModePanel (governance control)
+  mira/                      # DecisionFeed (realtime)
+  MascotOrb.tsx              # floating orb (governance indicator)
+  MascotChatDrawer.tsx       # chat UI (voice + markdown + Spotlight)
+src/lib/mira/
+  agents/                    # stock, restock, returns, founderContext
+  tools_math.ts              # ALL arithmetic (no LLM math)
+  tools_read.ts              # 11 READ tools
+  tools_action.ts            # 6 ACTION tools
+  policy.ts                  # FounderPolicy + Reputation Shield
+  templates.ts               # 14 immutable renderers
+  fuse.ts                    # Safety Fuse
+  briefing.ts                # morning digest
+  ingestion.ts               # JSONL → operational_objects
+  history.ts                 # mira_conversation_history
+src/scripts/                 # migrations, seeds, tests
 ```
-
-Et, si une table doit être créée ponctuellement, utiliser un script SQL ciblé via :
-
-```bash
-npx prisma db execute --schema prisma/schema.prisma --file chemin/du/script.sql
-```
-
-## Base Supabase
-
-Schéma principal :
-
-```text
-public
-```
-
-Tables applicatives principales :
-
-- `products`
-- `product_categories`
-- `stock_movements`
-- `parcels`
-- `warehouse_zones`
-- `warehouse_bins`
-- `bin_contents`
-- `picking_lists`
-- `picking_tasks`
-- `calendar_events`
-- `loss_events`
-
-Tables de données importées depuis `docs/data` :
-
-- `data_orders_amazon`
-- `data_orders_google`
-- `data_messages_amazon`
-- `data_messages_google`
-- `data_supplier_catalog_nordika_200`
-
-Ces tables importées servent de base réaliste pour les modules d'analyse.
-
-## Données Importées
-
-Le dossier source contient :
-
-```text
-docs/data/messages_amazon.jsonl
-docs/data/messages_google.jsonl
-docs/data/orders_amazon.jsonl
-docs/data/orders_google.jsonl
-docs/data/supplier_catalog_nordika_200.xlsx
-```
-
-État d'import connu :
-
-- `data_orders_amazon` : 496 lignes
-- `data_orders_google` : 257 lignes
-- `data_messages_amazon` : 160 lignes
-- `data_messages_google` : 91 lignes
-- `data_supplier_catalog_nordika_200` : 200 lignes
-
-## Calendrier
-
-Route :
-
-```text
-/calendar
-```
-
-Table Supabase :
-
-```text
-public.calendar_events
-```
-
-Le calendrier permet :
-
-- affichage mensuel
-- événements multi-jours
-- drag and drop pour déplacer un événement
-- double-clic sur un jour pour préremplir la création
-- création, édition et suppression d'événements
-- sauvegarde immédiate dans Supabase
-
-Colonnes clés :
-
-- `title`
-- `start_at` en `timestamptz`
-- `end_at` en `timestamptz`
-- `kind`
-- `impact`
-- `zone`
-- `notes`
-- `locked`
-- `created_at`
-- `updated_at`
-
-Les événements préchargés incluent des jours fériés français et des temps forts commerce comme :
-
-- Nouvel An chinois
-- Ramadan / Aïd el-Fitr
-- Soldes
-- Singles Day
-- Black Friday / Cyber Monday
-- Noël et période de retours
-
-## Suivi Des Pertes
-
-Route :
-
-```text
-/losses
-```
-
-Table Supabase :
-
-```text
-public.loss_events
-```
-
-Objectif V1 :
-
-- répondre à "où les pertes apparaissent ?"
-- répondre à "pourquoi elles arrivent ?"
-- répondre à "qui / quoi est concerné ?"
-- donner une vision rapide de la valeur perdue, des unités perdues, des pertes à traiter, de l'étape critique, de la cause principale et du transporteur le plus concerné
-
-La V1 est volontairement en lecture seule. Elle affiche :
-
-- KPI cliquables
-- détail de KPI
-- camemberts interactifs au survol
-- filtres par recherche, étape, raison, transporteur, marketplace, statut
-- tableau des pertes
-- panneau détail d'une perte sélectionnée
-
-Les données `loss_events` ont été générées à partir des vraies tables importées :
-
-- `data_orders_amazon`
-- `data_orders_google`
-- `data_supplier_catalog_nordika_200`
-
-Champs importants :
-
-- `source_table`
-- `source_line`
-- `source_order_ref`
-- `sku`
-- `product_name`
-- `category`
-- `quantity_lost`
-- `unit_cost`
-- `order_unit_price`
-- `estimated_loss_value`
-- `detected_stage`
-- `reason_category`
-- `confidence`
-- `status`
-- `carrier_name`
-- `marketplace`
-- `supplier_name`
-
-État connu du seed V1 :
-
-- 20 événements de perte
-- 30 unités perdues
-- 17 474 EUR de valeur estimée
-- 20 SKU distincts
-- 18 commandes distinctes
-
-## Conventions De Développement
-
-Les pages App Router sont dans :
-
-```text
-src/app
-```
-
-Les composants globaux sont dans :
-
-```text
-src/components
-```
-
-Les helpers DB/session sont dans :
-
-```text
-src/lib
-```
-
-Le schéma Prisma est dans :
-
-```text
-src/prisma/schema.prisma
-```
-
-Quand une feature doit être disponible dans le menu, ajouter l'entrée dans :
-
-```text
-src/components/Sidebar.tsx
-```
-
-Et ajouter une tuile module dans :
-
-```text
-src/app/dashboard/page.tsx
-```
-
-## Workflow Recommandé Pour Pull
-
-```bash
-git switch dev
-git pull origin dev
-cd src
-npm install
-npm run dev
-```
-
-Si Prisma se plaint d'un client non généré :
-
-```bash
-npm run prisma:generate
-```
-
-Si Next affiche une erreur étrange après un build ou un changement de branche :
-
-```bash
-pkill -f "next dev"
-rm -rf .next
-npm run dev
-```
-
-## Points D'Attention
-
-- Ne pas commit les fichiers `.env`.
-- Ne pas utiliser `npm run db:push` sans relire le risque de suppression de tables.
-- Certaines tables Supabase ont été créées/importées manuellement pour le hackathon.
-- `products`, `parcels`, `warehouse_zones` et `warehouse_bins` peuvent être vides selon l'état de la démo.
-- `loss_events` s'appuie aujourd'hui sur les tables importées `data_*`, pas encore sur des écritures temps réel du module Stock.
-- Le module `Suivi des pertes` est une V1 d'analyse, pas encore un CRUD.
-
-## Build
-
-Commande validée :
-
-```bash
-cd src
-npm run build
-```
-
-Warnings connus non bloquants :
-
-- dépendances `useEffect` dans `app/parcels/ParcelsPageClient.tsx`
-- usage de `<img>` dans `app/stock/StockPageClient.tsx`
-
-Ces warnings existaient avant la feature `Suivi des pertes`.
