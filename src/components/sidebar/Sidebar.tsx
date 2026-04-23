@@ -77,7 +77,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
         type="button"
         onClick={() => setIsMobileOpen(true)}
         aria-label="Ouvrir la navigation"
-        className="fixed left-4 top-4 z-50 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-lg border border-slate-200 bg-white p-2 text-[#30373E] shadow-sm lg:hidden"
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -101,7 +101,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
             <button
               type="button"
               onClick={() => setIsMobileOpen(false)}
-              className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600"
+              className="rounded-lg border border-slate-200 bg-white p-1.5 text-[#6B7480]"
               aria-label="Fermer le menu"
             >
               <X className="h-4 w-4" />
@@ -152,7 +152,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
           <button
             type="button"
             onClick={handleSignOut}
-            className="flex w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="flex w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#30373E] transition-colors hover:bg-slate-50 hover:text-[#03182F]"
           >
             <LogOut className="h-4 w-4" />
             Sign out

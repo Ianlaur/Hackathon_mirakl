@@ -107,7 +107,7 @@ function ProposalsTab() {
           {proposals.map((p) => (
             <div key={p.name} className="bg-white border border-[#DDE5EE] p-4 flex items-center hover:bg-slate-50 transition-colors">
               <div className="w-12 h-12 bg-white flex-shrink-0 flex items-center justify-center border border-slate-200 p-2 rounded">
-                <Store className="h-6 w-6 text-slate-400" />
+                <Store className="h-6 w-6 text-[#6B7480]" />
               </div>
               <div className="ml-6 flex-1 grid grid-cols-4 items-center">
                 <div>
@@ -143,7 +143,7 @@ function ProposalsTab() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {suggestions.map((s) => (
-            <div key={s.name} className="bg-white border border-dashed border-slate-300 p-5 flex flex-col items-center text-center rounded-lg hover:border-[#004bd9] transition-all">
+            <div key={s.name} className="bg-white border border-dashed border-[#BFCBDA] p-5 flex flex-col items-center text-center rounded-lg hover:border-[#004bd9] transition-all">
               <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
                 <Store className="h-8 w-8 text-slate-300" />
               </div>
@@ -168,7 +168,7 @@ function ActiveConnectionTab() {
       {/* Left: Conversation list */}
       <aside className="w-80 border-r border-slate-200 flex flex-col overflow-y-auto flex-shrink-0">
         <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-          <h3 className="font-serif text-[10px] font-bold tracking-[0.1em] text-slate-500 uppercase">Active Proposals</h3>
+          <h3 className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Active Proposals</h3>
         </div>
         <div className="flex-grow">
           {conversations.map((c) => (
@@ -184,14 +184,14 @@ function ActiveConnectionTab() {
             >
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
-                  <Store className="h-5 w-5 text-slate-400" />
+                  <Store className="h-5 w-5 text-[#6B7480]" />
                 </div>
                 <div className="flex-grow min-w-0">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-serif text-sm font-bold text-slate-900">{c.name}</span>
-                    <span className="text-[10px] font-mono text-slate-400 uppercase">{c.time}</span>
+                    <span className="font-serif text-sm font-bold text-[#03182F]">{c.name}</span>
+                    <span className="text-[10px] font-mono text-[#6B7480] uppercase">{c.time}</span>
                   </div>
-                  <p className="text-[12px] text-slate-500 truncate italic">{c.lastMsg}</p>
+                  <p className="text-[12px] text-[#6B7480] truncate italic">{c.lastMsg}</p>
                 </div>
               </div>
             </button>
@@ -205,18 +205,18 @@ function ActiveConnectionTab() {
         <header className="p-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center">
-              <Store className="h-5 w-5 text-slate-400" />
+              <Store className="h-5 w-5 text-[#6B7480]" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-bold text-slate-900">{selectedConv}</h2>
+              <h2 className="font-serif text-lg font-bold text-[#03182F]">{selectedConv}</h2>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#3FA46A]" />
-                <span className="text-[10px] font-mono text-slate-400 uppercase">Proposing Partner · Online</span>
+                <span className="text-[10px] font-mono text-[#6B7480] uppercase">Proposing Partner · Online</span>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
-            <button className="h-9 px-4 flex items-center gap-2 border border-[#BFCBDA] text-slate-700 text-[11px] font-bold rounded hover:bg-slate-50 transition-colors uppercase">
+            <button className="h-9 px-4 flex items-center gap-2 border border-[#BFCBDA] text-[#30373E] text-[11px] font-bold rounded hover:bg-slate-50 transition-colors uppercase">
               <X className="h-3.5 w-3.5" /> Decline
             </button>
             <button className="h-9 px-4 flex items-center gap-2 bg-[#3FA46A] text-white text-[11px] font-bold rounded hover:opacity-90 transition-opacity uppercase shadow-sm">
@@ -239,7 +239,7 @@ function ActiveConnectionTab() {
                     <div className="bg-[#004bd9] text-white p-4 rounded-xl rounded-tr-none shadow-sm">
                       <p className="text-sm">{msg.text}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-400 uppercase mr-1">{msg.time}</span>
+                    <span className="text-[10px] font-mono text-[#6B7480] uppercase mr-1">{msg.time}</span>
                   </div>
                 </div>
               )
@@ -247,13 +247,13 @@ function ActiveConnectionTab() {
             return (
               <div key={i} className="flex gap-4 max-w-2xl">
                 <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex-shrink-0 flex items-center justify-center">
-                  <Store className="h-4 w-4 text-slate-400" />
+                  <Store className="h-4 w-4 text-[#6B7480]" />
                 </div>
                 <div className="space-y-1">
                   <div className="bg-white border border-[#DDE5EE] p-4 rounded-xl rounded-tl-none shadow-sm">
-                    <p className="text-sm text-slate-700">{msg.text}</p>
+                    <p className="text-sm text-[#30373E]">{msg.text}</p>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 uppercase ml-1">{msg.time}</span>
+                  <span className="text-[10px] font-mono text-[#6B7480] uppercase ml-1">{msg.time}</span>
                 </div>
               </div>
             )
@@ -263,11 +263,11 @@ function ActiveConnectionTab() {
         {/* Input */}
         <footer className="p-4 bg-white border-t border-slate-100 flex-shrink-0">
           <div className="flex gap-3 items-center bg-[#03182F] rounded-full p-1.5 pl-4 shadow-lg">
-            <button className="text-slate-400 hover:text-white transition-colors">
+            <button className="text-[#6B7480] hover:text-white transition-colors">
               <Paperclip className="h-5 w-5" />
             </button>
-            <input className="flex-grow bg-transparent border-none text-white text-sm focus:ring-0 focus:outline-none placeholder:text-slate-500 font-serif" placeholder={`Type your message to ${selectedConv} team...`} type="text" />
-            <button className="bg-[#004bd9] text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+            <input className="flex-grow bg-transparent border-none text-white text-sm focus:ring-0 focus:outline-none placeholder:text-[#6B7480] font-serif" placeholder={`Type your message to ${selectedConv} team...`} type="text" />
+            <button className="bg-[#004bd9] text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#2764FF] transition-colors">
               <Send className="h-4 w-4" />
             </button>
           </div>
@@ -279,39 +279,39 @@ function ActiveConnectionTab() {
         <div className="p-6 space-y-8">
           {/* Brand card */}
           <div className="text-center">
-            <div className="w-20 h-20 rounded-2xl bg-white border border-slate-100 shadow-sm mx-auto mb-4 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-lg bg-white border border-slate-100 shadow-sm mx-auto mb-4 flex items-center justify-center">
               <Store className="h-10 w-10 text-slate-300" />
             </div>
-            <h3 className="font-serif text-[22px] font-bold text-slate-900">{selectedConv}</h3>
-            <p className="text-[12px] text-slate-500 mt-1">High-Tech & Electronics Marketplace</p>
+            <h3 className="font-serif text-[22px] font-bold text-[#03182F]">{selectedConv}</h3>
+            <p className="text-[12px] text-[#6B7480] mt-1">High-Tech & Electronics Marketplace</p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 gap-4">
             <div className="p-4 bg-[#F2F8FF] rounded-lg border border-[#DDE5EE]">
-              <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-slate-500 uppercase block mb-1">Daily Users</span>
-              <span className="font-serif text-2xl font-bold text-slate-900">2.4M</span>
+              <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-1">Daily Users</span>
+              <span className="font-serif text-2xl font-bold text-[#03182F]">2.4M</span>
             </div>
             <div className="p-4 bg-[#F2F8FF] rounded-lg border border-[#DDE5EE]">
-              <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-slate-500 uppercase block mb-1">LY Revenue</span>
-              <span className="font-serif text-2xl font-bold text-slate-900">€850M</span>
+              <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-1">LY Revenue</span>
+              <span className="font-serif text-2xl font-bold text-[#03182F]">€850M</span>
             </div>
           </div>
 
           {/* About */}
           <div className="space-y-3">
-            <h4 className="font-serif text-sm font-bold uppercase text-slate-500 tracking-wider">About</h4>
-            <p className="text-[13px] text-slate-600 leading-relaxed">
+            <h4 className="font-serif text-sm font-bold uppercase text-[#6B7480] tracking-wider">About</h4>
+            <p className="text-[13px] text-[#6B7480] leading-relaxed">
               Leading French electronics retailer. Integrating provides access to a highly qualified consumer base focused on home appliances, computing, and high-end consumer electronics.
             </p>
           </div>
 
           {/* Requirements */}
           <div className="space-y-3">
-            <h4 className="font-serif text-sm font-bold uppercase text-slate-500 tracking-wider">Requirements</h4>
+            <h4 className="font-serif text-sm font-bold uppercase text-[#6B7480] tracking-wider">Requirements</h4>
             <ul className="space-y-2">
               {requirements.map((r) => (
-                <li key={r.label} className="flex items-start gap-2 text-[13px] text-slate-600">
+                <li key={r.label} className="flex items-start gap-2 text-[13px] text-[#6B7480]">
                   {r.status === 'ok' && <span className="text-[#3FA46A] text-base mt-0.5">&#10003;</span>}
                   {r.status === 'warn' && <span className="text-[#E0A93A] text-base mt-0.5">&#9888;</span>}
                   {r.status === 'pending' && <span className="text-slate-300 text-base mt-0.5">&#9675;</span>}
@@ -358,7 +358,7 @@ export default function MarketplacesPage() {
           className={`px-4 py-2.5 text-sm font-serif font-medium transition-colors relative ${
             tab === 'proposals'
               ? 'text-[#004bd9]'
-              : 'text-[#6B7480] hover:text-slate-900'
+              : 'text-[#6B7480] hover:text-[#03182F]'
           }`}
         >
           Integration Proposals
@@ -370,7 +370,7 @@ export default function MarketplacesPage() {
           className={`px-4 py-2.5 text-sm font-serif font-medium transition-colors relative ${
             tab === 'active'
               ? 'text-[#004bd9]'
-              : 'text-[#6B7480] hover:text-slate-900'
+              : 'text-[#6B7480] hover:text-[#03182F]'
           }`}
         >
           Active Connections

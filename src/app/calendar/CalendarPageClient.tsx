@@ -32,13 +32,13 @@ const eventKinds: Record<EventKind, { label: string; color: string; chip: string
   holiday: {
     label: 'Férié',
     color: 'bg-slate-500',
-    chip: 'bg-slate-100 text-slate-700',
+    chip: 'bg-slate-100 text-[#30373E]',
     border: 'border-slate-200',
   },
   celebration: {
     label: 'Fête',
-    color: 'bg-amber-500',
-    chip: 'bg-amber-50 text-amber-800',
+    color: 'bg-[#E0A93A]/100',
+    chip: 'bg-[#E0A93A]/10 text-amber-800',
     border: 'border-amber-200',
   },
   peak: {
@@ -55,17 +55,17 @@ const eventKinds: Record<EventKind, { label: string; color: string; chip: string
   },
 }
 
-const fallbackKind = { label: 'Autre', color: 'bg-slate-400', chip: 'bg-slate-100 text-slate-600', border: 'border-slate-200' }
+const fallbackKind = { label: 'Autre', color: 'bg-slate-400', chip: 'bg-slate-100 text-[#6B7480]', border: 'border-slate-200' }
 
 function getKindStyle(kind: string) {
   return eventKinds[kind as EventKind] || fallbackKind
 }
 
 const impactLabels: Record<EventImpact, { label: string; chip: string }> = {
-  low: { label: 'Faible', chip: 'bg-slate-100 text-slate-600' },
-  medium: { label: 'Moyen', chip: 'bg-amber-50 text-amber-700' },
+  low: { label: 'Faible', chip: 'bg-slate-100 text-[#6B7480]' },
+  medium: { label: 'Moyen', chip: 'bg-[#E0A93A]/10 text-amber-700' },
   high: { label: 'Fort', chip: 'bg-orange-50 text-orange-700' },
-  critical: { label: 'Critique', chip: 'bg-red-50 text-red-700 ring-1 ring-red-200' },
+  critical: { label: 'Critique', chip: 'bg-[#FFE7EC] text-red-700 ring-1 ring-red-200' },
 }
 
 const today = new Date()
@@ -848,17 +848,17 @@ export default function CalendarPageClient() {
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {isLoading && (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-[#6B7480]">
                 Chargement Supabase...
               </span>
             )}
             {savingIds.length > 0 && (
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+              <span className="rounded-full bg-[#2764FF]/10 px-3 py-1 text-xs font-semibold text-[#004bd9]">
                 Sauvegarde en cours
               </span>
             )}
             {syncError && (
-              <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+              <span className="rounded-full bg-[#FFE7EC] px-3 py-1 text-xs font-semibold text-red-700">
                 {syncError}
               </span>
             )}
@@ -890,13 +890,13 @@ export default function CalendarPageClient() {
           const mg = Math.max(8, 100 / Math.max(vis.length, 1) * 0.8)
           const pos: number[] = []
           vis.forEach((e) => { let p = pc(e.startDate < todayKey ? todayKey : e.startDate); if (pos.length > 0 && p - pos[pos.length - 1] < mg) p = Math.min(96, pos[pos.length - 1] + mg); pos.push(p) })
-          if (vis.length === 0) return <p className="text-sm text-slate-400">Aucun événement sur cette période.</p>
+          if (vis.length === 0) return <p className="text-sm text-[#6B7480]">Aucun événement sur cette période.</p>
           return (
             <div className="relative px-4">
               <div className="absolute left-4 right-4 top-3 h-px bg-slate-200" />
               <div className="absolute top-0 left-0">
                 <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
-                <p className="mt-1 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Auj.</p>
+                <p className="mt-1 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-[#6B7480] whitespace-nowrap">Auj.</p>
               </div>
               {vis.map((evt, i) => { const k = getKindStyle(evt.kind); return (
                 <div key={evt.id} className="absolute cursor-pointer group" style={{ left: `${pos[i]}%` }}
@@ -928,7 +928,7 @@ export default function CalendarPageClient() {
             <button
               type="button"
               onClick={() => calendarView === 'month' ? moveMonth(-1) : calendarView === 'week' ? moveWeek(-1) : moveDay(-1)}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[#6B7480] transition hover:bg-slate-100 hover:text-[#30373E]"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
               {calendarView === 'month' && (
@@ -945,7 +945,7 @@ export default function CalendarPageClient() {
                 <button
                   type="button"
                   onClick={goToToday}
-                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-[#6B7480] transition hover:bg-slate-50"
                 >
                   Aujourd&apos;hui
                 </button>
@@ -954,7 +954,7 @@ export default function CalendarPageClient() {
             <button
               type="button"
               onClick={() => calendarView === 'month' ? moveMonth(1) : calendarView === 'week' ? moveWeek(1) : moveDay(1)}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[#6B7480] transition hover:bg-slate-100 hover:text-[#30373E]"
             >
               {calendarView === 'month' && (
                 <span className="hidden sm:inline capitalize">{monthLabel(new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1))}</span>
@@ -966,7 +966,7 @@ export default function CalendarPageClient() {
           {/* --- Month view --- */}
           {calendarView === 'month' && (
             <>
-              <div className="mt-4 grid grid-cols-7 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="mt-4 grid grid-cols-7 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
                 {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
                   <div key={day} className="border-r border-slate-200 px-2 py-3 last:border-r-0">
                     {day}
@@ -987,13 +987,13 @@ export default function CalendarPageClient() {
                       onDoubleClick={() => startCreateFromDate(day.key)}
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={() => dropEvent(day.key)}
-                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-blue-50/60 ${
+                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-[#2764FF]/10/60 ${
                         day.inMonth ? 'bg-white' : 'bg-slate-50 text-slate-300'
                       } ${isSelected ? 'ring-2 ring-inset ring-blue-500' : ''}`}
                     >
                       <span
                         className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
-                          day.isToday ? 'bg-blue-600 text-white' : day.inMonth ? 'text-slate-700' : 'text-slate-300'
+                          day.isToday ? 'bg-[#2764FF] text-white' : day.inMonth ? 'text-[#30373E]' : 'text-slate-300'
                         }`}
                       >
                         {day.date.getDate()}
@@ -1026,7 +1026,7 @@ export default function CalendarPageClient() {
                           )
                         })}
                         {dayEvents.length > 4 && (
-                          <p className="text-xs font-medium text-slate-400">+{dayEvents.length - 4}</p>
+                          <p className="text-xs font-medium text-[#6B7480]">+{dayEvents.length - 4}</p>
                         )}
                       </div>
                     </button>
@@ -1057,10 +1057,10 @@ export default function CalendarPageClient() {
             return (
               <div className="mt-4 space-y-0">
                 {/* Header */}
-                <div className="grid grid-cols-[56px_repeat(7,1fr)] rounded-t-xl border border-b-0 border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <div className="grid grid-cols-[56px_repeat(7,1fr)] rounded-t-xl border border-b-0 border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
                   <div className="border-r border-slate-200 px-1 py-3" />
                   {weekDays.map((wd) => (
-                    <div key={wd.key} className={`border-r border-slate-200 px-1 py-3 last:border-r-0 ${wd.isToday ? 'bg-blue-50 text-blue-700' : ''}`}>
+                    <div key={wd.key} className={`border-r border-slate-200 px-1 py-3 last:border-r-0 ${wd.isToday ? 'bg-[#2764FF]/10 text-[#004bd9]' : ''}`}>
                       {new Intl.DateTimeFormat('fr-FR', { weekday: 'short' }).format(wd.date)} {wd.date.getDate()}
                     </div>
                   ))}
@@ -1071,7 +1071,7 @@ export default function CalendarPageClient() {
                   <div className="relative border border-b-0 border-slate-200 bg-slate-50/60">
                     <div className="grid grid-cols-[56px_repeat(7,1fr)]">
                       <div className="flex items-start justify-end border-r border-slate-100 pr-2 pt-2">
-                        <span className="text-[10px] font-medium text-slate-400">Journée</span>
+                        <span className="text-[10px] font-medium text-[#6B7480]">Journée</span>
                       </div>
                       <div className="col-span-7 space-y-0.5 py-1">
                         {allDaySpans.map(({ event, startCol, span }) => {
@@ -1103,7 +1103,7 @@ export default function CalendarPageClient() {
                     return (
                       <div key={hour} className="grid grid-cols-[56px_repeat(7,1fr)] border-b border-slate-100 last:border-b-0">
                         <div className="flex items-start justify-end border-r border-slate-100 pr-2 pt-1">
-                          <span className="text-xs font-medium text-slate-400">{label}</span>
+                          <span className="text-xs font-medium text-[#6B7480]">{label}</span>
                         </div>
                         {weekDays.map((wd) => {
                           const hourEvents = events.filter((event) => {
@@ -1113,8 +1113,8 @@ export default function CalendarPageClient() {
                           return (
                             <div
                               key={wd.key}
-                              className={`min-h-10 border-r border-slate-100 px-1 py-0.5 last:border-r-0 transition hover:bg-blue-50/40 cursor-pointer ${
-                                selectedDate === wd.key ? 'bg-blue-50/20' : ''
+                              className={`min-h-10 border-r border-slate-100 px-1 py-0.5 last:border-r-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer ${
+                                selectedDate === wd.key ? 'bg-[#2764FF]/10/20' : ''
                               }`}
                               onClick={() => chooseDate(wd.key)}
                               onDoubleClick={() => {
@@ -1165,7 +1165,7 @@ export default function CalendarPageClient() {
               <div className="mt-4 space-y-0">
                 {allDayEvents.length > 0 && (
                   <div className="mb-2 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5">
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Journée entière</p>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#6B7480]">Journée entière</p>
                     <div className="space-y-1">
                       {allDayEvents.map((event) => {
                         const kind = getKindStyle(event.kind)
@@ -1180,7 +1180,7 @@ export default function CalendarPageClient() {
                           >
                             <div className="flex items-center gap-2">
                               <span className={`h-2 w-2 shrink-0 rounded-full ${kind.color}`} />
-                              <span className="text-sm font-semibold text-slate-950 truncate">{event.title}</span>
+                              <span className="text-sm font-semibold text-[#03182F] truncate">{event.title}</span>
                               <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${impactLabels[event.impact].chip}`}>
                                 {impactLabels[event.impact].label}
                               </span>
@@ -1199,14 +1199,14 @@ export default function CalendarPageClient() {
                   return (
                     <div
                       key={hour}
-                      className="group flex border-b border-slate-100 last:border-b-0 transition hover:bg-blue-50/40 cursor-pointer"
+                      className="group flex border-b border-slate-100 last:border-b-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer"
                       onDoubleClick={() => {
                         setNaturalInput(`le ${formatDateFr(selectedDate).replaceAll('-', '/')} de ${hour}h à ${hour + 1}h `)
                         startCreateFromDate(selectedDate)
                       }}
                     >
                       <div className="flex w-16 shrink-0 items-start justify-end border-r border-slate-100 pr-3 pt-2">
-                        <span className="text-xs font-medium text-slate-400">{label}</span>
+                        <span className="text-xs font-medium text-[#6B7480]">{label}</span>
                       </div>
                       <div className="min-h-14 flex-1 px-3 py-1.5">
                         {hourEvents.map((event) => {
@@ -1222,9 +1222,9 @@ export default function CalendarPageClient() {
                             >
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 shrink-0 rounded-full ${kind.color}`} />
-                                <span className="text-sm font-semibold text-slate-950 truncate">{event.title}</span>
+                                <span className="text-sm font-semibold text-[#03182F] truncate">{event.title}</span>
                                 {event.startTime && (
-                                  <span className="shrink-0 text-xs text-slate-500">
+                                  <span className="shrink-0 text-xs text-[#6B7480]">
                                     {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}
                                   </span>
                                 )}

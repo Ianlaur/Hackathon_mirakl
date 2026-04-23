@@ -48,15 +48,15 @@ export default function ShipmentTooltip({
 
         <p className="text-sm font-medium text-white">
           {getCountryFlagFromLocation(shipment.origin.name)} {shipment.origin.name}
-          <span className="mx-1 text-slate-400">→</span>
+          <span className="mx-1 text-[#6B7480]">→</span>
           {getCountryFlagFromLocation(shipment.destination.name)} {shipment.destination.name}
         </p>
 
         <p className="mt-2 text-slate-300">
-          {shipment.freight} <span className="mx-1 text-slate-500">|</span> {formatCost(shipment.cost)}
-          <span className="mx-1 text-slate-500">|</span> ETA {formatEta(shipment.eta)}
+          {shipment.freight} <span className="mx-1 text-[#6B7480]">|</span> {formatCost(shipment.cost)}
+          <span className="mx-1 text-[#6B7480]">|</span> ETA {formatEta(shipment.eta)}
         </p>
-        <p className="mt-1 text-slate-400">{formatCo2(shipment.co2)}</p>
+        <p className="mt-1 text-[#6B7480]">{formatCo2(shipment.co2)}</p>
       </div>
     )
   }

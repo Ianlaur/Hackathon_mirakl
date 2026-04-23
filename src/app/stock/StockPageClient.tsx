@@ -54,13 +54,13 @@ interface Stats {
 }
 
 const MOVEMENT_TYPES = {
-  purchase: { label: 'Achat', icon: '+', color: 'text-green-600 bg-green-50' },
-  sale: { label: 'Vente', icon: '-', color: 'text-blue-600 bg-blue-50' },
+  purchase: { label: 'Achat', icon: '+', color: 'text-[#3FA46A] bg-[#3FA46A]/10' },
+  sale: { label: 'Vente', icon: '-', color: 'text-[#2764FF] bg-[#2764FF]/10' },
   return_in: { label: 'Retour client', icon: '←', color: 'text-purple-600 bg-purple-50' },
   return_out: { label: 'Retour fournisseur', icon: '→', color: 'text-orange-600 bg-orange-50' },
   adjustment: { label: 'Ajustement', icon: '±', color: 'text-[#30373E] bg-[#F2F8FF]' },
   transfer: { label: 'Transfert', icon: '⇄', color: 'text-indigo-600 bg-indigo-50' },
-  loss: { label: 'Perte', icon: '×', color: 'text-red-600 bg-red-50' },
+  loss: { label: 'Perte', icon: '×', color: 'text-[#F22E75] bg-[#FFE7EC]' },
   initial: { label: 'Stock initial', icon: '○', color: 'text-teal-600 bg-teal-50' },
 }
 
@@ -220,7 +220,7 @@ export default function StockPageClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Link href="/" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <Link href="/" className="p-2 hover:bg-[#F2F8FF] rounded-lg transition-colors">
                 <svg className="w-5 h-5 text-[#30373E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -233,7 +233,7 @@ export default function StockPageClient({
             <div className="flex items-center gap-2">
               {/* Import/Export Dropdown */}
               <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 text-[#30373E] hover:bg-gray-100 rounded-xl transition-colors">
+                <button className="flex items-center gap-2 px-3 py-2 text-[#30373E] hover:bg-[#F2F8FF] rounded-xl transition-colors">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
@@ -273,7 +273,7 @@ export default function StockPageClient({
                   <div className="border-t border-[#DDE5EE]"></div>
                   <button
                     onClick={handleDeleteAll}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-b-xl"
+                    className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#F22E75] hover:bg-[#FFE7EC] rounded-b-xl"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -302,8 +302,8 @@ export default function StockPageClient({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#2764FF]/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#2764FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
@@ -316,8 +316,8 @@ export default function StockPageClient({
 
           <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#3FA46A]/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#3FA46A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -330,28 +330,28 @@ export default function StockPageClient({
 
           <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#E0A93A]/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#E0A93A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div>
                 <p className="text-sm text-[#6B7480]">Stock bas</p>
-                <p className="text-2xl font-bold text-amber-600">{stats.lowStockCount}</p>
+                <p className="text-2xl font-bold text-[#E0A93A]">{stats.lowStockCount}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-[#FFE7EC] rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#F22E75]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               </div>
               <div>
                 <p className="text-sm text-[#6B7480]">Rupture</p>
-                <p className="text-2xl font-bold text-red-600">{stats.outOfStockCount}</p>
+                <p className="text-2xl font-bold text-[#F22E75]">{stats.outOfStockCount}</p>
               </div>
             </div>
           </div>
@@ -403,7 +403,7 @@ export default function StockPageClient({
                         }
                       }
                     }}
-                    className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors"
+                    className="px-3 py-2 text-sm text-[#F22E75] hover:bg-[#FFE7EC] rounded-xl font-medium transition-colors"
                     title="Supprimer les catégories vides"
                   >
                     Nettoyer catégories
@@ -414,8 +414,8 @@ export default function StockPageClient({
                   onClick={() => setShowLowStock(!showLowStock)}
                   className={`px-4 py-2 rounded-xl font-medium transition-colors ${
                     showLowStock 
-                      ? 'bg-amber-100 text-amber-700' 
-                      : 'bg-gray-100 text-[#30373E] hover:bg-gray-200'
+                      ? 'bg-[#E0A93A]/10 text-amber-700' 
+                      : 'bg-[#F2F8FF] text-[#30373E] hover:bg-gray-200'
                   }`}
                 >
                   Stock bas
@@ -427,7 +427,7 @@ export default function StockPageClient({
             <div className="space-y-3">
               {filteredProducts.length === 0 ? (
                 <div className="bg-white rounded-lg p-12 shadow-sm border border-[#DDE5EE] text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-[#F2F8FF] rounded-full flex items-center justify-center">
                     <svg className="w-8 h-8 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
@@ -449,7 +449,7 @@ export default function StockPageClient({
                   >
                     <div className="flex items-center gap-4">
                       {/* Product Image/Icon */}
-                      <div className="relative w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <div className="relative w-16 h-16 bg-[#F2F8FF] rounded-xl flex items-center justify-center flex-shrink-0">
                         {product.image_url ? (
                           <Image
                             src={product.image_url}
@@ -491,8 +491,8 @@ export default function StockPageClient({
                       {/* Stock Level */}
                       <div className="text-right">
                         <div className={`text-2xl font-bold ${
-                          product.quantity === 0 ? 'text-red-600' :
-                          product.quantity <= product.min_quantity ? 'text-amber-600' :
+                          product.quantity === 0 ? 'text-[#F22E75]' :
+                          product.quantity <= product.min_quantity ? 'text-[#E0A93A]' :
                           'text-[#03182F]'
                         }`}>
                           {product.quantity}
@@ -501,10 +501,10 @@ export default function StockPageClient({
                           {product.unit}s en stock
                         </div>
                         {product.quantity <= product.min_quantity && product.quantity > 0 && (
-                          <span className="text-xs text-amber-600 font-medium">Stock bas</span>
+                          <span className="text-xs text-[#E0A93A] font-medium">Stock bas</span>
                         )}
                         {product.quantity === 0 && (
-                          <span className="text-xs text-red-600 font-medium">Rupture</span>
+                          <span className="text-xs text-[#F22E75] font-medium">Rupture</span>
                         )}
                       </div>
 
@@ -512,7 +512,7 @@ export default function StockPageClient({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setShowStockModal(product.id)}
-                          className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                          className="p-2 bg-[#3FA46A]/10 text-[#3FA46A] rounded-lg hover:bg-[#3FA46A]/10 transition-colors"
                           title="Mouvement de stock"
                         >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -522,7 +522,7 @@ export default function StockPageClient({
                         <button
                           onClick={() => handleDeleteProduct(product.id, product.name)}
                           disabled={deletingId === product.id}
-                          className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                          className="p-2 bg-[#FFE7EC] text-[#F22E75] rounded-lg hover:bg-[#FFE7EC] transition-colors disabled:opacity-50"
                           title="Supprimer le produit"
                         >
                           {deletingId === product.id ? (
@@ -682,7 +682,7 @@ function NewProductModal({
         <div className="p-6 border-b border-[#DDE5EE]">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-[#03182F]">Nouveau produit</h2>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button onClick={onClose} className="p-2 hover:bg-[#F2F8FF] rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -829,7 +829,7 @@ function NewProductModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gray-100 text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
+              className="flex-1 px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
             >
               Annuler
             </button>
@@ -905,7 +905,7 @@ function StockMovementModal({
               <h2 className="text-xl font-bold text-[#03182F]">Mouvement de stock</h2>
               <p className="text-sm text-[#6B7480]">{productName}</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button onClick={onClose} className="p-2 hover:bg-[#F2F8FF] rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -983,7 +983,7 @@ function StockMovementModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gray-100 text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
+              className="flex-1 px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
             >
               Annuler
             </button>
@@ -1238,7 +1238,7 @@ function ImportModal({
                 {step === 'result' && 'Import terminé'}
               </p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button onClick={onClose} className="p-2 hover:bg-[#F2F8FF] rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -1250,9 +1250,9 @@ function ImportModal({
             {['upload', 'mapping', 'preview'].map((s, i) => (
               <div key={s} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step === s ? 'bg-emerald-500 text-white' :
-                  ['upload', 'mapping', 'preview'].indexOf(step) > i || step === 'result' ? 'bg-emerald-100 text-emerald-700' :
-                  'bg-gray-100 text-[#6B7480]'
+                  step === s ? 'bg-[#3FA46A]/100 text-white' :
+                  ['upload', 'mapping', 'preview'].indexOf(step) > i || step === 'result' ? 'bg-[#3FA46A]/10 text-emerald-700' :
+                  'bg-[#F2F8FF] text-[#6B7480]'
                 }`}>
                   {i + 1}
                 </div>
@@ -1267,7 +1267,7 @@ function ImportModal({
         <div className="p-6 space-y-6">
           {/* Error */}
           {error && (
-            <div className="bg-red-50 text-red-700 p-4 rounded-xl flex items-center gap-2">
+            <div className="bg-[#FFE7EC] text-red-700 p-4 rounded-xl flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -1295,9 +1295,9 @@ function ImportModal({
                 </label>
               </div>
               
-              <div className="bg-blue-50 p-4 rounded-xl">
+              <div className="bg-[#2764FF]/10 p-4 rounded-xl">
                 <h4 className="font-medium text-blue-900 mb-2">Formats acceptés</h4>
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-[#004bd9]">
                   Importez un fichier CSV ou JSON depuis n&apos;importe quelle application. 
                   Vous pourrez ensuite choisir quelle colonne correspond à quel champ.
                 </p>
@@ -1325,7 +1325,7 @@ function ImportModal({
                       <div className="w-40 flex-shrink-0">
                         <span className="text-sm font-medium text-[#30373E]">
                           {field.label}
-                          {field.required && <span className="text-red-500 ml-1">*</span>}
+                          {field.required && <span className="text-[#F22E75] ml-1">*</span>}
                         </span>
                       </div>
                       <div className="flex-1">
@@ -1358,7 +1358,7 @@ function ImportModal({
                 <div className="overflow-x-auto bg-[#F2F8FF] rounded-xl">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-gray-100">
+                      <tr className="bg-[#F2F8FF]">
                         {headers.map((header, i) => (
                           <th key={i} className="px-3 py-2 text-left text-[#30373E] font-medium whitespace-nowrap">
                             {header}
@@ -1385,7 +1385,7 @@ function ImportModal({
                 <button
                   type="button"
                   onClick={() => { setStep('upload'); setFile(null); setHeaders([]); setRawData([]); }}
-                  className="px-4 py-3 bg-gray-100 text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
+                  className="px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
                 >
                   Retour
                 </button>
@@ -1409,7 +1409,7 @@ function ImportModal({
           {/* Step 3: Preview */}
           {step === 'preview' && (
             <>
-              <div className="bg-emerald-50 p-4 rounded-xl">
+              <div className="bg-[#3FA46A]/10 p-4 rounded-xl">
                 <p className="text-emerald-700">
                   <strong>{buildProducts().length}</strong> produits prêts à être importés
                 </p>
@@ -1420,7 +1420,7 @@ function ImportModal({
                 <div className="overflow-x-auto bg-[#F2F8FF] rounded-xl">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-100">
+                      <tr className="bg-[#F2F8FF]">
                         <th className="px-3 py-2 text-left text-[#30373E] font-medium">Nom</th>
                         <th className="px-3 py-2 text-left text-[#30373E] font-medium">SKU</th>
                         <th className="px-3 py-2 text-left text-[#30373E] font-medium">Prix</th>
@@ -1452,7 +1452,7 @@ function ImportModal({
                 <button
                   type="button"
                   onClick={() => setStep('mapping')}
-                  className="px-4 py-3 bg-gray-100 text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
+                  className="px-4 py-3 bg-[#F2F8FF] text-[#30373E] font-medium rounded-xl hover:bg-gray-200"
                 >
                   Retour
                 </button>
@@ -1471,16 +1471,16 @@ function ImportModal({
           {step === 'result' && importStats && (
             <>
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-16 h-16 mx-auto mb-4 bg-[#3FA46A]/10 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-[#3FA46A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold text-[#03182F] mb-2">Import terminé</h3>
                 <p className="text-[#30373E]">
-                  <strong className="text-emerald-600">{importStats.success}</strong> produits importés avec succès
+                  <strong className="text-[#3FA46A]">{importStats.success}</strong> produits importés avec succès
                   {importStats.failed > 0 && (
-                    <span className="text-red-600"> · {importStats.failed} échecs</span>
+                    <span className="text-[#F22E75]"> · {importStats.failed} échecs</span>
                   )}
                 </p>
               </div>

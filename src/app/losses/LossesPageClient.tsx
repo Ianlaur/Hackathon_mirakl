@@ -72,8 +72,8 @@ const reasonLabels: Record<string, string> = {
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   open: { label: 'Ouvert', className: 'bg-rose-50 text-rose-700 ring-rose-100' },
-  investigating: { label: 'En analyse', className: 'bg-amber-50 text-amber-700 ring-amber-100' },
-  resolved: { label: 'Résolu', className: 'bg-emerald-50 text-emerald-700 ring-emerald-100' },
+  investigating: { label: 'En analyse', className: 'bg-[#E0A93A]/10 text-amber-700 ring-amber-100' },
+  resolved: { label: 'Résolu', className: 'bg-[#3FA46A]/10 text-emerald-700 ring-emerald-100' },
   ignored: { label: 'Ignoré', className: 'bg-slate-100 text-[#6B7480] ring-slate-200' },
 }
 
@@ -85,9 +85,9 @@ const confidenceLabels: Record<string, string> = {
 
 const stageAccent: Record<string, string> = {
   carrier_transit: 'bg-[#2764ff]',
-  receiving: 'bg-emerald-500',
+  receiving: 'bg-[#3FA46A]/100',
   storage: 'bg-cyan-500',
-  picking: 'bg-amber-500',
+  picking: 'bg-[#E0A93A]/100',
   packing: 'bg-orange-500',
   shipping: 'bg-rose-500',
   customer_return: 'bg-violet-500',
@@ -187,7 +187,7 @@ function PieDistribution({ title, items }: { title: string; items: GroupMetric[]
             </div>
           </div>
           <div
-            className="min-w-0 rounded-2xl border border-[#DDE5EE] bg-[#F2F8FF] p-4"
+            className="min-w-0 rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] p-4"
             onMouseLeave={() => setHoveredKey(null)}
           >
             {activeItem ? (
@@ -236,7 +236,7 @@ function PieDistribution({ title, items }: { title: string; items: GroupMetric[]
                     onMouseEnter={() => setHoveredKey(item.key)}
                     onFocus={() => setHoveredKey(item.key)}
                     className={`flex min-w-0 items-center gap-2 rounded-full border px-3 py-1.5 text-left text-xs font-medium transition ${
-                      active ? 'border-slate-300 bg-white text-[#03182F] shadow-sm' : 'border-[#DDE5EE] bg-[#F2F8FF] text-[#6B7480] hover:bg-white'
+                      active ? 'border-[#BFCBDA] bg-white text-[#03182F] shadow-sm' : 'border-[#DDE5EE] bg-[#F2F8FF] text-[#6B7480] hover:bg-white'
                     }`}
                   >
                     <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: pieColors[index % pieColors.length] }} />

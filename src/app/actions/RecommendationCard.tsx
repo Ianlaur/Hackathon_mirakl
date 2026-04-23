@@ -16,27 +16,27 @@ export function RecommendationCard({
 
   const badge =
     recommendation.status === 'pending_approval'
-      ? { text: 'À valider', className: 'bg-amber-100 text-amber-700' }
+      ? { text: 'À valider', className: 'bg-[#E0A93A]/10 text-amber-700' }
       : recommendation.status === 'approved'
-        ? { text: 'Approuvée', className: 'bg-emerald-100 text-emerald-700' }
+        ? { text: 'Approuvée', className: 'bg-[#3FA46A]/10 text-emerald-700' }
         : recommendation.status === 'rejected'
-          ? { text: 'Rejetée', className: 'bg-slate-200 text-slate-700' }
-          : { text: recommendation.status, className: 'bg-slate-200 text-slate-700' }
+          ? { text: 'Rejetée', className: 'bg-slate-200 text-[#30373E]' }
+          : { text: recommendation.status, className: 'bg-slate-200 text-[#30373E]' }
 
   return (
     <button
       type="button"
       onClick={onSelect}
       className={`w-full rounded-xl border p-4 text-left transition hover:border-blue-500 ${
-        selected ? 'border-blue-600 bg-blue-50' : 'border-slate-200 bg-white'
+        selected ? 'border-blue-600 bg-[#2764FF]/10' : 'border-slate-200 bg-white'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-slate-900">
+          <p className="truncate text-sm font-semibold text-[#03182F]">
             {recommendation.title}
           </p>
-          <p className="mt-1 line-clamp-2 text-xs text-slate-600">
+          <p className="mt-1 line-clamp-2 text-xs text-[#6B7480]">
             {recommendation.reasoning_summary}
           </p>
         </div>
@@ -48,7 +48,7 @@ export function RecommendationCard({
       </div>
 
       {payload && isPending && (payload.items_count || payload.total_estimated_cost_eur) ? (
-        <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-600">
+        <div className="mt-3 flex flex-wrap gap-3 text-xs text-[#6B7480]">
           {typeof payload.items_count === 'number' && (
             <span>{payload.items_count} commandes</span>
           )}

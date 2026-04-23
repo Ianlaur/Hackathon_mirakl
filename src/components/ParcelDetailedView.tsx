@@ -43,18 +43,18 @@ export default function ParcelDetailedView({ parcel, onClose }: ParcelDetailedVi
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+      <div className="w-full max-w-3xl overflow-hidden rounded-lg bg-white shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Parcel details</p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#004bd9]">Parcel details</p>
+            <h2 className="mt-2 text-2xl font-semibold text-[#03182F]">
               {parcel.reference || parcel.tracking_code || 'Parcel overview'}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+            className="rounded-full border border-slate-200 p-2 text-[#6B7480] transition hover:bg-slate-50 hover:text-[#03182F]"
             aria-label="Close parcel details"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -84,9 +84,9 @@ export default function ParcelDetailedView({ parcel, onClose }: ParcelDetailedVi
 
 function DetailBlock({ label, value }: { label: string; value: string | null }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-900">{value || 'Not provided'}</p>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm font-medium text-[#6B7480]">{label}</p>
+      <p className="mt-2 text-sm leading-6 text-[#03182F]">{value || 'Not provided'}</p>
     </div>
   )
 }

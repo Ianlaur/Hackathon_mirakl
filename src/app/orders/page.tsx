@@ -6,7 +6,7 @@ const stats = [
   { label: 'PENDING ACTION', value: '14', color: 'text-[#F22E75]', badge: '+2h', badgeBg: 'bg-[#F22E75]/10 text-[#F22E75]' },
   { label: 'IN TRANSIT', value: '128', color: 'text-[#004bd9]', badge: '89%', badgeBg: 'bg-[#004bd9]/10 text-[#004bd9]' },
   { label: 'DELIVERED (24H)', value: '342', color: 'text-[#3FA46A]', badge: '↑4%', badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]' },
-  { label: 'PROCESSING', value: '56', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-slate-100 text-slate-500' },
+  { label: 'PROCESSING', value: '56', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-slate-100 text-[#6B7480]' },
 ]
 
 const orders = [
@@ -23,7 +23,7 @@ const orders = [
   },
   {
     marketplace: 'Bol.com',
-    mpColor: 'bg-blue-600',
+    mpColor: 'bg-[#2764FF]',
     mpCode: 'BOL',
     orderId: '#ORD-88271-AA',
     date: 'Yesterday, 4:15 PM',
@@ -39,7 +39,7 @@ const orders = [
     orderId: '#ORD-77112-ZZ',
     date: 'Nov 14, 2023',
     status: 'Delivered',
-    statusStyle: 'bg-green-50 text-[#3FA46A] border border-[#3FA46A]/10',
+    statusStyle: 'bg-[#3FA46A]/10 text-[#3FA46A] border border-[#3FA46A]/10',
     items: 5,
     value: '€412.99',
   },
@@ -50,7 +50,7 @@ const orders = [
     orderId: '#ORD-66231-PP',
     date: 'Nov 14, 2023',
     status: 'Processing',
-    statusStyle: 'bg-slate-100 text-slate-600',
+    statusStyle: 'bg-slate-100 text-[#6B7480]',
     items: 1,
     value: '€55.00',
   },
@@ -144,7 +144,7 @@ export default function OrdersPage() {
                     <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-200" />
                     {o.items > 1 && (
                       <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center">
-                        <span className="text-[10px] font-mono text-slate-500">+{o.items - 1}</span>
+                        <span className="text-[10px] font-mono text-[#6B7480]">+{o.items - 1}</span>
                       </div>
                     )}
                   </div>
@@ -163,13 +163,13 @@ export default function OrdersPage() {
             Showing <span className="font-bold">1-10</span> of <span className="font-bold">2,451</span> orders
           </span>
           <div className="flex gap-1">
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors">
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-slate-50 transition-colors">
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button className="w-8 h-8 rounded bg-[#004bd9] text-white text-[11px] font-bold">1</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors">2</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors">3</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors">
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-slate-50 transition-colors">2</button>
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-slate-50 transition-colors">3</button>
+            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-slate-50 transition-colors">
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -188,7 +188,7 @@ export default function OrdersPage() {
             {logFeed.map((l, i) => (
               <div key={i} className="flex items-center h-8 border-b border-slate-50">
                 <span className={`w-2 h-2 rounded-full ${l.color} mr-4 ${l.pulse ? 'animate-pulse' : ''}`} />
-                <span className="font-mono text-[10px] text-slate-400 w-20">{l.time}</span>
+                <span className="font-mono text-[10px] text-[#6B7480] w-20">{l.time}</span>
                 <span className="font-serif text-[13px] text-[#191b24]">{l.text}</span>
               </div>
             ))}
@@ -198,7 +198,7 @@ export default function OrdersPage() {
         {/* Quick Decision */}
         <div className="col-span-4 bg-[#03182F] text-white rounded-lg p-6 flex flex-col justify-between">
           <div>
-            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase block mb-2">QUICK DECISION</span>
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-2">QUICK DECISION</span>
             <h4 className="font-serif text-base font-bold mb-2">Restock Alert: Best Seller</h4>
             <p className="font-serif text-[12px] text-slate-300">&quot;Modern Ceramic Vase&quot; inventory below 10% on Amazon DE. Orders may stall.</p>
           </div>

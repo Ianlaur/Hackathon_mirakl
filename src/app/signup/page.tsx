@@ -73,7 +73,7 @@ export default function SignUpPage() {
         </svg>
       ),
       color: 'from-emerald-500 to-teal-500',
-      bgColor: 'bg-emerald-50',
+      bgColor: 'bg-[#3FA46A]/10',
       borderColor: 'border-emerald-500',
       features: ['Gestion des stocks', 'WMS / Entrepôt', 'Suivi des ventes', 'Facturation rapide'],
     },
@@ -110,7 +110,7 @@ export default function SignUpPage() {
           {/* Logo and Title */}
           <div className="text-center mb-8 animate-fadeIn">
             <div className="inline-block mb-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl border border-white/20 transform hover:scale-105 transition-transform duration-300">
+              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-2xl border border-white/20 transform hover:scale-105 transition-transform duration-300">
                 <span className="text-4xl font-black text-white">L</span>
               </div>
             </div>
@@ -135,16 +135,16 @@ export default function SignUpPage() {
 
           {/* Step 1: Business Type Selection */}
           {step === 1 && (
-            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 border border-white/20 animate-slideUp">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl p-8 sm:p-10 border border-white/20 animate-slideUp">
+              <h2 className="text-2xl font-bold text-[#03182F] mb-2">
                 Quel est votre type d&apos;activité ?
               </h2>
-              <p className="text-gray-500 mb-8">Choisissez le profil qui correspond le mieux à votre activité</p>
+              <p className="text-[#6B7480] mb-8">Choisissez le profil qui correspond le mieux à votre activité</p>
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl animate-shake">
+                <div className="mb-6 p-4 bg-[#FFE7EC] border border-red-200 rounded-xl animate-shake">
                   <div className="flex items-start gap-3">
-                    <span className="text-red-600 text-xl">⚠</span>
+                    <span className="text-[#F22E75] text-xl">⚠</span>
                     <p className="text-sm text-red-700 font-medium">{error}</p>
                   </div>
                 </div>
@@ -156,10 +156,10 @@ export default function SignUpPage() {
                     key={type.id}
                     type="button"
                     onClick={() => handleBusinessTypeSelect(type.id)}
-                    className={`relative flex items-start gap-4 p-5 rounded-2xl border-2 transition-all duration-200 text-left ${
+                    className={`relative flex items-start gap-4 p-5 rounded-lg border-2 transition-all duration-200 text-left ${
                       businessType === type.id
                         ? `${type.borderColor} ${type.bgColor} shadow-lg`
-                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md bg-white'
+                        : 'border-[#DDE5EE] hover:border-[#BFCBDA] hover:shadow-md bg-white'
                     }`}
                   >
                     {/* Selection Indicator */}
@@ -177,16 +177,16 @@ export default function SignUpPage() {
                       {type.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-gray-900 mb-1">{type.name}</h3>
-                      <p className="text-sm text-gray-500 mb-3">{type.description}</p>
+                      <h3 className="text-lg font-bold text-[#03182F] mb-1">{type.name}</h3>
+                      <p className="text-sm text-[#6B7480] mb-3">{type.description}</p>
                       <div className="flex flex-wrap gap-2">
                         {type.features.map((feature, idx) => (
                           <span
                             key={idx}
                             className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                               businessType === type.id
-                                ? `bg-white/80 text-gray-700`
-                                : 'bg-gray-100 text-gray-600'
+                                ? `bg-white/80 text-[#30373E]`
+                                : 'bg-[#F2F8FF] text-[#30373E]'
                             }`}
                           >
                             {feature}
@@ -207,8 +207,8 @@ export default function SignUpPage() {
                 Continuer
               </button>
 
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <p className="text-center text-sm text-gray-600">
+              <div className="mt-8 pt-6 border-t border-[#DDE5EE]">
+                <p className="text-center text-sm text-[#30373E]">
                   Accès direct au profil{' '}
                   <Link href="/settings" className="text-indigo-600 hover:text-indigo-700 font-bold inline-flex items-center gap-1 group">
                     <span>Ouvrir</span>
@@ -223,31 +223,31 @@ export default function SignUpPage() {
 
           {/* Step 2: Account Information */}
           {step === 2 && (
-            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 border border-white/20 animate-slideUp">
+            <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl p-8 sm:p-10 border border-white/20 animate-slideUp">
               <div className="flex items-center gap-3 mb-6">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg hover:bg-[#F2F8FF] transition-colors"
                 >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-[#30373E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-[#03182F]">
                     Créez votre compte
                   </h2>
-                  <p className="text-gray-500 text-sm">
-                    Profil : <span className="font-medium text-gray-700">{businessType === 'retail' ? 'Commerce / Retail' : 'Freelance / Consultant'}</span>
+                  <p className="text-[#6B7480] text-sm">
+                    Profil : <span className="font-medium text-[#30373E]">{businessType === 'retail' ? 'Commerce / Retail' : 'Freelance / Consultant'}</span>
                   </p>
                 </div>
               </div>
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl animate-shake">
+                <div className="mb-6 p-4 bg-[#FFE7EC] border border-red-200 rounded-xl animate-shake">
                   <div className="flex items-start gap-3">
-                    <span className="text-red-600 text-xl">⚠</span>
+                    <span className="text-[#F22E75] text-xl">⚠</span>
                     <p className="text-sm text-red-700 font-medium">{error}</p>
                   </div>
                 </div>
@@ -255,12 +255,12 @@ export default function SignUpPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="inviteCode" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="inviteCode" className="block text-sm font-semibold text-[#30373E] mb-2">
                     Code d&apos;invitation
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                       </svg>
                     </div>
@@ -269,12 +269,12 @@ export default function SignUpPage() {
                       type="text"
                       value={formData.inviteCode}
                       onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                      className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
                       placeholder="Entrez votre code d&apos;invitation"
                       required
                     />
                   </div>
-                  <p className="mt-2 text-xs text-gray-500">
+                  <p className="mt-2 text-xs text-[#6B7480]">
                     Pas de code ?{' '}
                     <a href="/#waitlist" className="text-indigo-600 hover:text-indigo-700 font-medium">
                       Rejoignez la liste d&apos;attente
@@ -283,12 +283,12 @@ export default function SignUpPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="name" className="block text-sm font-semibold text-[#30373E] mb-2">
                     Nom complet
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
@@ -297,7 +297,7 @@ export default function SignUpPage() {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                      className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
                       placeholder="Jean Dupont"
                       required
                       minLength={2}
@@ -306,12 +306,12 @@ export default function SignUpPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-[#30373E] mb-2">
                     Adresse email
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                       </svg>
                     </div>
@@ -320,7 +320,7 @@ export default function SignUpPage() {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                      className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
                       placeholder="vous@exemple.com"
                       required
                     />
@@ -328,12 +328,12 @@ export default function SignUpPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="password" className="block text-sm font-semibold text-[#30373E] mb-2">
                     Mot de passe
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
@@ -342,7 +342,7 @@ export default function SignUpPage() {
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                      className="w-full pl-12 pr-12 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
                       placeholder="••••••••"
                       required
                       minLength={8}
@@ -350,7 +350,7 @@ export default function SignUpPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#6B7480] hover:text-[#30373E]"
                     >
                       {showPassword ? (
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -364,16 +364,16 @@ export default function SignUpPage() {
                       )}
                     </button>
                   </div>
-                  <p className="mt-2 text-xs text-gray-500">Minimum 8 caractères</p>
+                  <p className="mt-2 text-xs text-[#6B7480]">Minimum 8 caractères</p>
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-[#30373E] mb-2">
                     Confirmer le mot de passe
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
@@ -382,7 +382,7 @@ export default function SignUpPage() {
                       type={showConfirmPassword ? "text" : "password"}
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                      className="w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                      className="w-full pl-12 pr-12 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
                       placeholder="••••••••"
                       required
                       minLength={8}
@@ -390,7 +390,7 @@ export default function SignUpPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#6B7480] hover:text-[#30373E]"
                     >
                       {showConfirmPassword ? (
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -425,8 +425,8 @@ export default function SignUpPage() {
                 </button>
               </form>
 
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <p className="text-center text-sm text-gray-600">
+              <div className="mt-8 pt-6 border-t border-[#DDE5EE]">
+                <p className="text-center text-sm text-[#30373E]">
                   Accès direct au profil{' '}
                   <Link href="/settings" className="text-indigo-600 hover:text-indigo-700 font-bold inline-flex items-center gap-1 group">
                     <span>Ouvrir</span>

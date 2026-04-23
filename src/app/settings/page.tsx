@@ -208,15 +208,15 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="text-sm text-gray-500">Paramètres</p>
-          <h1 className="text-3xl font-bold text-gray-900">Mon profil</h1>
-          <p className="text-gray-500 mt-1">Mettez à jour vos informations personnelles</p>
+          <p className="text-sm text-[#6B7480]">Paramètres</p>
+          <h1 className="text-3xl font-bold text-[#03182F]">Mon profil</h1>
+          <p className="text-[#6B7480] mt-1">Mettez à jour vos informations personnelles</p>
         </div>
       </div>
 
-      <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">Plugins de navigation</h2>
-        <p className="mt-1 text-sm text-gray-500">
+      <section className="mb-6 rounded-xl border border-[#DDE5EE] bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-[#03182F]">Plugins de navigation</h2>
+        <p className="mt-1 text-sm text-[#6B7480]">
           Activez les plugins pour afficher leurs onglets dans la sidebar.
         </p>
         <div className="mt-4 space-y-3">
@@ -232,20 +232,20 @@ export default function SettingsPage() {
               return (
                 <div
                   key={plugin.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] px-4 py-3"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{plugin.label}</p>
-                    <p className="text-xs text-gray-600">{plugin.description}</p>
-                    <p className="mt-1 text-xs text-gray-500">Ajoute: {tabs.join(' · ')}</p>
+                    <p className="text-sm font-semibold text-[#03182F]">{plugin.label}</p>
+                    <p className="text-xs text-[#30373E]">{plugin.description}</p>
+                    <p className="mt-1 text-xs text-[#6B7480]">Ajoute: {tabs.join(' · ')}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => togglePlugin(plugin.id)}
                     className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
                       active
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-[#2764FF]/10 text-[#004bd9] hover:bg-blue-200'
+                        : 'bg-gray-200 text-[#30373E] hover:bg-gray-300'
                     }`}
                   >
                     {active ? 'Actif' : 'Inactif'}
@@ -256,14 +256,14 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-[#DDE5EE] shadow-sm p-6 space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-[#FFE7EC] border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="bg-[#3FA46A]/10 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
             {success}
           </div>
         )}
@@ -279,7 +279,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <p className="text-sm text-gray-600 mb-2">Photo de profil</p>
+            <p className="text-sm text-[#30373E] mb-2">Photo de profil</p>
             <div className="flex items-center gap-3">
               <label className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg cursor-pointer hover:bg-indigo-700 transition">
                 Changer
@@ -292,66 +292,66 @@ export default function SettingsPage() {
                     setPreview(null)
                     setProfile((prev) => ({ ...prev, profile_image_url: '' }))
                   }}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-[#6B7480] hover:text-[#30373E]"
                 >
                   Supprimer
                 </button>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1">PNG/JPG, max 1.5MB</p>
+            <p className="text-xs text-[#6B7480] mt-1">PNG/JPG, max 1.5MB</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nom complet</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-2">Nom complet</label>
             <input
               type="text"
               value={profile.name}
               onChange={handleChange('name')}
               required
-              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-2">Email</label>
             <input
               type="email"
               value={profile.email}
               onChange={handleChange('email')}
               required
-              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone (optionnel)</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-2">Téléphone (optionnel)</label>
             <input
               type="tel"
               value={profile.phone || ''}
               onChange={handleChange('phone')}
               placeholder="+33 6 12 34 56 78"
-              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Adresse (optionnel)</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-2">Adresse (optionnel)</label>
             <input
               type="text"
               value={profile.address || ''}
               onChange={handleChange('address')}
               placeholder="12 rue Exemple, 75000 Paris"
-              className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Autres infos (bio, note)</label>
+          <label className="block text-sm font-medium text-[#30373E] mb-2">Autres infos (bio, note)</label>
           <textarea
             value={profile.bio || ''}
             onChange={handleChange('bio')}
             rows={4}
-            className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             placeholder="Parlez brièvement de vous ou ajoutez une note interne."
           />
         </div>
@@ -368,30 +368,30 @@ export default function SettingsPage() {
       </form>
 
       {/* Business Information Section */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6 mt-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-[#DDE5EE] shadow-sm p-6 space-y-6 mt-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-[#03182F] flex items-center gap-2">
             <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
             Informations entreprise
           </h2>
-          <p className="text-sm text-gray-500 mt-1">Ces informations apparaîtront sur vos factures et devis</p>
+          <p className="text-sm text-[#6B7480] mt-1">Ces informations apparaîtront sur vos factures et devis</p>
         </div>
 
         {/* Company Logo */}
         <div className="flex items-start gap-6">
           <div className="flex-shrink-0">
-            <p className="text-sm font-medium text-gray-700 mb-2">Logo entreprise</p>
-            <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
+            <p className="text-sm font-medium text-[#30373E] mb-2">Logo entreprise</p>
+            <div className="w-32 h-32 border-2 border-dashed border-[#BFCBDA] rounded-lg flex items-center justify-center bg-[#F2F8FF] overflow-hidden">
               {logoPreview ? (
                 <Image src={logoPreview} alt="Logo" width={128} height={128} className="object-contain w-full h-full" />
               ) : (
                 <div className="text-center p-4">
-                  <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-8 h-8 text-[#6B7480] mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-xs text-gray-500">Aucun logo</span>
+                  <span className="text-xs text-[#6B7480]">Aucun logo</span>
                 </div>
               )}
             </div>
@@ -407,60 +407,60 @@ export default function SettingsPage() {
                     setLogoPreview(null)
                     setProfile((prev) => ({ ...prev, company_logo_url: '' }))
                   }}
-                  className="text-xs text-gray-500 hover:text-gray-700"
+                  className="text-xs text-[#6B7480] hover:text-[#30373E]"
                 >
                   Supprimer
                 </button>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1">PNG/JPG, max 1.5MB</p>
+            <p className="text-xs text-[#6B7480] mt-1">PNG/JPG, max 1.5MB</p>
           </div>
 
           <div className="flex-1 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l&apos;entreprise</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">Nom de l&apos;entreprise</label>
               <input
                 type="text"
                 value={profile.company_name || ''}
                 onChange={handleChange('company_name')}
                 placeholder="Mon Entreprise SARL"
-                className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">SIRET</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">SIRET</label>
               <input
                 type="text"
                 value={profile.company_siret || ''}
                 onChange={handleChange('company_siret')}
                 placeholder="123 456 789 00012"
-                className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Adresse de l&apos;entreprise</label>
+          <label className="block text-sm font-medium text-[#30373E] mb-2">Adresse de l&apos;entreprise</label>
           <textarea
             value={profile.company_address || ''}
             onChange={handleChange('company_address')}
             rows={2}
             placeholder="7 rue François Mitterrand&#10;18100 Vierzon, France"
-            className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Mention TVA</label>
+          <label className="block text-sm font-medium text-[#30373E] mb-2">Mention TVA</label>
           <input
             type="text"
             value={profile.company_tva_text || ''}
             onChange={handleChange('company_tva_text')}
             placeholder="TVA non applicable, art. 293 B du CGI"
-            className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
-          <p className="text-xs text-gray-500 mt-1">Laissez vide si vous êtes assujetti à la TVA</p>
+          <p className="text-xs text-[#6B7480] mt-1">Laissez vide si vous êtes assujetti à la TVA</p>
         </div>
 
         <div className="flex justify-end">
@@ -474,51 +474,51 @@ export default function SettingsPage() {
         </div>
       </form>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4 mt-6">
+      <div className="bg-white rounded-xl border border-[#DDE5EE] shadow-sm p-6 space-y-4 mt-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Sécurité</h2>
-          <p className="text-sm text-gray-500">Mettre à jour votre mot de passe</p>
+          <h2 className="text-xl font-semibold text-[#03182F]">Sécurité</h2>
+          <p className="text-sm text-[#6B7480]">Mettre à jour votre mot de passe</p>
         </div>
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           {pwError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-[#FFE7EC] border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {pwError}
             </div>
           )}
           {pwSuccess && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            <div className="bg-[#3FA46A]/10 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
               {pwSuccess}
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe actuel</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">Mot de passe actuel</label>
               <input
                 type="password"
                 value={pwCurrent}
                 onChange={(e) => setPwCurrent(e.target.value)}
                 required
-                className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nouveau mot de passe</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">Nouveau mot de passe</label>
               <input
                 type="password"
                 value={pwNew}
                 onChange={(e) => setPwNew(e.target.value)}
                 required
-                className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirmer</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">Confirmer</label>
               <input
                 type="password"
                 value={pwConfirm}
                 onChange={(e) => setPwConfirm(e.target.value)}
                 required
-                className="w-full px-3 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -537,14 +537,14 @@ export default function SettingsPage() {
       {/* Beta Features Section */}
       <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-sm p-6 space-y-4 mt-6">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-amber-100 rounded-xl">
-            <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="p-3 bg-[#E0A93A]/10 rounded-xl">
+            <svg className="w-6 h-6 text-[#E0A93A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
             </svg>
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-900">Fonctionnalités Beta</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-[#03182F]">Fonctionnalités Beta</h2>
+            <p className="text-sm text-[#30373E] mt-1">
               Accédez en avant-première aux nouvelles fonctionnalités en cours de développement.
               Ces fonctionnalités peuvent être instables ou changer sans préavis.
             </p>
@@ -555,8 +555,8 @@ export default function SettingsPage() {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
               <div>
-                <p className="font-medium text-gray-900">Activer les fonctionnalités beta</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-medium text-[#03182F]">Activer les fonctionnalités beta</p>
+                <p className="text-sm text-[#6B7480]">
                   Inclut : Suivi des dépenses, et plus à venir...
                 </p>
               </div>
@@ -580,13 +580,13 @@ export default function SettingsPage() {
                 }}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#BFCBDA] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#E0A93A]/100"></div>
             </div>
           </label>
         </div>
 
         {profile.beta_features_enabled && (
-          <div className="bg-amber-100/50 rounded-lg p-3 flex items-center gap-2 text-sm text-amber-800">
+          <div className="bg-[#E0A93A]/10/50 rounded-lg p-3 flex items-center gap-2 text-sm text-amber-800">
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -598,14 +598,14 @@ export default function SettingsPage() {
       {/* Inventory & Stock Management Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm p-6 space-y-4 mt-6">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-blue-100 rounded-xl">
-            <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="p-3 bg-[#2764FF]/10 rounded-xl">
+            <svg className="w-6 h-6 text-[#2764FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-900">Gestion de Stock & Entrepôt</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-[#03182F]">Gestion de Stock & Entrepôt</h2>
+            <p className="text-sm text-[#30373E] mt-1">
               Activez les fonctionnalités de gestion de stock et d&apos;entrepôt (WMS) pour votre activité commerciale.
             </p>
           </div>
@@ -615,8 +615,8 @@ export default function SettingsPage() {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
               <div>
-                <p className="font-medium text-gray-900">Activer la gestion de stock</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-medium text-[#03182F]">Activer la gestion de stock</p>
+                <p className="text-sm text-[#6B7480]">
                   Inclut : Stock produits, Entrepôt (WMS), Zones, Emplacements, Listes de picking
                 </p>
               </div>
@@ -640,13 +640,13 @@ export default function SettingsPage() {
                 }}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#BFCBDA] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2764FF]"></div>
             </div>
           </label>
         </div>
 
         {profile.has_inventory && (
-          <div className="bg-blue-100/50 rounded-lg p-3 flex items-center gap-2 text-sm text-blue-800">
+          <div className="bg-[#2764FF]/10/50 rounded-lg p-3 flex items-center gap-2 text-sm text-blue-800">
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>

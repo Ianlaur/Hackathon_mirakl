@@ -69,10 +69,10 @@ export default function NavItem({ item, active, open = false, isSubitemActive, o
         className={`mx-2 my-0.5 flex items-center gap-3 rounded-md px-3 py-2 font-serif text-sm font-medium transition-all duration-200 ${
           active
             ? 'bg-slate-50 text-[#2764ff] border border-slate-200'
-            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            : 'text-[#6B7480] hover:bg-slate-50 hover:text-[#03182F]'
         }`}
       >
-        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764ff]' : 'text-slate-400'}`} />
+        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764ff]' : 'text-[#6B7480]'}`} />
         <span>{item.label}</span>
       </Link>
     )
@@ -86,13 +86,13 @@ export default function NavItem({ item, active, open = false, isSubitemActive, o
         className={`mx-2 my-0.5 flex w-[calc(100%-16px)] items-center gap-3 rounded-md px-3 py-2 text-left font-serif text-sm font-medium transition-all duration-200 ${
           active
             ? 'text-[#2764ff]'
-            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            : 'text-[#6B7480] hover:bg-slate-50 hover:text-[#03182F]'
         }`}
       >
-        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764ff]' : 'text-slate-400'}`} />
+        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764ff]' : 'text-[#6B7480]'}`} />
         <span>{item.label}</span>
         <ChevronDown
-          className={`ml-auto h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${
+          className={`ml-auto h-3.5 w-3.5 text-[#6B7480] transition-transform duration-200 ${
             open ? 'rotate-180' : ''
           }`}
         />
