@@ -1,472 +1,161 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
-import {
-  ArrowRight,
-  Bell,
-  CheckCircle2,
-  Clock3,
-  DollarSign,
-  MapPin,
-  Package,
-  Search,
-  Truck,
-  Wallet,
-} from 'lucide-react'
-import type { Shipment, ShipmentStatus } from '@/types/shipment'
-import { usePluginContext } from '@/contexts/PluginContext'
+import { Send } from 'lucide-react'
 
-const GlobalShipmentTracker = dynamic(
-  () => import('@/components/map/GlobalShipmentTracker'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[340px] animate-pulse rounded-xl border border-slate-700/60 bg-slate-900" />
-    ),
-  }
-)
-
-type Order = {
-  id: string
-  product: string
-  status: 'Processing' | 'Delivered' | 'In Transit' | 'Blocked'
-  origin: string
-  destination: string
-  eta: string
-  carrier: string
-  co2: string
-  stock: string
-}
-
-type InventoryItem = {
-  name: string
-  sku: string
-  qtyLabel: string
-  statusLabel: string
-  status: 'critical' | 'low' | 'ok'
-  levelPct: number
-}
-
-type LowStockAlert = {
-  id: string
-  status: string
-  quantity: number
-  threshold: number
-  productName: string
-  sku: string | null
-  createdAt: string
-  dustResponse: string | null
-  proposedSolution: string | null
-  errorMessage: string | null
-}
-
-const BASIC_ORDERS: Order[] = [
-  { id: '#ORDER-884', product: '1 Oak Table', status: 'Processing', origin: 'Annecy, FR', destination: 'Lyon, FR', eta: 'Nov 22', carrier: 'Colissimo Eco', co2: '12 kg', stock: '3 left' },
-  { id: '#ORDER-880', product: '2 Dining Chairs', status: 'Delivered', origin: 'Chambéry, FR', destination: 'Paris, FR', eta: 'Nov 18', carrier: 'Chronopost', co2: '24 kg', stock: 'In Stock' },
-  { id: '#ORDER-876', product: '3 Bar Stools', status: 'In Transit', origin: 'Annecy, FR', destination: 'Nice, FR', eta: 'Nov 21', carrier: 'Colissimo Eco', co2: '18 kg', stock: '5 left' },
-  { id: '#ORDER-871', product: '1 Bookshelf', status: 'Delivered', origin: 'Albertville, FR', destination: 'Toulouse, FR', eta: 'Nov 16', carrier: 'Colis Privé', co2: '8 kg', stock: 'In Stock' },
+const orders = [
+  { id: 'MK-8829-X', marketplace: 'Amazon US', icon: '🛒', value: '$249.00', status: 'FULFILLED', statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10', time: '14:22:05' },
+  { id: 'MK-8830-L', marketplace: 'Maison du Monde', icon: '🏠', value: '$1,120.45', status: 'PROCESSING', statusStyle: 'text-[#2764FF] bg-[#2764FF]/10', time: '14:18:12' },
+  { id: 'MK-8831-Z', marketplace: 'Zalando EU', icon: '🌍', value: '$89.99', status: 'RISK ATTACHED', statusStyle: 'text-[#F22E75] bg-[#FFE7EC]', time: '14:05:44' },
+  { id: 'MK-8832-P', marketplace: 'Carrefour', icon: '🛍️', value: '$42.50', status: 'FULFILLED', statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10', time: '13:59:30' },
 ]
-
-const PRO_ORDERS: Order[] = [
-  { id: '#ORDER-883', product: '50 Oak Tables', status: 'Blocked', origin: 'Shanghai, CN', destination: 'Marseille, FR', eta: 'Delayed', carrier: 'DHL', co2: '1.8 tons', stock: 'Critical' },
-  { id: '#ORDER-877', product: '120 Sofas', status: 'In Transit', origin: 'Rotterdam, NL', destination: 'Lyon, FR', eta: 'Nov 20', carrier: 'Truck LTL', co2: '85 kg', stock: 'Healthy' },
-  { id: '#ORDER-864', product: '30 Dining Sets', status: 'Delivered', origin: 'Shenzhen, CN', destination: 'Frankfurt, DE', eta: 'Nov 14', carrier: 'Air Freight', co2: '4.2 tons', stock: 'Healthy' },
-  { id: '#ORDER-859', product: '80 Bar Stools', status: 'Processing', origin: 'Hamburg, DE', destination: 'Nice, FR', eta: 'Nov 28', carrier: 'Truck FTL', co2: '320 kg', stock: 'Medium' },
-]
-
-const BASIC_INVENTORY: InventoryItem[] = [
-  { name: 'Oak Tables', sku: 'SKU-OAK-01', qtyLabel: '4 left', statusLabel: 'Low Stock', status: 'low', levelPct: 20 },
-  { name: 'Pine Shelves', sku: 'SKU-PIN-03', qtyLabel: '18 left', statusLabel: 'In Stock', status: 'ok', levelPct: 90 },
-  { name: 'Walnut Chairs', sku: 'SKU-WAL-07', qtyLabel: '2 left', statusLabel: 'Critical', status: 'critical', levelPct: 10 },
-  { name: 'Birch Desks', sku: 'SKU-BIR-02', qtyLabel: '11 left', statusLabel: 'In Stock', status: 'ok', levelPct: 55 },
-]
-
-const PRO_INVENTORY: InventoryItem[] = [
-  { name: 'Oak Tables', sku: 'SKU-OAK-01', qtyLabel: '125 total', statusLabel: 'Critical', status: 'critical', levelPct: 25 },
-  { name: 'Pine Shelves', sku: 'SKU-PIN-03', qtyLabel: '450 total', statusLabel: 'In Stock', status: 'ok', levelPct: 90 },
-  { name: 'Walnut Chairs', sku: 'SKU-WAL-07', qtyLabel: '80 total', statusLabel: 'Rebalancing', status: 'low', levelPct: 35 },
-  { name: 'Birch Desks', sku: 'SKU-BIR-02', qtyLabel: '210 total', statusLabel: 'In Stock', status: 'ok', levelPct: 70 },
-]
-
-const CITY_COORDINATES: Record<string, [number, number]> = {
-  'Annecy, FR': [6.1294, 45.8992],
-  'Lyon, FR': [4.8357, 45.764],
-  'Chambéry, FR': [5.9178, 45.5646],
-  'Paris, FR': [2.3522, 48.8566],
-  'Nice, FR': [7.262, 43.7102],
-  'Albertville, FR': [6.3928, 45.675],
-  'Toulouse, FR': [1.4442, 43.6047],
-  'Shanghai, CN': [121.4737, 31.2304],
-  'Marseille, FR': [5.3698, 43.2965],
-  'Rotterdam, NL': [4.4792, 51.9244],
-  'Shenzhen, CN': [114.0579, 22.5431],
-  'Frankfurt, DE': [8.6821, 50.1109],
-  'Hamburg, DE': [9.9937, 53.5511],
-}
-
-function toShipmentStatus(status: Order['status']): ShipmentStatus {
-  if (status === 'Blocked') return 'blocked'
-  if (status === 'In Transit') return 'in_transit'
-  if (status === 'Processing') return 'rerouted'
-  return 'on_track'
-}
-
-function toIsoEta(value: string) {
-  if (value.toLowerCase().includes('delayed')) {
-    return new Date(Date.now() + 9 * 24 * 60 * 60 * 1000).toISOString()
-  }
-  const parsed = Date.parse(`${value}, 2026`)
-  if (Number.isNaN(parsed)) return new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
-  return new Date(parsed).toISOString()
-}
-
-function parseCo2ToTons(co2: string) {
-  const normalized = co2.toLowerCase().trim()
-  if (normalized.includes('ton')) {
-    const value = Number.parseFloat(normalized.replace(/[^0-9.]/g, ''))
-    return Number.isFinite(value) ? value : 1
-  }
-  const kg = Number.parseFloat(normalized.replace(/[^0-9.]/g, ''))
-  if (!Number.isFinite(kg)) return 1
-  return Number((kg / 1000).toFixed(2))
-}
-
-function orderToShipment(order: Order): Shipment {
-  const fallback: [number, number] = [2.3522, 48.8566]
-
-  return {
-    id: order.id,
-    product: order.product,
-    origin: {
-      name: order.origin,
-      coordinates: CITY_COORDINATES[order.origin] ?? fallback,
-    },
-    destination: {
-      name: order.destination,
-      coordinates: CITY_COORDINATES[order.destination] ?? fallback,
-    },
-    status: toShipmentStatus(order.status),
-    eta: toIsoEta(order.eta),
-    freight: order.carrier,
-    cost: 2200 + order.product.length * 110,
-    co2: parseCo2ToTons(order.co2),
-  }
-}
-
-function statusStyle(status: Order['status']) {
-  if (status === 'Delivered') return 'border-emerald-200 bg-[#3FA46A]/10 text-emerald-700'
-  if (status === 'In Transit') return 'border-amber-200 bg-[#E0A93A]/10 text-amber-700'
-  if (status === 'Blocked') return 'bg-[#FFE7EC] text-[#F22E75]'
-  return 'bg-[#E9F0FF] text-[#2764FF]'
-}
-
-function inventoryTone(status: InventoryItem['status']) {
-  if (status === 'critical') {
-    return {
-      chip: 'bg-[#FFE7EC] text-[#F22E75]',
-      qty: 'text-[#F22E75]',
-      bar: 'bg-[#F22E75]',
-    }
-  }
-  if (status === 'low') {
-    return {
-      chip: 'border-amber-200 bg-[#E0A93A]/10 text-amber-700',
-      qty: 'text-amber-700',
-      bar: 'bg-[#E0A93A]/100',
-    }
-  }
-  return {
-    chip: 'border-emerald-200 bg-[#3FA46A]/10 text-emerald-700',
-    qty: 'text-emerald-700',
-    bar: 'bg-[#3FA46A]/100',
-  }
-}
-
-function lowStockStatusClass(status: string) {
-  if (status === 'review_ready') return 'bg-[#3FA46A]/10 text-emerald-700'
-  if (status === 'failed') return 'bg-[#FFE7EC] text-[#F22E75]'
-  if (status === 'processing') return 'bg-[#E0A93A]/10 text-amber-700'
-  return 'bg-slate-100 text-[#30373E]'
-}
 
 export default function DashboardPage() {
-  const { isProPluginActive } = usePluginContext()
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
-  const [lowStockAlerts, setLowStockAlerts] = useState<LowStockAlert[]>([])
-  const [lowStockLoading, setLowStockLoading] = useState(true)
-  const isPro = isProPluginActive
-  const orders = isPro ? PRO_ORDERS : BASIC_ORDERS
-  const trackerShipments = useMemo(() => orders.map(orderToShipment), [orders])
-  const inventory = isPro ? PRO_INVENTORY : BASIC_INVENTORY
-  const alertCount = inventory.filter((item) => item.status !== 'ok').length
-  const kpis = isPro
-    ? [
-        { label: 'Total Revenue', value: '€2.47M', trend: '+12.4% vs last month', icon: DollarSign, trendColor: 'text-[#3FA46A]' },
-        { label: 'Stripe Liquidity Available', value: '€184,300', trend: '+€23,500 this week', icon: Wallet, trendColor: 'text-[#3FA46A]' },
-        { label: 'Active Shipments', value: '127', trend: '-3 blocked at port', icon: Package, trendColor: 'text-[#F22E75]' },
-      ]
-    : [
-        { label: 'Total Revenue', value: '€8,240', trend: '+6.2% vs last month', icon: DollarSign, trendColor: 'text-[#3FA46A]' },
-        { label: 'Total Orders', value: '34', trend: '+4 this week', icon: Package, trendColor: 'text-[#3FA46A]' },
-      ]
-
-  useEffect(() => {
-    setSelectedOrderId((current) => {
-      if (current && orders.some((order) => order.id === current)) return current
-      return orders[0]?.id ?? null
-    })
-  }, [orders])
-
-  useEffect(() => {
-    let active = true
-
-    async function loadLowStockAlerts() {
-      try {
-        const response = await fetch('/api/low-stock-alerts', { cache: 'no-store' })
-        const payload = await response.json().catch(() => ({}))
-
-        if (!response.ok) {
-          throw new Error(payload?.error || 'Failed to load low-stock alerts')
-        }
-
-        if (active) {
-          setLowStockAlerts(Array.isArray(payload.alerts) ? payload.alerts : [])
-        }
-      } catch (error) {
-        console.error('Failed to load low-stock alerts:', error)
-        if (active) {
-          setLowStockAlerts([])
-        }
-      } finally {
-        if (active) {
-          setLowStockLoading(false)
-        }
-      }
-    }
-
-    loadLowStockAlerts()
-
-    return () => {
-      active = false
-    }
-  }, [])
-
   return (
-    <div className="min-h-screen bg-[#F2F8FF]">
-      <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-serif text-[22px] font-bold leading-[32px] tracking-tight text-[#03182F]">Control Tower</h1>
-              <span
-                className={`rounded-md px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${
-                  isPro ? 'bg-[#E9F0FF] text-[#2764FF]' : 'bg-white text-[#6B7480] border border-[#DDE5EE]'
-                }`}
-              >
-                {isPro ? 'Flux internationaux' : 'Activité atelier'}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-[#6B7480]">
-              {isPro
-                ? 'Supervision temps réel de vos opérations globales.'
-                : 'Indicateurs essentiels de votre activité locale.'}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/app-store"
-              className="inline-flex items-center gap-2 rounded-md border border-[#DDE5EE] bg-white px-4 py-2 text-sm font-semibold text-[#03182F] transition hover:border-[#2764FF] hover:text-[#2764FF]"
-            >
-              Plugins <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-
-            <label className="inline-flex items-center gap-2 rounded-md border border-[#DDE5EE] bg-white px-3 py-2 text-sm text-[#6B7480]">
-              <Search className="h-4 w-4" />
-              <input className="w-44 border-none bg-transparent text-[#30373E] outline-none placeholder:text-[#6B7480]" placeholder="Rechercher une commande" />
-            </label>
-
-            <button className="rounded-md border border-[#DDE5EE] bg-white p-2.5 text-[#6B7480] transition hover:text-[#03182F]" aria-label="Notifications">
-              <Bell className="h-4 w-4" />
-            </button>
-          </div>
-        </header>
-
-        <section className={`grid gap-3 ${isPro ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
-          {kpis.map((item) => (
-            <article key={item.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6B7480]">{item.label}</p>
-                  <p className="mt-3 text-4xl font-semibold tracking-tight text-[#03182F]">{item.value}</p>
-                  <p className={`mt-2 text-base font-medium ${item.trendColor}`}>↗ {item.trend}</p>
-                </div>
-                <div className="rounded-md bg-[#E9F0FF] p-2.5 text-[#2764FF]">
-                  <item.icon className="h-4 w-4" strokeWidth={2} />
-                </div>
-              </div>
-            </article>
-          ))}
-        </section>
-
-        <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#30373E]">Inventory Alerts</h2>
-            <span className="rounded-md bg-[#FFE7EC] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#F22E75]">
-              {alertCount} alertes
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {inventory.map((item) => {
-              const tone = inventoryTone(item.status)
-
-              return (
-                <div key={item.sku}>
-                  <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-base font-semibold text-[#03182F]">
-                      {item.name}{' '}
-                      <span className="text-sm font-medium text-[#6B7480]">{item.sku}</span>
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-base font-semibold ${tone.qty}`}>{item.qtyLabel}</span>
-                      <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tone.chip}`}>
-                        {item.statusLabel}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className={`h-full ${tone.bar}`} style={{ width: `${item.levelPct}%` }} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-
-        <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#30373E]">Low Stock Mira Trigger</h2>
-              <p className="mt-1 text-sm text-[#6B7480]">
-                Trigger threshold rule: max(min_quantity, 10)
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {lowStockLoading ? (
-              <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-[#6B7480]">
-                Loading low-stock alerts...
-              </div>
-            ) : lowStockAlerts.length === 0 ? (
-              <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-[#6B7480]">
-                No low-stock alerts yet. Update stock below threshold to trigger Mira analysis.
-              </div>
-            ) : (
-              lowStockAlerts.map((alert) => (
-                <article key={alert.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-[#03182F]">{alert.productName}</p>
-                      <p className="mt-1 text-xs text-[#6B7480]">
-                        Qty {alert.quantity} / Threshold {alert.threshold}
-                        {alert.sku ? ` • SKU ${alert.sku}` : ''}
-                      </p>
-                    </div>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${lowStockStatusClass(alert.status)}`}>
-                      {alert.status}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 text-sm text-[#30373E]">
-                    <span className="font-medium">Agent analysis:</span>{' '}
-                    {alert.dustResponse || (alert.status === 'failed' ? alert.errorMessage : 'Pending analysis...')}
-                  </p>
-                  <p className="mt-2 text-sm text-[#30373E]">
-                    <span className="font-medium">Proposed solution:</span>{' '}
-                    {alert.proposedSolution || 'Will be provided after analysis.'}
-                  </p>
-                </article>
-              ))
-            )}
-          </div>
-        </section>
-
-        {isPro && (
-          <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <GlobalShipmentTracker
-              shipments={trackerShipments}
-              selectedShipmentId={selectedOrderId ?? undefined}
-              onShipmentSelect={(id) => setSelectedOrderId(id)}
-              height={340}
-            />
-          </section>
-        )}
-
-        <section className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-[#03182F]">{isPro ? 'Global Orders' : 'Recent Orders'}</h2>
-              <span className="rounded-full bg-[#E9F0FF] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#2764FF]">{orders.length} orders</span>
-            </div>
-            <button className="text-sm font-semibold text-[#2764FF]">View all →</button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left">
-              <thead className="bg-white text-xs uppercase tracking-[0.14em] text-[#6B7480]">
-                <tr>
-                  <th className="px-4 py-3">Order ID</th>
-                  <th className="px-4 py-3">Product</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Origin → Dest.</th>
-                  <th className="px-4 py-3">ETA</th>
-                  <th className="px-4 py-3">Carrier</th>
-                  <th className="px-4 py-3">CO₂</th>
-                  <th className="px-4 py-3">Stock</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {orders.map((order) => (
-                  <tr
-                    key={order.id}
-                    onClick={() => setSelectedOrderId(order.id)}
-                    aria-selected={selectedOrderId === order.id}
-                    className={`cursor-pointer transition-colors ${
-                      selectedOrderId === order.id
-                        ? 'bg-[#E9F0FF]/70'
-                        : 'hover:bg-slate-50/80'
-                    }`}
-                  >
-                    <td className="px-4 py-4 font-semibold text-[#2764FF]">{order.id}</td>
-                    <td className="px-4 py-4 font-medium text-[#03182F]">{order.product}</td>
-                    <td className="px-4 py-4">
-                      <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${statusStyle(order.status)}`}>
-                        {order.status === 'Delivered' && <CheckCircle2 className="mr-1 h-4 w-4" />}
-                        {order.status === 'In Transit' && <Truck className="mr-1 h-4 w-4" />}
-                        {order.status === 'Processing' && <Clock3 className="mr-1 h-4 w-4" />}
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-[#30373E]">
-                      <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4 text-[#6B7480]" /> {order.origin}</span>{' '}
-                      <span className="text-[#6B7480]">→</span> {order.destination}
-                    </td>
-                    <td className={`px-4 py-4 font-semibold ${order.status === 'Blocked' ? 'text-[#F22E75]' : 'text-[#03182F]'}`}>{order.eta}</td>
-                    <td className="px-4 py-4 text-[#30373E]">{order.carrier}</td>
-                    <td className="px-4 py-4 font-medium text-emerald-700">{order.co2}</td>
-                    <td className="px-4 py-4 font-semibold text-[#03182F]">{order.stock}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-end">
+        <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Dashboard</h1>
+        <div className="font-serif text-[12px] text-[#6B7480]">Last sync: 2 minutes ago</div>
       </div>
 
+      {/* AI Chat Bar */}
+      <div className="relative w-full max-w-3xl mx-auto">
+        <div className="bg-[#03182F] rounded-full py-3 px-6 flex items-center gap-4 shadow-lg border border-white/10">
+          <svg className="h-5 w-5 text-[#2764FF] flex-shrink-0" viewBox="1 6 22 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="13" r="5" />
+            <ellipse cx="5.5" cy="11" rx="2.5" ry="2" />
+            <ellipse cx="18.5" cy="11" rx="2.5" ry="2" />
+          </svg>
+          <input
+            className="bg-transparent border-none focus:ring-0 focus:outline-none text-white font-serif text-sm flex-1 placeholder:text-slate-500"
+            placeholder="Ask Leia for operational insights..."
+            type="text"
+          />
+          <button className="bg-[#2764FF] text-white rounded-full p-1.5 flex items-center justify-center hover:bg-[#004bd9] transition-colors">
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Total Orders Today */}
+        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
+          <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">TOTAL ORDERS TODAY</div>
+          <div className="flex items-baseline justify-between">
+            <div className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">1,284</div>
+            <div className="text-[#3FA46A] font-serif italic text-sm">+12% vs yesterday</div>
+          </div>
+          <div className="h-10 mt-2 flex items-end gap-1">
+            <div className="flex-1 bg-[#2764FF]/10 h-4 rounded-sm" />
+            <div className="flex-1 bg-[#2764FF]/10 h-6 rounded-sm" />
+            <div className="flex-1 bg-[#2764FF]/10 h-5 rounded-sm" />
+            <div className="flex-1 bg-[#2764FF]/20 h-8 rounded-sm" />
+            <div className="flex-1 bg-[#2764FF]/30 h-10 rounded-sm" />
+            <div className="flex-1 bg-[#2764FF] h-9 rounded-sm" />
+          </div>
+        </div>
+
+        {/* Active SKUs */}
+        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
+          <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">ACTIVE SKUS</div>
+          <div className="flex items-baseline justify-between">
+            <div className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">186</div>
+            <div className="text-[#6B7480] font-serif text-sm">of 200 total</div>
+          </div>
+          <div className="mt-4 w-full h-1.5 bg-[#ededfa] rounded-full overflow-hidden">
+            <div className="h-full bg-[#2764FF] w-[93%]" />
+          </div>
+          <div className="font-serif text-[12px] text-[#6B7480] mt-2">Capacity optimization at 93%</div>
+        </div>
+
+        {/* Stock Health */}
+        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
+          <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">STOCK HEALTH</div>
+          <div className="flex items-baseline justify-between">
+            <div className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">94%</div>
+            <span className="text-[#3FA46A] text-xl">&#10003;</span>
+          </div>
+          <div className="h-10 mt-2 flex items-end gap-1">
+            <div className="flex-1 bg-[#3FA46A]/20 h-8 rounded-sm" />
+            <div className="flex-1 bg-[#3FA46A]/20 h-9 rounded-sm" />
+            <div className="flex-1 bg-[#3FA46A]/20 h-8 rounded-sm" />
+            <div className="flex-1 bg-[#3FA46A]/20 h-7 rounded-sm" />
+            <div className="flex-1 bg-[#3FA46A]/20 h-9 rounded-sm" />
+            <div className="flex-1 bg-[#3FA46A] h-10 rounded-sm" />
+          </div>
+        </div>
+      </div>
+
+      {/* Orders Table */}
+      <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+        <div className="p-6 border-b border-[#DDE5EE] flex items-center justify-between">
+          <h2 className="font-serif text-lg font-bold text-[#03182F]">Recent Operational Orders</h2>
+          <button className="text-[#2764FF] font-serif text-sm font-medium hover:underline">View all orders</button>
+        </div>
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-[#f3f2ff]">
+              {['ORDER ID', 'MARKETPLACE', 'VALUE', 'STATUS', 'TIMESTAMP'].map((h) => (
+                <th key={h} className="px-6 py-3 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#DDE5EE]">
+            {orders.map((o) => (
+              <tr key={o.id} className="hover:bg-white transition-colors">
+                <td className="px-6 py-4 font-mono text-[14px] text-[#03182F]">{o.id}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-[#F2F8FF] flex items-center justify-center text-sm">{o.icon}</div>
+                    <span className="font-serif text-sm">{o.marketplace}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 font-serif text-sm font-bold">{o.value}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold font-serif ${o.statusStyle}`}>{o.status}</span>
+                </td>
+                <td className="px-6 py-4 font-mono text-[10px] text-[#6B7480]">{o.time}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Decision Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+        {/* Stock Out Risk */}
+        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#F22E75] uppercase">STOCK OUT RISK</span>
+            <span className="text-[#F22E75]">&#9888;</span>
+          </div>
+          <div>
+            <h3 className="font-serif text-base font-bold text-[#03182F]">Linum Cushion (Blue)</h3>
+            <p className="font-serif text-[13px] text-[#6B7480] mt-1">Inventory will deplete in 48 hours at current velocity. Suggested restock: 45 units.</p>
+          </div>
+          <div className="mt-auto pt-4 flex gap-3">
+            <button className="bg-[#2764FF] text-white px-4 py-2 rounded font-serif text-sm hover:bg-[#004bd9] transition-colors flex-1">Approve Restock</button>
+            <button className="border border-[#BFCBDA] text-[#30373E] px-4 py-2 rounded font-serif text-sm hover:bg-[#F2F8FF] transition-colors">Ignore</button>
+          </div>
+        </div>
+
+        {/* Marketplace Insight */}
+        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#2764FF] uppercase">LEIA INSIGHT</span>
+            <span className="text-[#2764FF]">&#9733;</span>
+          </div>
+          <div>
+            <h3 className="font-serif text-base font-bold text-[#03182F]">Optimized Pricing on Zalando</h3>
+            <p className="font-serif text-[13px] text-[#6B7480] mt-1">Competitors have adjusted prices in Home &amp; Decor. Dropping price by $2.00 could increase volume by 15%.</p>
+          </div>
+          <div className="mt-auto pt-4 flex gap-3">
+            <button className="bg-[#2764FF] text-white px-4 py-2 rounded font-serif text-sm hover:bg-[#004bd9] transition-colors flex-1">Apply Price Change</button>
+            <button className="border border-[#BFCBDA] text-[#30373E] px-4 py-2 rounded font-serif text-sm hover:bg-[#F2F8FF] transition-colors">Review Details</button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

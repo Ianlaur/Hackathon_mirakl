@@ -9,6 +9,7 @@ type PluginNavItemsProps = {
   isSubitemActive: (href: string) => boolean
   isItemOpen: (item: NavItemType) => boolean
   onToggleGroup: (itemId: string) => void
+  collapsed?: boolean
 }
 
 export default function PluginNavItems({
@@ -17,6 +18,7 @@ export default function PluginNavItems({
   isSubitemActive,
   isItemOpen,
   onToggleGroup,
+  collapsed = false,
 }: PluginNavItemsProps) {
   return (
     <>
@@ -26,6 +28,7 @@ export default function PluginNavItems({
           item={item}
           active={isItemActive(item)}
           open={isItemOpen(item)}
+          collapsed={collapsed}
           isSubitemActive={isSubitemActive}
           onToggleGroup={onToggleGroup}
         />

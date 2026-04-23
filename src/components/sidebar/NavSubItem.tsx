@@ -13,7 +13,7 @@ export default function NavSubItem({ item, active }: NavSubItemProps) {
     <Link
       href={item.href}
       className={`block rounded-md py-2 px-3 font-serif text-sm transition-all duration-200 ${
-        active ? 'bg-slate-50 font-medium text-[#2764ff] border border-slate-200' : 'text-[#6B7480] hover:bg-slate-50 hover:text-[#03182F]'
+        active ? 'bg-[#2764FF]/5 font-bold text-[#2764FF]' : 'text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F]'
       }`}
     >
       {item.label}
