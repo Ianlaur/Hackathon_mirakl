@@ -28,10 +28,10 @@ const suggestions = [
 ]
 
 const conversations = [
-  { name: 'Darty', lastMsg: 'MIRA: The category mapping is ready for your...', time: '14:20', active: true },
+  { name: 'Darty', lastMsg: 'LEIA: The category mapping is ready for your...', time: '14:20', active: true },
   { name: 'Carrefour', lastMsg: 'We are reviewing your luxury goods catalog...', time: 'YESTERDAY', active: false },
-  { name: 'Auchan', lastMsg: 'MIRA: Proposal sent for the Q4 integration phase.', time: 'MON', active: false },
-  { name: 'ManoMano', lastMsg: 'MIRA: Checking logistics API endpoints.', time: 'OCT 24', active: false },
+  { name: 'Auchan', lastMsg: 'LEIA: Proposal sent for the Q4 integration phase.', time: 'MON', active: false },
+  { name: 'ManoMano', lastMsg: 'LEIA: Checking logistics API endpoints.', time: 'OCT 24', active: false },
 ]
 
 const messages = [
@@ -41,8 +41,8 @@ const messages = [
     time: '10:45 AM',
   },
   {
-    from: 'mira',
-    text: 'MIRA has analyzed the proposal. Integration compatibility for Black Friday is 94%. I have prepared the initial category mapping for your approval.',
+    from: 'leia',
+    text: 'LEIA has analyzed the proposal. Integration compatibility for Black Friday is 94%. I have prepared the initial category mapping for your approval.',
     time: '11:02 AM · AUTOPILOT',
   },
   {
@@ -247,7 +247,7 @@ function ActiveConnectionTab() {
         {/* Messages */}
         <div className="flex-grow overflow-y-auto p-6 space-y-8 bg-[#faf8ff]">
           {messages.map((msg, i) => {
-            if (msg.from === 'mira') {
+            if (msg.from === 'leia') {
               return (
                 <div key={i} className="flex gap-4 max-w-2xl ml-auto flex-row-reverse">
                   <div className="w-8 h-8 rounded-full bg-[#03182F] flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">AI</div>

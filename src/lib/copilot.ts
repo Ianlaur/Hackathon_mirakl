@@ -367,7 +367,7 @@ async function callOpenAI({
         {
           role: 'system',
           content:
-            'You are an operations copilot for a merchant. Answer only from the provided context. Return strict JSON with keys answer, reasoningSummary, evidence, recommendations. evidence must be an array of {label,value}. recommendations must be an array of {title,scenarioType,reasoningSummary,expectedImpact,confidenceNote,target,payload}.',
+            'You are an operations copilot for a merchant. Always respond in English, regardless of the language used by the merchant. Answer only from the provided context. Return strict JSON with keys answer, reasoningSummary, evidence, recommendations. All string values inside the JSON must be written in English. evidence must be an array of {label,value}. recommendations must be an array of {title,scenarioType,reasoningSummary,expectedImpact,confidenceNote,target,payload}.',
         },
         {
           role: 'user',
@@ -422,7 +422,7 @@ export async function generateCopilotResponse(userId: string, userMessage: strin
     }
   }
 
-  const model = context.aiSettings?.preferred_model || process.env.OPENAI_MODEL?.trim() || 'gpt-4.1-mini'
+  const model = context.aiSettings?.preferred_model || process.env.OPENAI_MODEL?.trim() || 'gpt-4.1'
 
   try {
     const modelResponse = await callOpenAI({
@@ -478,7 +478,7 @@ export async function getCopilotConfig(userId: string) {
   return {
     apiKeyConfigured: Boolean(aiSettings?.encrypted_api_key),
     apiKeyHint: aiSettings?.api_key_hint || null,
-    preferredModel: aiSettings?.preferred_model || 'gpt-4.1-mini',
+    preferredModel: aiSettings?.preferred_model || 'gpt-4.1',
     autonomyMode: aiSettings?.autonomy_mode || 'approval_required',
     merchantCategory: profile?.merchant_category || '',
     operatingRegions: profile?.operating_regions || [],
@@ -512,7 +512,7 @@ export async function upsertCopilotConfig(
   }
 ) {
   const aiData = {
-    preferred_model: payload.preferredModel || 'gpt-4.1-mini',
+    preferred_model: payload.preferredModel || 'gpt-4.1',
     autonomy_mode: payload.autonomyMode || 'approval_required',
     ...(payload.apiKey
       ? {
