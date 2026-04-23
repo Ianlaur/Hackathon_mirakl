@@ -22,6 +22,7 @@ import {
   Zap,
 } from 'lucide-react'
 import type { Shipment, ShipmentStatus } from '@/types/shipment'
+import { MiraDecisionFeed } from '@/components/mira/DecisionFeed'
 
 const PRO_PLUGIN_KEY = 'mirakl_global_control_tower_active'
 
@@ -477,6 +478,10 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
+        </section>
+
+        <section className="mt-4">
+          <MiraDecisionFeed />
         </section>
       </div>
 

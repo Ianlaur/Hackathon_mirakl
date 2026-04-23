@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent } from 'react'
 import {
+  Activity,
   Boxes,
   LayoutDashboard,
   Bot,
@@ -50,6 +51,7 @@ type SidebarProps = {
 const navigation: NavEntry[] = [
   { type: 'link', name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { type: 'link', name: 'Actions', href: '/actions', icon: Inbox },
+  { type: 'link', name: 'Activity', href: '/activity', icon: Activity },
   {
     type: 'group',
     id: 'operations',

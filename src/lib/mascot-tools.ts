@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { buildPlanItems, summarizePlan } from '@/lib/calendar-restock'
+import { READ_TOOLS, executeReadTool } from '@/lib/mira/tools_read'
+import { ACTION_TOOLS, executeActionTool } from '@/lib/mira/tools_action'
 
 export type ToolDefinition = {
   type: 'function'
@@ -9,6 +11,13 @@ export type ToolDefinition = {
     parameters: Record<string, unknown>
   }
 }
+
+const MIRA_TOOL_NAMES = new Set<string>([
+  ...READ_TOOLS.map((t) => t.function.name),
+  ...ACTION_TOOLS.map((t) => t.function.name),
+])
+
+const MIRA_READ_NAMES = new Set<string>(READ_TOOLS.map((t) => t.function.name))
 
 export const MASCOT_TOOLS: ToolDefinition[] = [
   {
@@ -123,6 +132,9 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
       },
     },
   },
+  // MIRA governance layer — analytical reads + template-enforced actions
+  ...(READ_TOOLS as unknown as ToolDefinition[]),
+  ...(ACTION_TOOLS as unknown as ToolDefinition[]),
 ]
 
 function toIsoNoon(date: string): Date {
@@ -134,6 +146,11 @@ export async function executeTool(
   args: Record<string, unknown>,
   ctx: { userId: string; origin: string }
 ): Promise<unknown> {
+  if (MIRA_TOOL_NAMES.has(name)) {
+    const miraCtx = { prisma, userId: ctx.userId }
+    if (MIRA_READ_NAMES.has(name)) return executeReadTool(name, args, miraCtx)
+    return executeActionTool(name, args, miraCtx)
+  }
   switch (name) {
     case 'get_stock_summary': {
       const products = await prisma.product.findMany({

@@ -10,6 +10,8 @@
     "db:generate": "prisma generate",
     "db:prepare": "prisma db execute --file scripts/create-users-view.sql --schema prisma/schema.prisma && prisma db execute --file scripts/create-email-logs.sql --schema prisma/schema.prisma",
     "db:prepare:low-stock": "prisma db execute --file scripts/create-low-stock-trigger.sql --schema prisma/schema.prisma",
+    "db:prepare:mira": "prisma db execute --file scripts/create-mira-tables.sql --schema prisma/schema.prisma",
+    "db:prepare:mira-realtime": "prisma db execute --file scripts/enable-mira-realtime.sql --schema prisma/schema.prisma",
     "dust:test:low-stock": "node scripts/test-dust-low-stock-agent.js",
     "start": "next start",
     "test": "vitest run",
@@ -20,7 +22,12 @@
     "prisma:studio": "prisma studio",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
+    "prisma:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
+    "mira:ingest": "ts-node --project tsconfig.scripts.json scripts/run-mira-ingestion.ts",
+    "test:mira-invariant": "ts-node --project tsconfig.scripts.json scripts/test-mira-invariant.ts",
+    "test:mira-decision-mutations": "ts-node --project tsconfig.scripts.json scripts/test-mira-decision-mutations.ts",
+    "test:dashboard-mira-only": "node scripts/test-dashboard-mira-only.js",
+    "test:mira-design-language": "node scripts/test-mira-design-language.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.25",
@@ -41,7 +48,7 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
     "@react-pdf/renderer": "^3.3.8",
-
+    "@supabase/supabase-js": "^2.104.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

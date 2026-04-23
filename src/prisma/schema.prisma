@@ -468,3 +468,162 @@ model ExternalContextSignal {
   @@map("external_context_signals")
   @@schema("public")
 }
+
+// MIRA — operational objects unified across channels. raw_payload is the source of truth.
+model OperationalObject {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.Uuid
+  source_channel String
+  kind           String
+  external_id    String?
+  sku            String?
+  status         String?
+  quantity       Int?
+  amount_cents   Int?
+  currency       String?
+  occurred_at    DateTime?
+  ingested_at    DateTime @default(now())
+  raw_payload    Json
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now()) @updatedAt
+
+  @@unique([source_channel, kind, external_id], map: "ux_operational_objects_source")
+  @@index([user_id, kind])
+  @@index([sku])
+  @@index([source_channel])
+  @@index([occurred_at(sort: Desc)])
+  @@map("operational_objects")
+  @@schema("public")
+}
+
+// MIRA — source of truth for allowed template_ids (DB trigger validates against this table).
+model DecisionTemplate {
+  id          String   @id
+  description String
+  created_at  DateTime @default(now())
+
+  decisions DecisionRecord[]
+
+  @@map("decision_templates")
+  @@schema("public")
+}
+
+// MIRA — template-enforced action trace. BEFORE INSERT trigger rejects unknown template_ids.
+model DecisionRecord {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String    @db.Uuid
+  sku                 String?
+  channel             String?
+  action_type         String
+  template_id         String
+  logical_inference   String
+  raw_payload         Json
+  status              String
+  reversible          Boolean   @default(true)
+  source_agent        String?
+  triggered_by        String?
+  created_at          DateTime  @default(now())
+  executed_at         DateTime?
+  founder_decision_at DateTime?
+
+  template  DecisionTemplate  @relation(fields: [template_id], references: [id])
+  overrides OverrideRecord[]
+
+  @@index([user_id, status, created_at(sort: Desc)])
+  @@index([sku])
+  @@index([template_id])
+  @@map("decision_ledger")
+  @@schema("public")
+}
+
+// MIRA — current inventory snapshot per SKU. Agents read velocity + lead_time + buffer.
+model StockState {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String    @db.Uuid
+  sku               String
+  on_hand           Int       @default(0)
+  incoming          Int       @default(0)
+  reserved          Int       @default(0)
+  velocity_per_week Decimal   @default(0) @db.Decimal(10, 2)
+  lead_time_weeks   Decimal   @default(2) @db.Decimal(5, 2)
+  buffer_weeks      Decimal   @default(2) @db.Decimal(5, 2)
+  last_movement_at  DateTime?
+  updated_at        DateTime  @default(now()) @updatedAt
+
+  @@unique([user_id, sku], map: "ux_stock_state_user_sku")
+  @@map("stock_state")
+  @@schema("public")
+}
+
+// MIRA — singleton per user. Vacation/Sick widens safety buffers (policy.ts).
+model FounderState {
+  user_id    String    @id @db.Uuid
+  state      String    @default("Active")
+  until      DateTime?
+  notes      String?
+  updated_at DateTime  @default(now()) @updatedAt
+
+  @@map("founder_state")
+  @@schema("public")
+}
+
+// MIRA — per-action-type autonomy mode. UI maps observe/propose/auto_execute to Watching/Ask me/Handle it.
+model AutonomyConfig {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  action_type String
+  mode        String   @default("propose")
+  updated_at  DateTime @default(now()) @updatedAt
+
+  @@unique([user_id, action_type], map: "ux_autonomy_config_user_action")
+  @@map("autonomy_config")
+  @@schema("public")
+}
+
+// MIRA — founder undoes/rejects a ledger decision.
+model OverrideRecord {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @db.Uuid
+  decision_id     String   @db.Uuid
+  reason          String?
+  previous_status String
+  created_at      DateTime @default(now())
+
+  decision DecisionRecord @relation(fields: [decision_id], references: [id], onDelete: Cascade)
+
+  @@index([decision_id])
+  @@map("override_records")
+  @@schema("public")
+}
+
+// MIRA — seasonal events seed (FR/IT/DE/EU). Drives calendar_posture_v1 template.
+model CommercialCalendar {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  region         String
+  event_name     String
+  event_date     DateTime @db.Date
+  impact_tag     String
+  magnitude_hint String?
+  notes          String?
+  created_at     DateTime @default(now())
+
+  @@unique([region, event_name, event_date], map: "ux_commercial_calendar_region_event")
+  @@map("commercial_calendar")
+  @@schema("public")
+}
+
+// MIRA — Feature 1 LLM outputs. Separate from decision_ledger on purpose (free-form text
+// does not belong in the template-enforced ledger).
+model CatalogReviewRecord {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.Uuid
+  sku            String
+  channel        String?
+  review_payload Json
+  status         String   @default("pending")
+  created_at     DateTime @default(now())
+
+  @@index([user_id, created_at(sort: Desc)])
+  @@map("catalog_review_records")
+  @@schema("public")
+}
