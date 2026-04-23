@@ -316,7 +316,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
         <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 text-[#2764FF] mb-4">
-              <span className="font-serif text-[10px] font-bold tracking-[0.1em] uppercase">Copilot Recommendation</span>
+              <span className="font-serif text-[10px] font-bold tracking-[0.1em] uppercase">Leia Recommendation</span>
             </div>
             <h4 className="font-serif text-base font-bold text-[#03182F]">Carrier Switch Suggestion</h4>
             <p className="font-serif text-[14px] text-[#30373E] mt-2">

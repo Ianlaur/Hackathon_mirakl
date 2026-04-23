@@ -23,11 +23,22 @@ import {
 import NavSubItem from '@/components/sidebar/NavSubItem'
 import type { NavItem as NavItemType } from '@/types/navigation'
 
+function LeiaIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="10" r="4" />
+      <circle cx="6.5" cy="9.5" r="2.5" />
+      <circle cx="17.5" cy="9.5" r="2.5" />
+      <path d="M8 14C8 14 6 20 6 21L18 21C18 20 16 14 16 14" />
+    </svg>
+  )
+}
+
 const ICONS: Record<string, ComponentType<{ className?: string }>> = {
   LayoutDashboard,
   Store,
   Calendar,
-  Bot,
+  Bot: LeiaIcon,
   ShoppingCart,
   Package,
   AlertTriangle,
