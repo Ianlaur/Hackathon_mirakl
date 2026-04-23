@@ -267,11 +267,13 @@ export default function DashboardPage() {
                   isPro ? 'border border-indigo-200 bg-indigo-50 text-indigo-700' : 'border border-slate-200 bg-slate-100 text-slate-600'
                 }`}
               >
-                {isPro ? 'PRO · AI ACTIVE' : 'BASIC'}
+                {isPro ? 'Optimisé flux internationaux' : 'Optimisé activité atelier'}
               </span>
             </div>
             <p className="mt-1 text-sm text-slate-500">
-              {isPro ? 'Global Control Tower plugin active' : 'BASIC mode with simplified automation rules'}
+              {isPro
+                ? 'Dashboard optimisé pour vos opérations globales avec supervision temps réel.'
+                : 'Dashboard optimisé pour votre activité locale, avec les indicateurs essentiels.'}
             </p>
           </div>
 

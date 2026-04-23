@@ -39,6 +39,9 @@ const narrationStep1 =
 const step3UserMessage = 'Je serai absent du 1er au 15 août.'
 const step3AssistantMessage =
   '⚠️ Risque de rupture détecté. En août, vos ventes sur Mirakl augmentent de 30%. Souhaitez-vous que je prépare un réapprovisionnement automatique pour couvrir votre absence ?'
+const STEP1_TIMING_FACTOR = 2.6
+const STEP2_TIMING_FACTOR = 2.5
+const STEP1_TYPING_INTERVAL_MS = 46
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -158,6 +161,8 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
     setStep1CursorStage('start')
     setNarrationIndex(0)
 
+    const step1Delay = (baseDelay: number) => Math.round(baseDelay * STEP1_TIMING_FACTOR)
+
     const typewriterInterval = window.setInterval(() => {
       setNarrationIndex((current) => {
         if (current >= narrationStep1.length) {
@@ -166,7 +171,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
         }
         return current + 1
       })
-    }, 20)
+    }, STEP1_TYPING_INTERVAL_MS)
 
     const scheduleHover = (delay: number) =>
       window.setTimeout(() => {
@@ -191,16 +196,16 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
       }, delay)
 
     step1TimersRef.current.push(
-      scheduleHover(450),
-      scheduleToggle(900, true),
-      scheduleHover(1320),
-      scheduleToggle(1500, false),
-      scheduleHover(1850),
-      scheduleToggle(2030, true),
-      scheduleHover(2380),
-      scheduleToggle(2560, false),
-      scheduleHover(2910),
-      scheduleToggle(3090, true)
+      scheduleHover(step1Delay(450)),
+      scheduleToggle(step1Delay(900), true),
+      scheduleHover(step1Delay(1320)),
+      scheduleToggle(step1Delay(1500), false),
+      scheduleHover(step1Delay(1850)),
+      scheduleToggle(step1Delay(2030), true),
+      scheduleHover(step1Delay(2380)),
+      scheduleToggle(step1Delay(2560), false),
+      scheduleHover(step1Delay(2910)),
+      scheduleToggle(step1Delay(3090), true)
     )
 
     return () => {
@@ -219,47 +224,48 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
     setDashboardWidgets(['sales', 'stock', 'alerts'])
     setDashboardDragStock(false)
     setStep2CursorStage('stock-start')
+    const step2Delay = (baseDelay: number) => Math.round(baseDelay * STEP2_TIMING_FACTOR)
 
     const dragRight = window.setTimeout(() => {
       setStep2CursorStage('stock-drag-right')
       setDashboardDragStock(true)
-    }, 420)
+    }, step2Delay(420))
 
     const dropRight = window.setTimeout(() => {
       setStep2CursorStage('stock-drop-right')
       setDashboardDragStock(false)
       setDashboardWidgets(['sales', 'alerts', 'stock'])
-    }, 1080)
+    }, step2Delay(1080))
 
     const dragLeft = window.setTimeout(() => {
       setStep2CursorStage('stock-drag-left')
       setDashboardDragStock(true)
-    }, 1480)
+    }, step2Delay(1480))
 
     const dropLeft = window.setTimeout(() => {
       setStep2CursorStage('stock-drop-left')
       setDashboardDragStock(false)
       setDashboardWidgets(['stock', 'sales', 'alerts'])
-    }, 2140)
+    }, step2Delay(2140))
 
     const dragCenter = window.setTimeout(() => {
       setStep2CursorStage('stock-drag-center')
       setDashboardDragStock(true)
-    }, 2520)
+    }, step2Delay(2520))
 
     const dropCenter = window.setTimeout(() => {
       setStep2CursorStage('stock-drop-center')
       setDashboardDragStock(false)
       setDashboardWidgets(['sales', 'stock', 'alerts'])
-    }, 3140)
+    }, step2Delay(3140))
 
-    const plusHover = window.setTimeout(() => setStep2CursorStage('plus-hover'), 3520)
+    const plusHover = window.setTimeout(() => setStep2CursorStage('plus-hover'), step2Delay(3520))
     const plusClick = window.setTimeout(() => {
       setStep2CursorStage('plus-click')
       setDashboardWidgets((current) => (current.includes('weather') ? current : [...current, 'weather']))
-    }, 3920)
+    }, step2Delay(3920))
 
-    const done = window.setTimeout(() => setStep2CursorStage('done'), 4500)
+    const done = window.setTimeout(() => setStep2CursorStage('done'), step2Delay(4500))
 
     step2TimersRef.current.push(
       dragRight,

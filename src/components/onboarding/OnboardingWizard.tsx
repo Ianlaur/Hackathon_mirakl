@@ -269,7 +269,7 @@ export default function OnboardingWizard() {
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold text-slate-700">Profil détecté</p>
+                  <p className="text-sm font-semibold text-slate-700">Dashboard prêt</p>
                   <p className="mt-1 text-lg font-semibold text-slate-950">
                     {computedProfile === 'INTERNATIONAL'
                       ? 'International'
@@ -277,8 +277,8 @@ export default function OnboardingWizard() {
                   </p>
                   <p className="mt-2 text-sm text-slate-600">
                     {computedProfile === 'INTERNATIONAL'
-                      ? 'Le plugin Global Control Tower est activé automatiquement.'
-                      : 'Le mode BASIC est conservé, avec une vue simplifiée adaptée à votre activité.'}
+                      ? 'Jean-Charles, votre dashboard est prêt et optimisé pour vos flux internationaux.'
+                      : 'Jean-Charles, votre dashboard est prêt et optimisé pour votre activité atelier.'}
                   </p>
                   <p className="mt-2 inline-flex items-center gap-2 text-xs font-medium text-slate-500">
                     <Sparkles className="h-3.5 w-3.5" />
