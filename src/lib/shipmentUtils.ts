@@ -44,9 +44,15 @@ const STATUS_PRIORITY: ShipmentStatus[] = ['blocked', 'rerouted', 'in_transit', 
 
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim()
 
-export const MAP_STYLE_URL = MAPTILER_KEY
+export const MAP_STYLE_DARK_URL = MAPTILER_KEY
   ? `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${MAPTILER_KEY}`
   : 'https://tiles.openfreemap.org/styles/dark'
+
+export const MAP_STYLE_LIGHT_URL = MAPTILER_KEY
+  ? `https://api.maptiler.com/maps/backdrop/style.json?key=${MAPTILER_KEY}`
+  : 'https://tiles.openfreemap.org/styles/bright'
+
+export const MAP_STYLE_URL = MAP_STYLE_DARK_URL
 
 export function getStatusColor(status: ShipmentStatus) {
   return STATUS_COLORS[status]

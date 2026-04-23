@@ -27,7 +27,7 @@ export default function SuggestionChips({
             className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-60 ${
               isSelected
                 ? 'border-slate-900 bg-slate-900 text-white'
-                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                : 'border-slate-200 bg-white text-[#30373E] hover:border-[#BFCBDA] hover:bg-slate-50'
             }`}
           >
             {question}

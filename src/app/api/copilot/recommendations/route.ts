@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
-import { serializeJson } from '@/lib/copilot'
+import { serializeJson } from '@/lib/serialize'
 
 export const dynamic = 'force-dynamic'
 

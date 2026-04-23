@@ -35,9 +35,9 @@ type RecommendationItem = {
 }
 
 function statusTone(status: string) {
-  if (status === 'approved') return 'bg-emerald-50 text-emerald-700'
+  if (status === 'approved') return 'bg-[#3FA46A]/10 text-emerald-700'
   if (status === 'rejected') return 'bg-rose-50 text-rose-700'
-  return 'bg-amber-50 text-amber-700'
+  return 'bg-[#E0A93A]/10 text-amber-700'
 }
 
 export default function PlanningPageClient({
@@ -197,19 +197,19 @@ export default function PlanningPageClient({
       <section className="dashboard-card overflow-hidden">
         <div className="grid gap-6 p-6 lg:grid-cols-[1.3fr_0.8fr] lg:p-8">
           <div className="space-y-4">
-            <div className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
+            <div className="inline-flex items-center rounded-full border border-amber-200 bg-[#E0A93A]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
               Planning & Context
             </div>
-            <h1 className="text-4xl font-semibold tracking-tight text-slate-950">
+            <h1 className="text-4xl font-semibold tracking-tight text-[#03182F]">
               Calendar-aware planning with external context signals
             </h1>
-            <p className="max-w-3xl text-base leading-7 text-slate-600">
+            <p className="max-w-3xl text-base leading-7 text-[#6B7480]">
               Track merchant availability, ingest n8n context signals, and turn relevant events into approval-ready planning recommendations.
             </p>
           </div>
 
-          <div className="rounded-3xl bg-slate-950 p-5 text-white">
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">How this works</p>
+          <div className="rounded-lg bg-slate-950 p-5 text-white">
+            <p className="text-sm uppercase tracking-[0.2em] text-[#6B7480]">How this works</p>
             <div className="mt-5 space-y-2 text-sm text-slate-300">
               <p>1. Add business events such as vacations or blackout periods.</p>
               <p>2. Push external news or demand signals through n8n.</p>
@@ -220,14 +220,14 @@ export default function PlanningPageClient({
       </section>
 
       {error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error}
         </div>
       )}
 
       <section className="grid gap-6 xl:grid-cols-[1fr_1fr_1.1fr]">
         <div className="dashboard-card p-5">
-          <h2 className="text-lg font-semibold text-slate-950">Calendar events</h2>
+          <h2 className="text-lg font-semibold text-[#03182F]">Calendar events</h2>
           <form onSubmit={handleCreateEvent} className="mt-4 space-y-3">
             <input
               value={calendarForm.title}
@@ -289,27 +289,27 @@ export default function PlanningPageClient({
 
           <div className="mt-5 space-y-3">
             {events.map((item) => (
-              <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div key={item.id} className="rounded-lg border border-slate-200 bg-white p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">{item.title}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">{item.event_type}</p>
+                    <p className="text-sm font-semibold text-[#03182F]">{item.title}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[#6B7480]">{item.event_type}</p>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-[#6B7480]">
                     {item.impact_level}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-600">
+                <p className="mt-2 text-sm text-[#6B7480]">
                   {item.start_date.slice(0, 10)} to {item.end_date.slice(0, 10)}
                 </p>
-                {item.notes ? <p className="mt-2 text-sm text-slate-500">{item.notes}</p> : null}
+                {item.notes ? <p className="mt-2 text-sm text-[#6B7480]">{item.notes}</p> : null}
               </div>
             ))}
           </div>
         </div>
 
         <div className="dashboard-card p-5">
-          <h2 className="text-lg font-semibold text-slate-950">External context signals</h2>
+          <h2 className="text-lg font-semibold text-[#03182F]">External context signals</h2>
           <form onSubmit={handleCreateSignal} className="mt-4 space-y-3">
             <input
               value={signalForm.title}
@@ -382,7 +382,7 @@ export default function PlanningPageClient({
             <button
               type="submit"
               disabled={savingSignal}
-              className="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-slate-950 disabled:opacity-50"
+              className="rounded-xl bg-[#E0A93A]/100 px-4 py-2.5 text-sm font-medium text-[#03182F] disabled:opacity-50"
             >
               {savingSignal ? 'Saving...' : 'Add context signal'}
             </button>
@@ -390,28 +390,28 @@ export default function PlanningPageClient({
 
           <div className="mt-5 space-y-3">
             {signals.map((signal) => (
-              <div key={signal.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div key={signal.id} className="rounded-lg border border-slate-200 bg-white p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">{signal.title}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">{signal.signal_type}</p>
+                    <p className="text-sm font-semibold text-[#03182F]">{signal.title}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[#6B7480]">{signal.signal_type}</p>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-[#6B7480]">
                     {signal.relevance_score}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-600">{signal.summary}</p>
+                <p className="mt-2 text-sm text-[#6B7480]">{signal.summary}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-[#6B7480]">
                     {signal.impact_level}
                   </span>
                   {signal.geography ? (
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-[#6B7480]">
                       {signal.geography}
                     </span>
                   ) : null}
                   {signal.tags?.map((tag) => (
-                    <span key={`${signal.id}-${tag}`} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
+                    <span key={`${signal.id}-${tag}`} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-[#6B7480]">
                       {tag}
                     </span>
                   ))}
@@ -427,17 +427,17 @@ export default function PlanningPageClient({
         </div>
 
         <div className="dashboard-card p-5">
-          <h2 className="text-lg font-semibold text-slate-950">Planning recommendations</h2>
+          <h2 className="text-lg font-semibold text-[#03182F]">Planning recommendations</h2>
           <div className="mt-4 space-y-3">
             {recommendations.length === 0 ? (
-              <p className="text-sm text-slate-500">No planning recommendations yet.</p>
+              <p className="text-sm text-[#6B7480]">No planning recommendations yet.</p>
             ) : (
               recommendations.map((recommendation) => (
-                <div key={recommendation.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div key={recommendation.id} className="rounded-lg border border-slate-200 bg-white p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-950">{recommendation.title}</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                      <p className="text-sm font-semibold text-[#03182F]">{recommendation.title}</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[#6B7480]">
                         {recommendation.scenario_type}
                       </p>
                     </div>
@@ -446,9 +446,9 @@ export default function PlanningPageClient({
                     </span>
                   </div>
                   {recommendation.expected_impact ? (
-                    <p className="mt-3 text-sm text-slate-600">{recommendation.expected_impact}</p>
+                    <p className="mt-3 text-sm text-[#6B7480]">{recommendation.expected_impact}</p>
                   ) : null}
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className="mt-2 text-xs text-[#6B7480]">
                     {new Date(recommendation.created_at).toLocaleString()}
                   </p>
                 </div>

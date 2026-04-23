@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+import { prisma, prismaWithRetry } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { decryptSecret } from '@/lib/crypto'
 
@@ -40,15 +40,6 @@ type ActionSuggestion = {
   payload?: Record<string, unknown>
 }
 
-type ModelResult = {
-  answer: string
-  reasoningSummary: string
-  evidence: SerializableEvidence
-  recommendations: ActionSuggestion[]
-  usedModel: string
-  fallback: boolean
-}
-
 function safeJsonParse<T>(value: string): T | null {
   try {
     return JSON.parse(value) as T
@@ -62,66 +53,6 @@ function normalizeList(raw: string | undefined) {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean)
-}
-
-function pickString(source: Record<string, unknown>, keys: string[]) {
-  for (const key of keys) {
-    const value = source[key]
-    if (typeof value === 'string' && value.trim().length > 0) {
-      return value
-    }
-  }
-  return null
-}
-
-function normalizeEvidence(raw: unknown): SerializableEvidence {
-  if (!Array.isArray(raw)) {
-    return []
-  }
-
-  return raw
-    .map((item) => {
-      if (!item || typeof item !== 'object') return null
-      const record = item as Record<string, unknown>
-      const label = typeof record.label === 'string' ? record.label : null
-      const value = typeof record.value === 'string' ? record.value : null
-      if (!label || !value) return null
-      return { label, value }
-    })
-    .filter(Boolean) as SerializableEvidence
-}
-
-function normalizeSuggestions(raw: unknown): ActionSuggestion[] {
-  if (!Array.isArray(raw)) {
-    return []
-  }
-
-  return raw
-    .map((item) => {
-      if (!item || typeof item !== 'object') return null
-      const record = item as Record<string, unknown>
-      const title = pickString(record, ['title'])
-      const reasoningSummary = pickString(record, ['reasoningSummary', 'analysis', 'reasoning'])
-
-      if (!title || !reasoningSummary) {
-        return null
-      }
-
-      return {
-        title,
-        scenarioType: pickString(record, ['scenarioType']) || 'restock_risk',
-        reasoningSummary,
-        expectedImpact:
-          pickString(record, ['expectedImpact']) || 'Operational impact should be reviewed before execution.',
-        confidenceNote: pickString(record, ['confidenceNote', 'confidence']) || 'Medium confidence.',
-        target: pickString(record, ['target']) || 'manual_review',
-        payload:
-          record.payload && typeof record.payload === 'object'
-            ? (record.payload as Record<string, unknown>)
-            : {},
-      }
-    })
-    .filter(Boolean) as ActionSuggestion[]
 }
 
 export function serializeJson<T>(value: T): T {
@@ -147,7 +78,9 @@ function isDatabaseUnavailableError(error: unknown) {
   return (
     error.message.includes('Environment variable not found: DATABASE_URL') ||
     error.message.includes("Can't reach database server") ||
-    error.message.includes('Invalid `prisma.')
+    error.message.includes('Invalid `prisma.') ||
+    error.message.includes('EMAXCONNSESSION') ||
+    error.message.includes('max clients reached')
   )
 }
 
@@ -180,61 +113,83 @@ async function queryWithMissingTableFallback<T>(query: () => Promise<T>, fallbac
 }
 
 export async function getMerchantContext(userId: string): Promise<MerchantContext> {
-  const [
-    aiSettings,
-    profile,
-    products,
-    parcels,
-    zones,
-    bins,
-    pickingLists,
-    calendarEvents,
-    externalSignals,
-  ] = await Promise.all([
-    queryWithMissingTableFallback(
-      () => prisma.merchantAiSettings.findUnique({ where: { user_id: userId } }),
-      null
-    ),
-    queryWithMissingTableFallback(
-      () => prisma.merchantProfileContext.findUnique({ where: { user_id: userId } }),
-      null
-    ),
-    prisma.product.findMany({
-      where: { user_id: userId, active: true },
-      select: { name: true, quantity: true, min_quantity: true, supplier: true },
-      orderBy: [{ quantity: 'asc' }, { name: 'asc' }],
-      take: 50,
-    }),
-    prisma.parcel.findMany({
-      where: { user_id: userId },
-      select: { reference: true, status: true, carrier: true },
-      orderBy: { updated_at: 'desc' },
-      take: 50,
-    }),
-    prisma.warehouseZone.count({ where: { user_id: userId, active: true } }),
-    prisma.warehouseBin.count({ where: { user_id: userId, active: true } }),
-    prisma.pickingList.count({
-      where: { user_id: userId, status: { in: ['pending', 'in_progress'] } },
-    }),
-    queryWithMissingTableFallback(
-      () =>
-        prisma.merchantCalendarEvent.findMany({
+  const aiSettings = await queryWithMissingTableFallback(
+    () => prismaWithRetry((db) => db.merchantAiSettings.findUnique({ where: { user_id: userId } })),
+    null
+  )
+  const profile = await queryWithMissingTableFallback(
+    () => prismaWithRetry((db) => db.merchantProfileContext.findUnique({ where: { user_id: userId } })),
+    null
+  )
+  const products = await queryWithMissingTableFallback(
+    () =>
+      prismaWithRetry((db) =>
+        db.product.findMany({
+          where: { user_id: userId, active: true },
+          select: { name: true, quantity: true, min_quantity: true, supplier: true },
+          orderBy: [{ quantity: 'asc' }, { name: 'asc' }],
+          take: 50,
+        })
+      ),
+    []
+  )
+  const parcels = await queryWithMissingTableFallback(
+    () =>
+      prismaWithRetry((db) =>
+        db.parcel.findMany({
+          where: { user_id: userId },
+          select: { reference: true, status: true, carrier: true },
+          orderBy: { updated_at: 'desc' },
+          take: 50,
+        })
+      ),
+    []
+  )
+  const zones = await queryWithMissingTableFallback(
+    () =>
+      prismaWithRetry((db) =>
+        db.warehouseZone.count({ where: { user_id: userId, active: true } })
+      ),
+    0
+  )
+  const bins = await queryWithMissingTableFallback(
+    () =>
+      prismaWithRetry((db) =>
+        db.warehouseBin.count({ where: { user_id: userId, active: true } })
+      ),
+    0
+  )
+  const pickingLists = await queryWithMissingTableFallback(
+    () =>
+      prismaWithRetry((db) =>
+        db.pickingList.count({
+          where: { user_id: userId, status: { in: ['pending', 'in_progress'] } },
+        })
+      ),
+    0
+  )
+  const calendarEvents = await queryWithMissingTableFallback(
+    () =>
+      prismaWithRetry((db) =>
+        db.merchantCalendarEvent.findMany({
           where: { user_id: userId },
           orderBy: { start_date: 'asc' },
           take: 8,
-        }),
-      []
-    ),
-    queryWithMissingTableFallback(
-      () =>
-        prisma.externalContextSignal.findMany({
+        })
+      ),
+    []
+  )
+  const externalSignals = await queryWithMissingTableFallback(
+    () =>
+      prismaWithRetry((db) =>
+        db.externalContextSignal.findMany({
           where: { user_id: userId },
           orderBy: [{ relevance_score: 'desc' }, { created_at: 'desc' }],
           take: 8,
-        }),
-      []
-    ),
-  ])
+        })
+      ),
+    []
+  )
 
   const lowStockProducts = products.filter((product) => product.quantity <= product.min_quantity)
   const outOfStockCount = products.filter((product) => product.quantity === 0).length
@@ -445,115 +400,20 @@ async function callOpenAI({
   }>(content)
 }
 
-async function callDustOrchestrator({
-  userId,
-  userMessage,
-  context,
-}: {
-  userId: string
-  userMessage: string
-  context: MerchantContext
-}): Promise<ModelResult | null> {
-  const webhookUrl =
-    process.env.DUST_ORCHESTRATOR_WEBHOOK_URL?.trim() ||
-    process.env.DUST_AGENT_WEBHOOK_URL?.trim()
-  const apiKey =
-    process.env.DUST_ORCHESTRATOR_API_KEY?.trim() ||
-    process.env.DUST_AGENT_API_KEY?.trim()
-  const agentId = process.env.DUST_ORCHESTRATOR_AGENT_ID?.trim()
-
-  if (!webhookUrl || !agentId) {
-    return null
-  }
-
-  const response = await fetch(webhookUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-    },
-    body: JSON.stringify({
-      event: 'manual_chat_request',
-      agentId,
-      userId,
-      message: userMessage,
-      generatedAt: new Date().toISOString(),
-      context,
-    }),
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Dust orchestrator request failed: ${response.status} ${errorText}`)
-  }
-
-  const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>
-  const answer = pickString(payload, ['answer', 'response', 'message'])
-  const reasoningSummary = pickString(payload, ['reasoningSummary', 'analysis', 'reasoning'])
-  const evidence = normalizeEvidence(payload.evidence)
-  const recommendations = normalizeSuggestions(payload.recommendations)
-
-  if (answer && reasoningSummary) {
-    return {
-      answer,
-      reasoningSummary,
-      evidence,
-      recommendations,
-      usedModel: 'dust_orchestrator',
-      fallback: false,
-    }
-  }
-
-  if (payload.success === true) {
-    return {
-      answer:
-        'Your request has been sent to the orchestrator agent. I prepared immediate in-app recommendations while the orchestrator workflow processes.',
-      reasoningSummary:
-        'Dust webhook acknowledged the request in trigger mode, so this response uses your current merchant context as an immediate operational baseline.',
-      evidence: [],
-      recommendations: [],
-      usedModel: 'dust_orchestrator',
-      fallback: true,
-    }
-  }
-
-  return null
-}
-
 export async function generateCopilotResponse(userId: string, userMessage: string) {
   const context = await getMerchantContext(userId)
   const encryptedApiKey = context.aiSettings?.encrypted_api_key
   const heuristicSuggestions = buildHeuristicSuggestions(context)
   const defaultEvidence = buildEvidence(context)
+  const envApiKey = process.env.OPENAI_API_KEY?.trim()
+  const apiKey = encryptedApiKey ? decryptSecret(encryptedApiKey) : envApiKey
 
-  try {
-    const dustResult = await callDustOrchestrator({
-      userId,
-      userMessage,
-      context,
-    })
-
-    if (dustResult) {
-      return {
-        answer: dustResult.answer,
-        reasoningSummary: dustResult.reasoningSummary,
-        evidence: dustResult.evidence.length ? dustResult.evidence : defaultEvidence,
-        recommendations: dustResult.recommendations.length ? dustResult.recommendations : heuristicSuggestions,
-        usedModel: dustResult.usedModel,
-        fallback: dustResult.fallback,
-        context,
-      }
-    }
-  } catch (error) {
-    console.error('Dust orchestrator call failed, trying OpenAI fallback path:', error)
-  }
-
-  if (!encryptedApiKey) {
+  if (!apiKey) {
     return {
       answer:
-        'I could not reach an external model provider, so I generated an immediate operational response from your current app data.',
+        'No OpenAI API key is configured, so I generated an immediate operational response from your current app data.',
       reasoningSummary:
-        'No configured provider response was available; this answer is grounded in stock, transport, calendar, and context signals already stored in the workspace.',
+        'No live OpenAI response was available; this answer is grounded in stock, transport, calendar, and context signals already stored in the workspace.',
       evidence: defaultEvidence,
       recommendations: heuristicSuggestions,
       usedModel: 'heuristic_local',
@@ -562,8 +422,7 @@ export async function generateCopilotResponse(userId: string, userMessage: strin
     }
   }
 
-  const apiKey = decryptSecret(encryptedApiKey)
-  const model = context.aiSettings?.preferred_model || 'gpt-4.1-mini'
+  const model = context.aiSettings?.preferred_model || process.env.OPENAI_MODEL?.trim() || 'gpt-4.1-mini'
 
   try {
     const modelResponse = await callOpenAI({

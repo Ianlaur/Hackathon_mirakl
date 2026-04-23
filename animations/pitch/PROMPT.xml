@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Méta-prompt pour générer la vidéo pitch Mirakl × Mira (hackathon).
+  Format : XML structuré (Claude est entraîné à lire ce format — tip 12 du vault).
+  Usage : fournir ce fichier + les assets (mirakl-logo.png, dashboard.png) à une
+  session Claude avec le skill `hyperframes` chargé. Résultat attendu :
+  index.html, DESIGN.md, vidéo MP4 de ~25s qui tient un pitch Mirakl.
+-->
+<prompt>
+
+  <role>
+    Tu es motion designer senior spécialisé en vidéos pitch produit enterprise/SaaS.
+    Tu écris des compositions HyperFrames (HTML + GSAP + CSS + éventuellement Three.js).
+    Tu connais les principes de motion design : easing comme émotion, hiérarchie
+    par choreography, layered depth, anti-patterns LLM (gradient text, Inter partout,
+    tout centré). Tu refuses les solutions génériques.
+  </role>
+
+  <project>
+    <name>Hackathon Mirakl × Eugenia — Mira (UC1 Agent-Led Merchant Company)</name>
+    <deadline>Vendredi 24 avril 2026, 14h, locaux Mirakl Paris</deadline>
+    <team_role>Nathan (CTO) — branche nathan-calendar-advisor</team_role>
+    <product_one_liner>
+      Mira est un copilot IA pour merchants Mirakl : un orbe flottant qui parle
+      à l'utilisateur, anticipe les ruptures de stock grâce au calendrier, et
+      génère des plans de restock + emails fournisseurs approvables en 1 clic.
+    </product_one_liner>
+    <tech_stack>Next.js 14 · Prisma · Supabase · OpenAI gpt-4o tool use · Whisper · n8n</tech_stack>
+  </project>
+
+  <killer_feature>
+    <name>Calendar-Aware Restock Advisor</name>
+    <story>
+      Jean-Charles (persona), vendeur Nordika Studio en Savoie, part 10 jours.
+      Il crée un événement "Congés Savoie" dans le calendrier. Mira détecte le
+      conflit avec les vélocités de vente, projette le stock de 5 SKUs en négatif,
+      génère un plan agrégé (€2 430, deadline 7 mai), brouille les 4 emails
+      fournisseurs, et met le tout en attente d'approbation dans /actions.
+      Jean-Charles valide en 1 clic. Il peut partir en confiance. Le business
+      tourne sans lui.
+    </story>
+    <narrative_axis>
+      "L'agent ne remplace pas le merchant — il lui rend le contrôle avec
+      données + reasoning + human-in-the-loop obligatoire."
+    </narrative_axis>
+  </killer_feature>
+
+  <audience>
+    <primary>Jury Mirakl (execs + produit) qui évaluent 5-10 pitchs en 5-8 min chacun</primary>
+    <secondary>Team Eugenia (partenaire hackathon)</secondary>
+    <attention_span>Très court — la vidéo doit hook en 3 secondes, rester dense en information visuelle, ne jamais avoir un plan vide.</attention_span>
+  </audience>
+
+  <objective>
+    Produire une vidéo pitch de 22 à 26 secondes, 1920×1080, 30fps, qui :
+    1. Donne envie de tester Mira (wow factor visuel, pas juste screenshots animés)
+    2. Communique le problème ET la solution sans voiceover (texte à l'écran uniquement, FR)
+    3. Montre le flow "congés → plan restock → approve" condensé et lisible
+    4. Laisse une image marquante finale (orbe Mira + baseline)
+  </objective>
+
+  <brand>
+    <style_reference>Velvet Standard (Vignelli) + touche Data Drift (Anadol) pour les moments de chaleur AI</style_reference>
+
+    <palette>
+      <color role="canvas_deep">#0A1528 — navy profond (fond dominant)</color>
+      <color role="canvas_darker">#060C18 — navy quasi-noir (dégradé bas)</color>
+      <color role="mirakl_deep">#0F2A44 — bleu Mirakl foncé (accents)</color>
+      <color role="mirakl_brand">#3A6590 — bleu Mirakl (signature)</color>
+      <color role="mirakl_bright">#6EA0C9 — bleu Mirakl clair (halos, highlights)</color>
+      <color role="mira_indigo">#6366F1 — indigo Mira (chat, tool chips)</color>
+      <color role="mira_pink">#EC4899 — pink Mira (accent tool result)</color>
+      <color role="frost">#D6E4F2 — blanc bleuté (typo, hairlines)</color>
+      <color role="flash">#FFFFFF — flash de transition uniquement</color>
+      <color role="critical">#F43F5E — rouge critique (projection stock négatif)</color>
+      <color role="success">#10B981 — vert success (approval confirmed)</color>
+    </palette>
+
+    <typography>
+      <display>
+        Space Grotesk 100/300/600 — headlines, tagline, ghost words
+        ALL CAPS pour les labels, letter-spacing 0.42em minimum
+      </display>
+      <ui>Inter 300/400/600 — UI simulée (cards, boutons, tableaux SKU)</ui>
+      <banned>Roboto, Arial default, Helvetica sans raison, gradient text</banned>
+    </typography>
+
+    <iconography>
+      - Emojis thématiques sobres : 🏖️ (congés) · 📦 (restock) · ✉️ (email) · ✓ (approve)
+      - SF Symbols-style pour les UI : chips rectangulaires arrondies, badges pill
+      - Pas de shadows décoratifs colorés — rester Vignelli
+    </iconography>
+  </brand>
+
+  <narrative>
+    <total_duration>25 secondes</total_duration>
+    <pacing_rule>Chaque acte dure 3-6s. Aucun acte ne reste statique plus de 2s.</pacing_rule>
+
+    <act id="1" title="Reveal" start="0" end="6">
+      <beat time="0.3-1.5">Hairlines + kickers ("MIRAKL / CONNECT", "HACKATHON × EUGENIA") apparaissent, ghost word "MIRAKL" émerge à 5% opacity</beat>
+      <beat time="0.7-2.0">Logo Mirakl (PNG + filter SVG cutout-white) fade+rotate-in, halo bleu radial 1100px</beat>
+      <beat time="1.5-2.5">Tagline "Powered by Mira" en ALL CAPS wide tracking, brand bar en bas ("Merchant Ops Copilot · v0.1 · 2026")</beat>
+      <beat time="2.4-4.5">Idle : logo tourne 80° sur Z, sway 3D (rotationY ±14°), halo breath, 12 particules flottantes</beat>
+      <beat time="4.1-4.5">Wind-up : logo recule (scale 0.92, z -120) — anticipation</beat>
+      <beat time="4.5-5.85">Dive : logo spin 340° + scale 22 + z +1100, particules streak en random(-960,960), camera shake keyframes, flash blanc</beat>
+      <beat time="5.55-6">Dashboard révélé (scale 1.14 → 1)</beat>
+      <status>DÉJÀ IMPLÉMENTÉ dans animations/intro/index.html — récupérable tel quel</status>
+    </act>
+
+    <act id="2" title="The orb awakens" start="6" end="10.5">
+      <intent>Focalise l'attention sur la mascotte Mira (l'orbe flottant bas-droite du dashboard).</intent>
+      <beat time="6-7">Dashboard zoome/pan vers le coin bas-droit (scale 1.8, translate -30%,-22%)</beat>
+      <beat time="7-8">L'orbe Mira se matérialise : cercle 240px avec 4 blobs de fumée animés (pink/blue/violet/cyan, délais 0s/-1.6s/-3.2s/-4.8s comme MascotOrb.tsx), halo pulsant</beat>
+      <beat time="8-9">Label flottant "Mira" en Space Grotesk 42px + underline hairline, slide-in depuis la droite</beat>
+      <beat time="9-10.5">L'orbe pulse (scale 1 → 1.08, yoyo), 3 chips teaser flottent autour : "Stock" · "Calendrier" · "Actions"</beat>
+    </act>
+
+    <act id="3" title="The ask" start="10.5" end="15">
+      <intent>L'utilisateur pose sa question, Mira agit. Montre le tool use en action.</intent>
+      <beat time="10.5-11">L'orbe explose en particules (20 particules scale+translate random), le drawer Spotlight glisse depuis le haut (translateY -100% → 0, backdrop-blur 16px)</beat>
+      <beat time="11-13">Textarea s'auto-remplit, effet typewriter : "Je pars en congés du 10 au 20 mai" (caractère par caractère, 45ms/char)</beat>
+      <beat time="13-13.5">Chip tool call apparaît : "create_calendar_event" avec indigo bg + spinner "thinking"</beat>
+      <beat time="13.5-15">Event recap card slide-in : 🏖️ "Congés Savoie" · "10 → 20 mai" · "10 jours", bouton "Voir le plan restock →"</beat>
+    </act>
+
+    <act id="4" title="The plan" start="15" end="21">
+      <intent>Transition vers /actions, révèle le plan restock avec chiffres clés.</intent>
+      <beat time="15-15.8">Wipe horizontal vers la page /actions (divider vertical translate left → right, révèle dessous)</beat>
+      <beat time="15.8-17">Card reco principale apparaît : headline "Plan de restock avant congés" + icône 📦 + badge "À valider" ambre</beat>
+      <beat time="17-19">3 counters simultanés, counter-up from 0 :
+        - "5" SKUs à risque (rose-50 bg)
+        - "€2,430" coût total (slate bg)
+        - "7 mai" deadline (rose bg + pulse)
+      </beat>
+      <beat time="19-20.5">Mini-table 3 lignes SKU apparaît, stagger 120ms : "Chaise Oslo · stock -14 · cmd 50 · CRITICAL" avec priority badge</beat>
+      <beat time="20.5-21">Bouton "Approuver la sélection" highlight pulse (box-shadow expand)</beat>
+    </act>
+
+    <act id="5" title="The close" start="21" end="25">
+      <intent>Résolution + outro. Laisser une image de marque forte.</intent>
+      <beat time="21-21.5">Simulated click sur Approuver (bouton scale 0.96 → 1, flash blanc)</beat>
+      <beat time="21.5-22">Confirmation toast slide-up : "✓ 4 commandes créées" en vert</beat>
+      <beat time="22-23">Fade to deep navy, outro commence</beat>
+      <beat time="23-25">Orbe Mira mini (centre frame) + ligne "Mira — Powered by Mirakl × Eugenia" + date "2026" en wide tracking</beat>
+    </act>
+  </narrative>
+
+  <visual_language>
+    <layers>
+      <layer name="background">Dégradé radial navy + particules lentes</layer>
+      <layer name="ghost">Texte géant opacity 3-6% (MIRAKL, MIRA selon acte) bleeding off-frame</layer>
+      <layer name="structural">Hairlines top/bottom, kickers coins — persistants (pas re-entrent à chaque acte)</layer>
+      <layer name="content">L'action principale de chaque acte</layer>
+      <layer name="accent">Particules, glow streaks, flashs</layer>
+    </layers>
+
+    <spatial_rule>
+      Toujours 2+ focal points par frame. Jamais un élément seul flottant au centre
+      pendant plus de 0.5s. Anchor au left/top ou right/bottom via kickers et
+      brand-bar qui restent visibles entre les actes.
+    </spatial_rule>
+
+    <depth>Perspective CSS 1800px sur le root, transform-style: preserve-3d sur les conteneurs qui doivent bouger en Z.</depth>
+
+    <texture>Particules 4px blur(1px) + box-shadow 14px glow · glow streaks 3px rotationnels · camera-shake keyframes sur le rig global pendant les moments d'impact</texture>
+  </visual_language>
+
+  <motion_language>
+    <easings>
+      <rule>Jamais la même ease sur 2 tweens consécutifs du même élément</rule>
+      <entrance>expo.out · power3.out · power2.out</entrance>
+      <ambient>sine.inOut · power1.inOut</ambient>
+      <impact>power3.in · power2.in</impact>
+      <banned>linear (sauf rotation continue) · elastic (trop playful pour enterprise)</banned>
+    </easings>
+
+    <timing>
+      <fast_range>0.15-0.3s — chips, spinner, click feedback</fast_range>
+      <medium_range>0.4-0.8s — cards, counters, wipes</medium_range>
+      <slow_range>1.0-1.6s — entrances dramatic, halo breath, logo reveal</slow_range>
+    </timing>
+
+    <choreography>
+      Hiérarchie : l'élément qui bouge en premier est perçu comme le plus important.
+      Stagger par importance, pas par DOM order. Stagger total ≤ 500ms peu importe
+      le nombre d'items.
+    </choreography>
+
+    <transitions_between_acts>
+      - Acte 1 → 2 : zoom-in sur le dashboard (scale 1.8) — pas de cut, c'est continu
+      - Acte 2 → 3 : orbe explode en particules + drawer slide-down
+      - Acte 3 → 4 : wipe horizontal (divider vertical qui traverse)
+      - Acte 4 → 5 : click flash + fade to navy
+    </transitions_between_acts>
+
+    <continuous_elements>
+      Particules : drift subtle pendant tous les actes idle (yoyo 2.2s)
+      Hairlines + kickers : persistent acts 1-4 (fade out uniquement acte 5)
+      Ghost words : change de texte selon l'acte (MIRAKL → MIRA → CONGÉS → PLAN → ✓)
+    </continuous_elements>
+  </motion_language>
+
+  <technical_stack>
+    <framework>HyperFrames v0.4.15 — HTML + GSAP + CSS compiled to MP4 via Chrome puppeteer</framework>
+    <format>1920×1080, 30fps, durée 25s</format>
+    <data_attrs>data-composition-id="pitch", data-start="0", data-duration="25", data-width="1920", data-height="1080"</data_attrs>
+    <libs>
+      <lib>gsap 3.14.2 via CDN jsdelivr</lib>
+      <lib>three 0.158 (optionnel, seulement si un acte nécessite vrai 3D)</lib>
+    </libs>
+    <rules>
+      - window.__timelines["pitch"] = tl (enregistrement obligatoire)
+      - paused: true (le player contrôle le playback)
+      - data-duration impose la durée, pas la timeline GSAP
+      - Jamais repeat: -1 (calculer Math.ceil(duration / cycle) - 1)
+      - Scene transitions ALWAYS — no jump cuts
+      - Entrance animations on EVERY scene (gsap.from ou tl.from depuis état invisible)
+      - NEVER exit animations sauf scène finale — la transition est l'exit
+      - Preview standalone : query param ?play=1 déclenche tl.play() + loop
+    </rules>
+    <contrast>hyperframes validate applique WCAG AA. Tout texte readable avec decoratives masquées.</contrast>
+  </technical_stack>
+
+  <existing_assets>
+    <asset path="animations/intro/index.html">Composition intro 7s fonctionnelle (logo Mirakl + dashboard reveal). À réutiliser comme acte 1 en ajustant data-duration.</asset>
+    <asset path="animations/intro/mirakl-logo.png">Logo Mirakl bleu sur fond blanc. Fond blanc retiré via filter SVG feColorMatrix (matrix: alpha = -R-G-B+3A).</asset>
+    <asset path="animations/intro/dashboard.png">Screenshot dashboard Mirakl Connect (sidebar + header + KPIs + table orders + Mira search bar).</asset>
+    <asset path="animations/intro/DESIGN.md">Visual identity Velvet Standard. À étendre pour couvrir les actes 2-5.</asset>
+  </existing_assets>
+
+  <anti_patterns>
+    <avoid>Screenshots aplati collés en plein écran sans contexte (feels comme tutorial)</avoid>
+    <avoid>Typo Inter 400 partout (défaut LLM, aesthetic YC batch)</avoid>
+    <avoid>Gradients bleu-violet rainbow (ban tip 8 du vault)</avoid>
+    <avoid>Fonds noir pur #000 (aesthetic "nothing loaded") — toujours tinter bleu</avoid>
+    <avoid>Particules génériques identiques (variation size/blur/glow par particule)</avoid>
+    <avoid>Pure centering + vide autour (anchor aux edges)</avoid>
+    <avoid>Counter-ups "round" 0→100 — utiliser vrais chiffres du payload : 5, €2430, 7 mai</avoid>
+    <avoid>Drop shadows colorées (Vignelli ne pardonne pas)</avoid>
+    <avoid>Bouncy elastic ease sur enterprise (déplace dans Folk Frequency, inadapté)</avoid>
+    <avoid>Rotation du ghost word (c'est le décor, il reste stable)</avoid>
+  </anti_patterns>
+
+  <success_criteria>
+    <criterion>À t=3s, un observateur qui n'a pas lu le pitch sait qu'il regarde une démo Mirakl pro.</criterion>
+    <criterion>À t=15s, il a compris le flow "congés → plan" sans voix off.</criterion>
+    <criterion>À t=25s, il peut citer de tête : "5 SKUs", "€2430", "1 clic approve".</criterion>
+    <criterion>Le logo Mira (orbe) est reconnaissable — c'est la marque visuelle qu'on emporte.</criterion>
+    <criterion>Zéro frame vide ou statique &gt; 1s. Zéro jump cut. Zéro texte illisible (WCAG AA).</criterion>
+    <criterion>Le total tient en 25s ± 1s. Pas de scope creep.</criterion>
+  </success_criteria>
+
+  <examples>
+    <pattern name="SVG cutout-white filter">
+      &lt;svg width="0" height="0" style="position:absolute" aria-hidden="true"&gt;
+        &lt;defs&gt;
+          &lt;filter id="cutout-white" color-interpolation-filters="sRGB"&gt;
+            &lt;feColorMatrix type="matrix" values="
+              1 0 0 0 0
+              0 1 0 0 0
+              0 0 1 0 0
+              -1 -1 -1 3 0"/&gt;
+          &lt;/filter&gt;
+        &lt;/defs&gt;
+      &lt;/svg&gt;
+      &lt;!-- usage : filter: url(#cutout-white) sur l'img --&gt;
+    </pattern>
+
+    <pattern name="4 blobs de fumée (Mira orb)">
+      /* CSS */
+      .mira-orb { position:relative; width:240px; height:240px; border-radius:50%; }
+      .mira-orb::before, .mira-orb::after,
+      .mira-orb .blob-2, .mira-orb .blob-3 {
+        content:""; position:absolute; inset:0; border-radius:50%; filter:blur(30px);
+      }
+      .mira-orb::before { background: radial-gradient(circle, #EC4899 0%, transparent 60%); animation: drift-pink 9s ease-in-out infinite; }
+      /* ... 3 autres blobs avec délais -1.6s, -3.2s, -4.8s — ne pas tous partir à t=0 */
+    </pattern>
+
+    <pattern name="Counter-up avec vrais chiffres">
+      tl.from({ v: 0 }, {
+        v: 5, duration: 1.2, ease: "power2.out",
+        onUpdate: function() { document.querySelector("#sku-count").textContent = Math.round(this.targets()[0].v); }
+      }, 17);
+    </pattern>
+
+    <pattern name="Typewriter effect">
+      const text = "Je pars en congés du 10 au 20 mai";
+      tl.to({ i: 0 }, {
+        i: text.length, duration: 1.6, ease: "none",
+        onUpdate: function() {
+          const n = Math.round(this.targets()[0].i);
+          document.querySelector("#prompt-text").textContent = text.slice(0, n);
+        }
+      }, 11);
+    </pattern>
+
+    <pattern name="Camera shake keyframes (dive impact)">
+      tl.to(".camera-rig", {
+        keyframes: {
+          x:        [0, -6,  4, -8,  6, -4,  0],
+          y:        [0,  4, -6,  2, -8,  5,  0],
+          rotation: [0, -0.4, 0.5, -0.6, 0.3, -0.2, 0]
+        },
+        duration: 1.0, ease: "power1.in"
+      }, 4.6);
+    </pattern>
+  </examples>
+
+  <deliverable>
+    <file path="animations/pitch/index.html">Composition HyperFrames unique de 25s qui couvre les 5 actes</file>
+    <file path="animations/pitch/DESIGN.md">Visual identity étendue (nouvelles couleurs Mira, typographie détaillée, motion rules par acte)</file>
+    <file path="animations/pitch/PROMPT.xml">Ce fichier (meta-prompt)</file>
+    <file path="animations/pitch/mirakl-logo.png">Asset</file>
+    <file path="animations/pitch/dashboard.png">Asset</file>
+    <validation>
+      npx hyperframes lint → 0 errors
+      npx hyperframes validate → WCAG AA pass (ou warnings justifiés)
+    </validation>
+    <preview>Ouvrir file://.../index.html?play=1 pour boucle auto-play sans studio</preview>
+  </deliverable>
+
+  <instructions_for_executor>
+    1. Lis CE fichier en entier + DESIGN.md existant + intro/index.html existant.
+    2. Ne casse PAS l'intro existante — pitch/index.html est un nouveau projet.
+    3. Respecte la palette ET les anti-patterns à la lettre.
+    4. Construis acte par acte. Lance `npx hyperframes lint` entre chaque acte.
+    5. Ouvre ?play=1 dans le browser entre chaque acte pour vérifier visuellement.
+    6. Si un acte déborde la durée, COUPE des beats — ne pas étendre la durée totale.
+    7. À la fin : un seul fichier index.html, testé end-to-end, qui loop proprement.
+    8. Pas de scope creep : ne pas ajouter des 6e actes, pas de voix off, pas de son.
+  </instructions_for_executor>
+
+</prompt>

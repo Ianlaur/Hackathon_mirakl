@@ -1,0 +1,92 @@
+{
+  "name": "Calendar Advisor — Mirakl Hackathon",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calendar-leave-created",
+        "responseMode": "onReceived",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "name": "Webhook Leave Created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "calendar-leave-created"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"body\"][\"kind\"]}}",
+              "operation": "equals",
+              "value2": "leave"
+            }
+          ]
+        }
+      },
+      "name": "Is Leave Event",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env[\"APP_BASE_URL\"]}}/api/agent/calendar-advisor",
+        "method": "POST",
+        "sendBody": true,
+        "contentType": "json",
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"event_id\": \"{{$json[\"body\"][\"event_id\"]}}\",\n  \"user_id\": \"{{$json[\"body\"][\"user_id\"]}}\"\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "name": "POST Calendar Advisor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [{ "mode": "everyDay", "hour": 7, "minute": 0 }]
+        }
+      },
+      "name": "Cron Daily 07:00",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 500]
+    },
+    {
+      "parameters": {
+        "url": "={{$env[\"APP_BASE_URL\"]}}/api/agent/calendar-advisor/refresh",
+        "method": "GET",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "GET Refresh",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Leave Created": {
+      "main": [[{ "node": "Is Leave Event", "type": "main", "index": 0 }]]
+    },
+    "Is Leave Event": {
+      "main": [
+        [{ "node": "POST Calendar Advisor", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Cron Daily 07:00": {
+      "main": [[{ "node": "GET Refresh", "type": "main", "index": 0 }]]
+    }
+  }
+}

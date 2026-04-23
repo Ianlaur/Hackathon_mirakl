@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
+import { prisma, prismaWithRetry } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 import { generateCopilotResponse, serializeJson } from '@/lib/copilot'
 
@@ -16,23 +16,27 @@ export async function GET(request: NextRequest) {
     const sessionId = new URL(request.url).searchParams.get('sessionId')
 
     if (!sessionId) {
-      const sessions = await prisma.copilotChatSession.findMany({
-        where: { user_id: userId },
-        orderBy: { last_message_at: 'desc' },
-        take: 10,
-      })
+      const sessions = await prismaWithRetry((db) =>
+        db.copilotChatSession.findMany({
+          where: { user_id: userId },
+          orderBy: { last_message_at: 'desc' },
+          take: 10,
+        })
+      )
 
       return NextResponse.json({ sessions })
     }
 
-    const session = await prisma.copilotChatSession.findFirst({
-      where: { id: sessionId, user_id: userId },
-      include: {
-        messages: {
-          orderBy: { created_at: 'asc' },
+    const session = await prismaWithRetry((db) =>
+      db.copilotChatSession.findFirst({
+        where: { id: sessionId, user_id: userId },
+        include: {
+          messages: {
+            orderBy: { created_at: 'asc' },
+          },
         },
-      },
-    })
+      })
+    )
 
     if (!session) {
       return NextResponse.json({ error: 'Chat session not found' }, { status: 404 })
@@ -61,88 +65,97 @@ export async function POST(request: NextRequest) {
 
     const session =
       payload.sessionId
-        ? await prisma.copilotChatSession.findFirst({
-            where: { id: payload.sessionId, user_id: userId },
-          })
+        ? await prismaWithRetry((db) =>
+            db.copilotChatSession.findFirst({
+              where: { id: payload.sessionId, user_id: userId },
+            })
+          )
         : null
 
     const activeSession =
       session ||
-      (await prisma.copilotChatSession.create({
-        data: {
-          user_id: userId,
-          title: payload.message.slice(0, 60),
-        },
-      }))
+      (await prismaWithRetry((db) =>
+        db.copilotChatSession.create({
+          data: {
+            user_id: userId,
+            title: payload.message.slice(0, 60),
+          },
+        })
+      ))
 
-    await prisma.copilotChatMessage.create({
-      data: {
-        session_id: activeSession.id,
-        user_id: userId,
-        role: 'user',
-        content: payload.message,
-      },
-    })
+    await prismaWithRetry((db) =>
+      db.copilotChatMessage.create({
+        data: {
+          session_id: activeSession.id,
+          user_id: userId,
+          role: 'user',
+          content: payload.message,
+        },
+      })
+    )
 
     const result = await generateCopilotResponse(userId, payload.message)
 
     const createdRecommendations = []
     for (const suggestion of result.recommendations) {
-      const recommendation = await prisma.agentRecommendation.create({
-        data: {
-          user_id: userId,
-          title: suggestion.title,
-          scenario_type: suggestion.scenarioType,
-          reasoning_summary: suggestion.reasoningSummary,
-          evidence_payload: serializeJson(result.evidence) as Prisma.InputJsonValue,
-          expected_impact: suggestion.expectedImpact,
-          confidence_note: suggestion.confidenceNote,
-          approval_required: true,
+      const recommendation = await prismaWithRetry((db) =>
+        db.agentRecommendation.create({
+          data: {
+            user_id: userId,
+            title: suggestion.title,
+            scenario_type: suggestion.scenarioType,
+            reasoning_summary: suggestion.reasoningSummary,
+            evidence_payload: serializeJson(result.evidence) as Prisma.InputJsonValue,
+            expected_impact: suggestion.expectedImpact,
+            confidence_note: suggestion.confidenceNote,
+            approval_required: true,
           action_payload: serializeJson({
             target: suggestion.target,
             payload: serializeJson(suggestion.payload || {}),
             requestedFromChat: true,
           }) as Prisma.InputJsonValue,
-          source:
-            result.usedModel === 'dust_orchestrator'
-              ? 'dust_orchestrator'
-              : result.fallback
-                ? 'copilot_fallback'
-                : 'copilot',
+          source: result.fallback ? 'copilot_fallback' : 'copilot',
         },
       })
+      )
 
       createdRecommendations.push(recommendation)
     }
 
-    const assistantMessage = await prisma.copilotChatMessage.create({
-      data: {
-        session_id: activeSession.id,
-        user_id: userId,
-        role: 'assistant',
-        content: result.answer,
-        reasoning_summary: result.reasoningSummary,
-        evidence_payload: serializeJson(result.evidence) as Prisma.InputJsonValue,
-        linked_recommendation_id: createdRecommendations[0]?.id || null,
-      },
-    })
+    const assistantMessage = await prismaWithRetry((db) =>
+      db.copilotChatMessage.create({
+        data: {
+          session_id: activeSession.id,
+          user_id: userId,
+          role: 'assistant',
+          content: result.answer,
+          reasoning_summary: result.reasoningSummary,
+          evidence_payload: serializeJson(result.evidence) as Prisma.InputJsonValue,
+          linked_recommendation_id: createdRecommendations[0]?.id || null,
+        },
+      })
+    )
 
     await Promise.all([
-      prisma.copilotChatSession.update({
-        where: { id: activeSession.id },
-        data: {
-          last_message_at: new Date(),
-          title: activeSession.title === 'New chat' ? payload.message.slice(0, 60) : activeSession.title,
-        },
-      }),
-      prisma.agentContextSnapshot.create({
-        data: {
-          user_id: userId,
-          scenario_type: createdRecommendations[0]?.scenario_type || 'chat',
-          label: payload.message.slice(0, 80),
-          context_payload: serializeJson(result.context) as Prisma.InputJsonValue,
-        },
-      }),
+      prismaWithRetry((db) =>
+        db.copilotChatSession.update({
+          where: { id: activeSession.id },
+          data: {
+            last_message_at: new Date(),
+            title: activeSession.title === 'New chat' ? payload.message.slice(0, 60) : activeSession.title,
+          },
+        })
+      ),
+      prismaWithRetry((db) =>
+        db.agentContextSnapshot.create({
+          data: {
+            user_id: userId,
+            scenario_type: createdRecommendations[0]?.scenario_type || 'chat',
+            label: payload.message.slice(0, 80),
+            context_payload: serializeJson(result.context) as Prisma.InputJsonValue,
+          },
+        })
+      ),
     ])
 
     return NextResponse.json({

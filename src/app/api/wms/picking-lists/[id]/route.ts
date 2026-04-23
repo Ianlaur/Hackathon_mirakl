@@ -38,7 +38,7 @@ export async function GET(
     return NextResponse.json(pickingList)
   } catch (error) {
     console.error('Error fetching picking list:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
@@ -91,7 +91,7 @@ export async function PATCH(
     return NextResponse.json(pickingList)
   } catch (error) {
     console.error('Error updating picking list:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
@@ -133,6 +133,6 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting picking list:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

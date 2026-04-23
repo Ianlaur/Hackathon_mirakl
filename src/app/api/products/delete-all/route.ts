@@ -37,12 +37,12 @@ export async function DELETE(request: NextRequest) {
       success: true, 
       deleted: productsResult.count,
       categoriesDeleted: categoriesResult.count,
-      message: `${productsResult.count} produit(s) et ${categoriesResult.count} catégorie(s) supprimé(s)`
+      message: `${productsResult.count} product(s) and ${categoriesResult.count} categor${categoriesResult.count === 1 ? 'y' : 'ies'} deleted`
     })
   } catch (error) {
     console.error('Error deleting all products:', error)
     return NextResponse.json(
-      { error: 'Erreur lors de la suppression' },
+      { error: 'Deletion failed' },
       { status: 500 }
     )
   }

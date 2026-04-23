@@ -67,12 +67,12 @@ interface Stats {
 }
 
 const ZONE_TYPES: Record<string, { label: string; color: string }> = {
-  receiving: { label: 'Réception', color: 'bg-blue-100 text-blue-700' },
-  storage: { label: 'Stockage', color: 'bg-gray-100 text-gray-700' },
-  picking: { label: 'Picking', color: 'bg-green-100 text-green-700' },
-  shipping: { label: 'Expédition', color: 'bg-purple-100 text-purple-700' },
-  returns: { label: 'Retours', color: 'bg-orange-100 text-orange-700' },
-  quarantine: { label: 'Quarantaine', color: 'bg-red-100 text-red-700' },
+  receiving: { label: 'Receiving', color: 'bg-[#2764FF]/10 text-[#004bd9]' },
+  storage: { label: 'Storage', color: 'bg-[#F2F8FF] text-[#30373E]' },
+  picking: { label: 'Picking', color: 'bg-[#3FA46A]/10 text-green-700' },
+  shipping: { label: 'Shipping', color: 'bg-purple-100 text-purple-700' },
+  returns: { label: 'Returns', color: 'bg-orange-100 text-orange-700' },
+  quarantine: { label: 'Quarantine', color: 'bg-[#FFE7EC] text-red-700' },
 }
 
 export default function WMSPageClient({
@@ -152,7 +152,7 @@ export default function WMSPageClient({
   }
 
   const handleDeleteZone = async (zoneId: string) => {
-    if (!confirm('Supprimer cette zone et tous ses emplacements ?')) return
+    if (!confirm('Delete this zone and all its locations?')) return
     try {
       const res = await fetch(`/api/wms/zones/${zoneId}`, { method: 'DELETE' })
       if (res.ok) router.refresh()
@@ -205,7 +205,7 @@ export default function WMSPageClient({
   }
 
   const handleDeleteBin = async (binId: string) => {
-    if (!confirm('Supprimer cet emplacement ?')) return
+    if (!confirm('Delete this location?')) return
     try {
       const res = await fetch(`/api/wms/bins/${binId}`, { method: 'DELETE' })
       if (res.ok) router.refresh()
@@ -243,11 +243,11 @@ export default function WMSPageClient({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Gestion d&apos;entrepôt
-            <span className="ml-3 text-sm font-normal px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full">WMS</span>
+          <h1 className="text-3xl font-bold text-[#03182F]">
+            Warehouse management
+            <span className="ml-3 text-sm font-normal px-2 py-1 bg-[#3FA46A]/10 text-emerald-700 rounded-full">WMS</span>
           </h1>
-          <p className="text-gray-500 mt-1">Zones, emplacements et préparation de commandes</p>
+          <p className="text-[#6B7480] mt-1">Zones, locations and order picking</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -257,7 +257,7 @@ export default function WMSPageClient({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Nouvelle zone
+            New zone
           </button>
           <button
             onClick={() => { setEditingBin(null); setBinForm({ zone_id: zones[0]?.id || '', name: '', code: '', barcode: '', capacity: '' }); setShowBinModal(true) }}
@@ -267,14 +267,14 @@ export default function WMSPageClient({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Nouvel emplacement
+            New location
           </button>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-[#DDE5EE]">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
               <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -282,26 +282,26 @@ export default function WMSPageClient({
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{stats.totalZones}</div>
-              <div className="text-sm text-gray-500">Zones</div>
+              <div className="text-2xl font-bold text-[#03182F]">{stats.totalZones}</div>
+              <div className="text-sm text-[#6B7480]">Zones</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-[#DDE5EE]">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-              <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-xl bg-[#3FA46A]/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-[#3FA46A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{stats.totalBins}</div>
-              <div className="text-sm text-gray-500">Emplacements</div>
+              <div className="text-2xl font-bold text-[#03182F]">{stats.totalBins}</div>
+              <div className="text-sm text-[#6B7480]">Locations</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-[#DDE5EE]">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
               <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -309,28 +309,28 @@ export default function WMSPageClient({
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{stats.pendingPicking}</div>
-              <div className="text-sm text-gray-500">Picking en attente</div>
+              <div className="text-2xl font-bold text-[#03182F]">{stats.pendingPicking}</div>
+              <div className="text-sm text-[#6B7480]">Pending picking</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-[#DDE5EE]">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-xl bg-[#2764FF]/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-[#2764FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{stats.activePicking}</div>
-              <div className="text-sm text-gray-500">Picking en cours</div>
+              <div className="text-2xl font-bold text-[#03182F]">{stats.activePicking}</div>
+              <div className="text-sm text-[#6B7480]">Active picking</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200 overflow-x-auto">
+      <div className="flex gap-2 mb-6 border-b border-[#DDE5EE] overflow-x-auto">
         {(['overview', 'zones', 'bins', 'products', 'picking'] as const).map(tab => (
           <button
             key={tab}
@@ -338,13 +338,13 @@ export default function WMSPageClient({
             className={`px-4 py-3 font-medium border-b-2 transition whitespace-nowrap ${
               activeTab === tab
                 ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-[#6B7480] hover:text-[#30373E]'
             }`}
           >
-            {tab === 'overview' && 'Vue d\'ensemble'}
+            {tab === 'overview' && 'Overview'}
             {tab === 'zones' && 'Zones'}
-            {tab === 'bins' && 'Emplacements'}
-            {tab === 'products' && 'Produits → Emplacements'}
+            {tab === 'bins' && 'Locations'}
+            {tab === 'products' && 'Products → Locations'}
             {tab === 'picking' && 'Picking'}
           </button>
         ))}
@@ -354,16 +354,16 @@ export default function WMSPageClient({
       {activeTab === 'overview' && (
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Zones Overview */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Zones d&apos;entrepôt</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] p-6">
+            <h3 className="text-lg font-semibold text-[#03182F] mb-4">Warehouse zones</h3>
             {zones.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <p>Aucune zone configurée</p>
+              <div className="text-center py-8 text-[#6B7480]">
+                <p>No zones configured</p>
                 <button
                   onClick={() => setShowZoneModal(true)}
                   className="mt-3 text-indigo-600 hover:underline"
                 >
-                  Créer votre première zone
+                  Create your first zone
                 </button>
               </div>
             ) : (
@@ -371,7 +371,7 @@ export default function WMSPageClient({
                 {zones.map(zone => (
                   <div
                     key={zone.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition"
+                    className="flex items-center justify-between p-3 rounded-lg border border-[#DDE5EE] hover:bg-[#F2F8FF] transition"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -381,11 +381,11 @@ export default function WMSPageClient({
                         {zone.code.substring(0, 2)}
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{zone.name}</div>
-                        <div className="text-xs text-gray-500">{zone.code} • {zone._count.bins} emplacements</div>
+                        <div className="font-medium text-[#03182F]">{zone.name}</div>
+                        <div className="text-xs text-[#6B7480]">{zone.code} • {zone._count.bins} locations</div>
                       </div>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${ZONE_TYPES[zone.zone_type]?.color || 'bg-gray-100'}`}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${ZONE_TYPES[zone.zone_type]?.color || 'bg-[#F2F8FF]'}`}>
                       {ZONE_TYPES[zone.zone_type]?.label || zone.zone_type}
                     </span>
                   </div>
@@ -395,32 +395,32 @@ export default function WMSPageClient({
           </div>
 
           {/* Recent Picking Lists */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Préparations en cours</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] p-6">
+            <h3 className="text-lg font-semibold text-[#03182F] mb-4">Active preparations</h3>
             {pickingLists.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <p>Aucune préparation en attente</p>
+              <div className="text-center py-8 text-[#6B7480]">
+                <p>No pending preparations</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {pickingLists.map(pl => (
                   <div
                     key={pl.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition"
+                    className="flex items-center justify-between p-3 rounded-lg border border-[#DDE5EE] hover:bg-[#F2F8FF] transition"
                   >
                     <div>
-                      <div className="font-medium text-gray-900">{pl.reference}</div>
-                      <div className="text-xs text-gray-500">
-                        {pl._count.picking_tasks} articles • 
-                        {pl.picking_tasks.filter(t => t.status === 'completed').length} préparés
+                      <div className="font-medium text-[#03182F]">{pl.reference}</div>
+                      <div className="text-xs text-[#6B7480]">
+                        {pl._count.picking_tasks} items •
+                        {pl.picking_tasks.filter(t => t.status === 'completed').length} picked
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       pl.status === 'in_progress' 
-                        ? 'bg-blue-100 text-blue-700'
+                        ? 'bg-[#2764FF]/10 text-[#004bd9]'
                         : 'bg-orange-100 text-orange-700'
                     }`}>
-                      {pl.status === 'in_progress' ? 'En cours' : 'En attente'}
+                      {pl.status === 'in_progress' ? 'In progress' : 'Pending'}
                     </span>
                   </div>
                 ))}
@@ -432,49 +432,49 @@ export default function WMSPageClient({
 
       {/* Zones Tab */}
       {activeTab === 'zones' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-[#F2F8FF] border-b border-[#DDE5EE]">
               <tr>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Zone</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Code</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Type</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Emplacements</th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Zone</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Code</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Type</th>
+                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Locations</th>
+                <th className="text-right py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {zones.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-12 text-gray-400">
-                    Aucune zone configurée
+                  <td colSpan={5} className="text-center py-12 text-[#6B7480]">
+                    No zones configured
                   </td>
                 </tr>
               ) : (
                 zones.map(zone => (
-                  <tr key={zone.id} className="hover:bg-gray-50">
+                  <tr key={zone.id} className="hover:bg-[#F2F8FF]">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: zone.color || '#6366f1' }}
                         />
-                        <span className="font-medium text-gray-900">{zone.name}</span>
+                        <span className="font-medium text-[#03182F]">{zone.name}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-gray-600 font-mono text-sm">{zone.code}</td>
+                    <td className="py-3 px-4 text-[#30373E] font-mono text-sm">{zone.code}</td>
                     <td className="py-3 px-4">
-                      <span className={`text-xs px-2 py-1 rounded-full ${ZONE_TYPES[zone.zone_type]?.color || 'bg-gray-100'}`}>
+                      <span className={`text-xs px-2 py-1 rounded-full ${ZONE_TYPES[zone.zone_type]?.color || 'bg-[#F2F8FF]'}`}>
                         {ZONE_TYPES[zone.zone_type]?.label || zone.zone_type}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-center text-gray-600">{zone._count.bins}</td>
+                    <td className="py-3 px-4 text-center text-[#30373E]">{zone._count.bins}</td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => openEditZone(zone)}
-                          className="p-2 text-gray-400 hover:text-indigo-600 transition"
-                          title="Modifier"
+                          className="p-2 text-[#6B7480] hover:text-indigo-600 transition"
+                          title="Edit"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -482,8 +482,8 @@ export default function WMSPageClient({
                         </button>
                         <button
                           onClick={() => handleDeleteZone(zone.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 transition"
-                          title="Supprimer"
+                          className="p-2 text-[#6B7480] hover:text-[#F22E75] transition"
+                          title="Delete"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -501,49 +501,49 @@ export default function WMSPageClient({
 
       {/* Bins Tab */}
       {activeTab === 'bins' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-[#F2F8FF] border-b border-[#DDE5EE]">
               <tr>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Emplacement</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Code</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Zone</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Produits</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Capacité</th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Location</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Code</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Zone</th>
+                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Products</th>
+                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Capacity</th>
+                <th className="text-right py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {bins.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-12 text-gray-400">
-                    Aucun emplacement configuré
+                  <td colSpan={6} className="text-center py-12 text-[#6B7480]">
+                    No locations configured
                   </td>
                 </tr>
               ) : (
                 bins.map(bin => (
-                  <tr key={bin.id} className="hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium text-gray-900">{bin.name}</td>
-                    <td className="py-3 px-4 text-gray-600 font-mono text-sm">{bin.code}</td>
+                  <tr key={bin.id} className="hover:bg-[#F2F8FF]">
+                    <td className="py-3 px-4 font-medium text-[#03182F]">{bin.name}</td>
+                    <td className="py-3 px-4 text-[#30373E] font-mono text-sm">{bin.code}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <div
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: bin.zone.color || '#6366f1' }}
                         />
-                        <span className="text-gray-600">{bin.zone.name}</span>
+                        <span className="text-[#30373E]">{bin.zone.name}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-center text-gray-600">{bin._count.bin_contents}</td>
-                    <td className="py-3 px-4 text-center text-gray-600">
+                    <td className="py-3 px-4 text-center text-[#30373E]">{bin._count.bin_contents}</td>
+                    <td className="py-3 px-4 text-center text-[#30373E]">
                       {bin.capacity ? `${bin.current_usage}/${bin.capacity}` : '-'}
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => openEditBin(bin)}
-                          className="p-2 text-gray-400 hover:text-indigo-600 transition"
-                          title="Modifier"
+                          className="p-2 text-[#6B7480] hover:text-indigo-600 transition"
+                          title="Edit"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -551,8 +551,8 @@ export default function WMSPageClient({
                         </button>
                         <button
                           onClick={() => handleDeleteBin(bin.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 transition"
-                          title="Supprimer"
+                          className="p-2 text-[#6B7480] hover:text-[#F22E75] transition"
+                          title="Delete"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -575,11 +575,11 @@ export default function WMSPageClient({
 
       {/* Picking Tab */}
       {activeTab === 'picking' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="text-center py-8 text-gray-400">
-            <h3 className="text-lg font-medium text-gray-600 mb-2">Préparation de commandes</h3>
-            <p className="text-sm">La fonctionnalité de picking sera bientôt disponible.</p>
-            <p className="text-sm mt-1">Créez vos zones et emplacements pour commencer.</p>
+        <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] p-6">
+          <div className="text-center py-8 text-[#6B7480]">
+            <h3 className="text-lg font-medium text-[#30373E] mb-2">Order picking</h3>
+            <p className="text-sm">The picking feature will be available soon.</p>
+            <p className="text-sm mt-1">Create your zones and locations to get started.</p>
           </div>
         </div>
       )}
@@ -587,38 +587,38 @@ export default function WMSPageClient({
       {/* Zone Modal */}
       {showZoneModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              {editingZone ? 'Modifier la zone' : 'Nouvelle zone'}
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-[#03182F] mb-4">
+              {editingZone ? 'Edit zone' : 'New zone'}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Name</label>
                 <input
                   type="text"
                   value={zoneForm.name}
                   onChange={e => setZoneForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Zone A - Stockage principal"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Zone A - Main storage"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Code</label>
                 <input
                   type="text"
                   value={zoneForm.code}
                   onChange={e => setZoneForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
                   placeholder="ZONE-A"
                   maxLength={20}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Type</label>
                 <select
                   value={zoneForm.zone_type}
                   onChange={e => setZoneForm(f => ({ ...f, zone_type: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   {Object.entries(ZONE_TYPES).map(([value, { label }]) => (
                     <option key={value} value={value}>{label}</option>
@@ -626,7 +626,7 @@ export default function WMSPageClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Couleur</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Color</label>
                 <input
                   type="color"
                   value={zoneForm.color}
@@ -635,29 +635,29 @@ export default function WMSPageClient({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description (optionnel)</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Description (optional)</label>
                 <textarea
                   value={zoneForm.description}
                   onChange={e => setZoneForm(f => ({ ...f, description: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   rows={2}
-                  placeholder="Description de la zone..."
+                  placeholder="Zone description..."
                 />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => { setShowZoneModal(false); setEditingZone(null) }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+                className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={editingZone ? handleUpdateZone : handleCreateZone}
                 disabled={saving || !zoneForm.name || !zoneForm.code}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
               >
-                {saving ? 'Enregistrement...' : (editingZone ? 'Modifier' : 'Créer')}
+                {saving ? 'Saving...' : (editingZone ? 'Update' : 'Create')}
               </button>
             </div>
           </div>
@@ -667,62 +667,62 @@ export default function WMSPageClient({
       {/* Bin Modal */}
       {showBinModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              {editingBin ? 'Modifier l\'emplacement' : 'Nouvel emplacement'}
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-[#03182F] mb-4">
+              {editingBin ? 'Edit location' : 'New location'}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Zone</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Zone</label>
                 <select
                   value={binForm.zone_id}
                   onChange={e => setBinForm(f => ({ ...f, zone_id: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="">Sélectionner une zone</option>
+                  <option value="">Select a zone</option>
                   {zones.map(zone => (
                     <option key={zone.id} value={zone.id}>{zone.name} ({zone.code})</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Name</label>
                 <input
                   type="text"
                   value={binForm.name}
                   onChange={e => setBinForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Étagère 1 - Niveau 2"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Shelf 1 - Level 2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Code</label>
                 <input
                   type="text"
                   value={binForm.code}
                   onChange={e => setBinForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
                   placeholder="A-01-02"
                   maxLength={30}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Code-barres (optionnel)</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Barcode (optional)</label>
                 <input
                   type="text"
                   value={binForm.barcode}
                   onChange={e => setBinForm(f => ({ ...f, barcode: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
                   placeholder="LOC-A-01-02"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Capacité (optionnel)</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Capacity (optional)</label>
                 <input
                   type="number"
                   value={binForm.capacity}
                   onChange={e => setBinForm(f => ({ ...f, capacity: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   placeholder="100"
                   min="1"
                 />
@@ -731,16 +731,16 @@ export default function WMSPageClient({
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => { setShowBinModal(false); setEditingBin(null) }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+                className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={editingBin ? handleUpdateBin : handleCreateBin}
                 disabled={saving || !binForm.name || !binForm.code || !binForm.zone_id}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
               >
-                {saving ? 'Enregistrement...' : (editingBin ? 'Modifier' : 'Créer')}
+                {saving ? 'Saving...' : (editingBin ? 'Update' : 'Create')}
               </button>
             </div>
           </div>
@@ -801,7 +801,7 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
   }
 
   const handleRemove = async (binId: string, productId: string) => {
-    if (!confirm('Retirer ce produit de cet emplacement ?')) return
+    if (!confirm('Remove this product from this location?')) return
     try {
       const res = await fetch(`/api/wms/bin-contents?binId=${binId}&productId=${productId}`, {
         method: 'DELETE'
@@ -825,52 +825,52 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
   return (
     <div className="space-y-6">
       {/* Info banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <div className="bg-[#2764FF]/10 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
         <div className="text-2xl">💡</div>
         <div>
-          <h4 className="font-semibold text-blue-900">Lier vos produits aux emplacements</h4>
-          <p className="text-sm text-blue-700 mt-1">
-            Assignez vos produits du stock à des emplacements spécifiques dans votre entrepôt pour un meilleur suivi.
+          <h4 className="font-semibold text-blue-900">Link your products to locations</h4>
+          <p className="text-sm text-[#004bd9] mt-1">
+            Assign your stock products to specific locations in your warehouse for better tracking.
           </p>
         </div>
       </div>
 
       {/* Products list with locations */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Produits et leurs emplacements</h3>
-          <span className="text-sm text-gray-500">{products.length} produits</span>
+      <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] overflow-hidden">
+        <div className="px-6 py-4 border-b border-[#DDE5EE] flex items-center justify-between">
+          <h3 className="font-semibold text-[#03182F]">Products and their locations</h3>
+          <span className="text-sm text-[#6B7480]">{products.length} products</span>
         </div>
-        
+
         {products.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <p>Aucun produit dans le stock.</p>
-            <p className="text-sm mt-1">Ajoutez des produits dans la page Stock pour commencer.</p>
+          <div className="text-center py-12 text-[#6B7480]">
+            <p>No products in stock.</p>
+            <p className="text-sm mt-1">Add products in the Stock page to get started.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
             {productLocations.map(product => (
-              <div key={product.id} className="p-4 hover:bg-gray-50">
+              <div key={product.id} className="p-4 hover:bg-[#F2F8FF]">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-gray-900">{product.name}</h4>
+                      <h4 className="font-medium text-[#03182F]">{product.name}</h4>
                       {product.sku && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                        <span className="text-xs bg-[#F2F8FF] text-[#30373E] px-2 py-0.5 rounded">
                           {product.sku}
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      Stock total: <span className="font-medium text-gray-700">{product.quantity}</span>
+                    <div className="text-sm text-[#6B7480] mt-1">
+                      Total stock: <span className="font-medium text-[#30373E]">{product.quantity}</span>
                       {product.totalInBins > 0 && (
-                        <span className="ml-3 text-emerald-600">
-                          • {product.totalInBins} en entrepôt
+                        <span className="ml-3 text-[#3FA46A]">
+                          • {product.totalInBins} in warehouse
                         </span>
                       )}
                       {product.quantity > product.totalInBins && (
-                        <span className="ml-3 text-amber-600">
-                          • {product.quantity - product.totalInBins} non assigné
+                        <span className="ml-3 text-[#E0A93A]">
+                          • {product.quantity - product.totalInBins} unassigned
                         </span>
                       )}
                     </div>
@@ -889,7 +889,7 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
                             <span className="text-indigo-500">×{loc.quantity}</span>
                             <button
                               onClick={() => handleRemove(loc.bin_id, loc.product_id)}
-                              className="ml-1 text-indigo-400 hover:text-red-500 transition"
+                              className="ml-1 text-indigo-400 hover:text-[#F22E75] transition"
                             >
                               ×
                             </button>
@@ -906,7 +906,7 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
                     }}
                     className="ml-4 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-1"
                   >
-                    <span>+</span> Assigner
+                    <span>+</span> Assign
                   </button>
                 </div>
               </div>
@@ -918,27 +918,27 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
       {/* Assign Modal */}
       {showAssignModal && selectedProduct && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Assigner à un emplacement
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-[#03182F] mb-4">
+              Assign to a location
             </h3>
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <div className="font-medium text-gray-900">{selectedProduct.name}</div>
+            <div className="bg-[#F2F8FF] rounded-lg p-3 mb-4">
+              <div className="font-medium text-[#03182F]">{selectedProduct.name}</div>
               {selectedProduct.sku && (
-                <div className="text-sm text-gray-500">SKU: {selectedProduct.sku}</div>
+                <div className="text-sm text-[#6B7480]">SKU: {selectedProduct.sku}</div>
               )}
-              <div className="text-sm text-gray-500">Stock disponible: {selectedProduct.quantity}</div>
+              <div className="text-sm text-[#6B7480]">Available stock: {selectedProduct.quantity}</div>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Emplacement</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Location</label>
                 <select
                   value={selectedBin}
                   onChange={(e) => setSelectedBin(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="">Sélectionner un emplacement...</option>
+                  <option value="">Select a location...</option>
                   {bins.map(bin => (
                     <option key={bin.id} value={bin.id}>
                       {bin.zone?.name} / {bin.code} - {bin.name}
@@ -948,15 +948,15 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quantité</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Quantity</label>
                 <input
                   type="number"
                   min="1"
                   max={selectedProduct.quantity}
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  placeholder="Quantité à placer"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Quantity to place"
+                  className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -969,16 +969,16 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
                   setSelectedBin('')
                   setQuantity('')
                 }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+                className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={handleAssign}
                 disabled={saving || !selectedBin || !quantity}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
               >
-                {saving ? 'Enregistrement...' : 'Assigner'}
+                {saving ? 'Saving...' : 'Assign'}
               </button>
             </div>
           </div>

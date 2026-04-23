@@ -43,7 +43,7 @@ export default function TrackerToolbar({
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
                 isActive
                   ? 'bg-slate-800 text-slate-100 ring-1 ring-slate-600'
-                  : 'bg-slate-900/60 text-slate-500 ring-1 ring-slate-800'
+                  : 'bg-slate-900/60 text-[#6B7480] ring-1 ring-slate-800'
               }`}
             >
               <span className={`h-1.5 w-1.5 rounded-full ${visual.dot}`} />

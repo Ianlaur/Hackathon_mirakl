@@ -27,45 +27,51 @@ type ParsedNaturalEvent = {
   confidence: 'high' | 'medium' | 'low'
   summary: string
 }
+type EventChatMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  reasoningSummary?: string
+}
 
 const eventKinds: Record<EventKind, { label: string; color: string; chip: string; border: string }> = {
   holiday: {
-    label: 'Férié',
+    label: 'Public holiday',
     color: 'bg-slate-500',
-    chip: 'bg-slate-100 text-slate-700',
+    chip: 'bg-slate-100 text-[#30373E]',
     border: 'border-slate-200',
   },
   celebration: {
-    label: 'Fête',
-    color: 'bg-amber-500',
-    chip: 'bg-amber-50 text-amber-800',
+    label: 'Celebration',
+    color: 'bg-[#E0A93A]/100',
+    chip: 'bg-[#E0A93A]/10 text-amber-800',
     border: 'border-amber-200',
   },
   peak: {
-    label: 'Temps forts',
+    label: 'Peak period',
     color: 'bg-fuchsia-600',
     chip: 'bg-fuchsia-50 text-fuchsia-800',
     border: 'border-fuchsia-200',
   },
   leave: {
-    label: 'Congés',
+    label: 'Time off',
     color: 'bg-sky-600',
     chip: 'bg-sky-50 text-sky-800',
     border: 'border-sky-200',
   },
 }
 
-const fallbackKind = { label: 'Autre', color: 'bg-slate-400', chip: 'bg-slate-100 text-slate-600', border: 'border-slate-200' }
+const fallbackKind = { label: 'Other', color: 'bg-slate-400', chip: 'bg-slate-100 text-[#6B7480]', border: 'border-slate-200' }
 
 function getKindStyle(kind: string) {
   return eventKinds[kind as EventKind] || fallbackKind
 }
 
 const impactLabels: Record<EventImpact, { label: string; chip: string }> = {
-  low: { label: 'Faible', chip: 'bg-slate-100 text-slate-600' },
-  medium: { label: 'Moyen', chip: 'bg-amber-50 text-amber-700' },
-  high: { label: 'Fort', chip: 'bg-orange-50 text-orange-700' },
-  critical: { label: 'Critique', chip: 'bg-red-50 text-red-700 ring-1 ring-red-200' },
+  low: { label: 'Low', chip: 'bg-slate-100 text-[#6B7480]' },
+  medium: { label: 'Medium', chip: 'bg-[#E0A93A]/10 text-amber-700' },
+  high: { label: 'High', chip: 'bg-orange-50 text-orange-700' },
+  critical: { label: 'Critical', chip: 'bg-[#FFE7EC] text-red-700 ring-1 ring-red-200' },
 }
 
 const today = new Date()
@@ -108,17 +114,17 @@ const weekdayNames: Record<string, number> = {
 }
 
 const francePublicHolidays2026: CalendarEvent[] = [
-  ['jour-an', "Jour de l'An", '2026-01-01'],
-  ['lundi-paques', 'Lundi de Pâques', '2026-04-06'],
-  ['fete-travail', 'Fête du Travail', '2026-05-01'],
-  ['victoire-1945', 'Victoire 1945', '2026-05-08'],
-  ['ascension', 'Ascension', '2026-05-14'],
-  ['lundi-pentecote', 'Lundi de Pentecôte', '2026-05-25'],
-  ['fete-nationale', 'Fête nationale', '2026-07-14'],
-  ['assomption', 'Assomption', '2026-08-15'],
-  ['toussaint', 'Toussaint', '2026-11-01'],
-  ['armistice', 'Armistice 1918', '2026-11-11'],
-  ['noel', 'Noël', '2026-12-25'],
+  ['jour-an', "New Year's Day", '2026-01-01'],
+  ['lundi-paques', 'Easter Monday', '2026-04-06'],
+  ['fete-travail', 'Labour Day', '2026-05-01'],
+  ['victoire-1945', 'Victory in Europe Day', '2026-05-08'],
+  ['ascension', 'Ascension Day', '2026-05-14'],
+  ['lundi-pentecote', 'Whit Monday', '2026-05-25'],
+  ['fete-nationale', 'Bastille Day', '2026-07-14'],
+  ['assomption', 'Assumption Day', '2026-08-15'],
+  ['toussaint', "All Saints' Day", '2026-11-01'],
+  ['armistice', 'Armistice Day', '2026-11-11'],
+  ['noel', 'Christmas Day', '2026-12-25'],
 ].map(([slug, title, date]) => ({
   id: `holiday-fr-${slug}-2026`,
   title,
@@ -129,7 +135,7 @@ const francePublicHolidays2026: CalendarEvent[] = [
   kind: 'holiday',
   impact: 'medium',
   zone: 'France',
-  notes: 'Jour férié : anticiper les fermetures, retards transporteurs et pics avant/après.',
+  notes: 'Public holiday: expect closures, carrier delays and spikes before/after.',
   locked: true,
 }))
 
@@ -137,7 +143,7 @@ const initialEvents: CalendarEvent[] = [
   ...francePublicHolidays2026,
   {
     id: 'commerce-winter-sales-2026',
-    title: "Soldes d'hiver",
+    title: 'Winter sales',
     startDate: '2026-01-07',
     endDate: '2026-02-03',
     startTime: '',
@@ -145,7 +151,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'high',
     zone: 'France / e-commerce',
-    notes: 'Préparer promotions, stocks, pricing, SAV et capacité logistique sur 4 semaines.',
+    notes: 'Prepare promotions, stock, pricing, customer support and logistics capacity over 4 weeks.',
     locked: true,
   },
   {
@@ -158,12 +164,12 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'critical',
     zone: 'International',
-    notes: 'Pic de trafic, promotions agressives, tension stock et support client renforcé.',
+    notes: 'Traffic peak, aggressive promotions, stock tension and reinforced customer support.',
     locked: true,
   },
   {
     id: 'commerce-christmas-returns-2026',
-    title: 'Noël + retours post-Noël',
+    title: 'Christmas + post-holiday returns',
     startDate: '2026-12-01',
     endDate: '2027-01-10',
     startTime: '',
@@ -171,25 +177,25 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'critical',
     zone: 'France / Europe',
-    notes: 'Pic cadeaux, contraintes transport, puis hausse attendue des retours et échanges.',
+    notes: 'Gift peak, shipping constraints, then expected surge in returns and exchanges.',
     locked: true,
   },
   {
     id: 'commerce-chinese-new-year-2026',
-    title: 'Nouvel An chinois',
+    title: 'Chinese New Year',
     startDate: '2026-02-17',
     endDate: '2026-02-24',
     startTime: '',
     endTime: '',
     kind: 'celebration',
     impact: 'critical',
-    zone: 'Chine / sourcing international',
-    notes: 'Anticiper fermetures fournisseurs, délais de production, booking transport et ruptures import.',
+    zone: 'China / international sourcing',
+    notes: 'Plan ahead for supplier closures, production delays, transport booking and import stockouts.',
     locked: true,
   },
   {
     id: 'commerce-ramadan-eid-2026',
-    title: 'Ramadan + Aïd el-Fitr',
+    title: 'Ramadan + Eid al-Fitr',
     startDate: '2026-02-18',
     endDate: '2026-03-20',
     startTime: '',
@@ -197,7 +203,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'high',
     zone: 'International',
-    notes: 'Adapter assortiment, campagnes, horaires opérationnels et prévisions de demande selon marchés.',
+    notes: 'Adapt assortment, campaigns, operational hours and demand forecasts by market.',
     locked: true,
   },
   {
@@ -209,13 +215,13 @@ const initialEvents: CalendarEvent[] = [
     endTime: '',
     kind: 'peak',
     impact: 'high',
-    zone: 'Chine / marketplaces',
-    notes: 'Grand temps fort promotionnel e-commerce, utile pour veille marketplace et opérations cross-border.',
+    zone: 'China / marketplaces',
+    notes: 'Major e-commerce promotional peak — useful for marketplace monitoring and cross-border ops.',
     locked: true,
   },
   {
     id: 'commerce-back-to-school-2026',
-    title: 'Rentrée / Back to School',
+    title: 'Back to School',
     startDate: '2026-08-24',
     endDate: '2026-09-06',
     startTime: '',
@@ -223,12 +229,12 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'medium',
     zone: 'France / Europe',
-    notes: 'Préparer campagnes, stocks saisonniers et hausse de demande de fin août à début septembre.',
+    notes: 'Prepare campaigns, seasonal stock and demand surge from late August to early September.',
     locked: true,
   },
   {
     id: 'commerce-parents-days-2026',
-    title: 'Fête des Mères / Fête des Pères',
+    title: "Mother's Day / Father's Day",
     startDate: '2026-05-31',
     endDate: '2026-06-21',
     startTime: '',
@@ -236,12 +242,12 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'France',
-    notes: 'Période cadeaux à exploiter avec campagnes ciblées, bundles et délais de livraison garantis.',
+    notes: 'Gift window — leverage with targeted campaigns, bundles and guaranteed delivery SLAs.',
     locked: true,
   },
   {
     id: 'commerce-valentine-2026',
-    title: 'Saint-Valentin',
+    title: "Valentine's Day",
     startDate: '2026-02-14',
     endDate: '2026-02-14',
     startTime: '',
@@ -249,7 +255,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'International',
-    notes: 'Temps fort cadeaux, offres limitées et livraison avant date à surveiller.',
+    notes: 'Gift peak — time-boxed offers and strict on-time delivery expectations.',
     locked: true,
   },
 ]
@@ -266,12 +272,11 @@ function toDateKeyFromParts(day: number, month: number, year = today.getFullYear
 }
 
 function formatDateFr(dateKey: string) {
-  const [year, month, day] = dateKey.split('-')
-  return `${day}-${month}-${year}`
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(parseDateKey(dateKey))
 }
 
 function formatDateRangeFr(startDate: string, endDate: string) {
-  return startDate === endDate ? formatDateFr(startDate) : `${formatDateFr(startDate)} - ${formatDateFr(endDate)}`
+  return startDate === endDate ? formatDateFr(startDate) : `${formatDateFr(startDate)} — ${formatDateFr(endDate)}`
 }
 
 function parseDateKey(dateKey: string) {
@@ -356,7 +361,7 @@ function inferZone(text: string, kind: EventKind) {
   if (/(chine|chinois|sourcing|import)/.test(text)) return 'Chine / sourcing international'
   if (/(france|ferie|soldes)/.test(text)) return 'France'
   if (kind === 'leave') return 'Interne'
-  return 'Interne'
+  return 'Internal'
 }
 
 function removeCommandWords(value: string) {
@@ -369,7 +374,7 @@ function removeCommandWords(value: string) {
 }
 
 function inferTitle(original: string, text: string, kind: EventKind) {
-  if (kind === 'leave') return 'Congés'
+  if (kind === 'leave') return 'Time off'
 
   const cleaned = removeCommandWords(original)
   const beforeDate = cleaned
@@ -381,10 +386,10 @@ function inferTitle(original: string, text: string, kind: EventKind) {
     .trim()
 
   if (beforeDate.length >= 3) return titleCase(beforeDate)
-  if (kind === 'holiday') return text.includes('fermeture') ? 'Fermeture' : 'Jour férié'
-  if (kind === 'celebration') return 'Fête'
-  if (kind === 'peak') return 'Temps fort'
-  return 'Congés'
+  if (kind === 'holiday') return text.includes('fermeture') ? 'Closure' : 'Public holiday'
+  if (kind === 'celebration') return 'Celebration'
+  if (kind === 'peak') return 'Peak period'
+  return 'Time off'
 }
 
 function parseNaturalDates(text: string, fallbackDate: string) {
@@ -496,10 +501,10 @@ function parseNaturalEvent(input: string, fallbackDate: string): ParsedNaturalEv
       kind,
       impact,
       zone,
-      notes: `Créé depuis la saisie naturelle : "${original}"`,
+      notes: `Created from natural input: "${original}"`,
     },
     confidence,
-    summary: `${title} · ${formatDateRangeFr(dates.startDate, endDate)}${times.startTime ? ` · ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' · toute la journée'}`,
+    summary: `${title} · ${formatDateRangeFr(dates.startDate, endDate)}${times.startTime ? ` · ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' · all day'}`,
   }
 }
 
@@ -508,7 +513,7 @@ async function requestCalendarEvents(url: string, options?: RequestInit) {
   const data = await response.json().catch(() => null)
 
   if (!response.ok) {
-    throw new Error(data?.error || 'Erreur calendrier')
+    throw new Error(data?.error || 'Calendar error')
   }
 
   return data
@@ -546,7 +551,7 @@ async function deleteCalendarEvent(id: string) {
 }
 
 function monthLabel(date: Date) {
-  return new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(date)
+  return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(date)
 }
 
 function buildMonthDays(activeMonth: Date) {
@@ -588,12 +593,19 @@ export default function CalendarPageClient() {
   const [selectedDate, setSelectedDate] = useState(todayKey)
   const [selectedEventId, setSelectedEventId] = useState<string | null>('commerce-chinese-new-year-2026')
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null)
+  const [detailEventId, setDetailEventId] = useState<string | null>(null)
   const [isCreatingFromDate, setIsCreatingFromDate] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [savingIds, setSavingIds] = useState<string[]>([])
   const [syncError, setSyncError] = useState<string | null>(null)
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [naturalInput, setNaturalInput] = useState('')
+  const [tlRange, setTlRange] = useState(90)
+  const [eventChatInput, setEventChatInput] = useState('')
+  const [eventChatMessages, setEventChatMessages] = useState<EventChatMessage[]>([])
+  const [eventChatError, setEventChatError] = useState<string | null>(null)
+  const [eventChatSessionId, setEventChatSessionId] = useState<string | null>(null)
+  const [eventChatSending, setEventChatSending] = useState(false)
 
   useEffect(() => {
     let ignore = false
@@ -619,7 +631,7 @@ export default function CalendarPageClient() {
         setSelectedDate(seeded.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
       } catch (error) {
         if (!ignore) {
-          setSyncError(error instanceof Error ? error.message : 'Synchronisation calendrier impossible')
+          setSyncError(error instanceof Error ? error.message : 'Unable to sync calendar')
         }
       } finally {
         if (!ignore) {
@@ -635,10 +647,22 @@ export default function CalendarPageClient() {
     }
   }, [])
 
+  useEffect(() => {
+    setEventChatInput('')
+    setEventChatMessages([])
+    setEventChatError(null)
+    setEventChatSessionId(null)
+    setEventChatSending(false)
+  }, [detailEventId])
+
   const monthDays = useMemo(() => buildMonthDays(activeMonth), [activeMonth])
   const selectedEvent = useMemo(
     () => events.find((event) => event.id === selectedEventId) || null,
     [events, selectedEventId]
+  )
+  const detailEvent = useMemo(
+    () => (detailEventId ? events.find((event) => event.id === detailEventId) || null : null),
+    [events, detailEventId]
   )
   const selectedDateEvents = events
     .filter((event) => isDateInRange(selectedDate, event))
@@ -676,14 +700,14 @@ export default function CalendarPageClient() {
       setNaturalInput('')
       setIsCreatingFromDate(false)
     } catch (error) {
-      setSyncError(error instanceof Error ? error.message : 'Création impossible')
+      setSyncError(error instanceof Error ? error.message : 'Unable to create event')
     }
   }
 
   const createEvent = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!parsedNaturalEvent) {
-      setSyncError('Décrivez un événement, par exemple : congés du 5 au 10 mai toute la journée')
+      setSyncError('Describe an event — e.g. "time off from May 5 to May 10, all day"')
       return
     }
     await saveDraftEvent(parsedNaturalEvent.event)
@@ -715,7 +739,7 @@ export default function CalendarPageClient() {
       })
       .catch((error) => {
         setEvents((current) => current.map((event) => (event.id === previousEvent.id ? previousEvent : event)))
-        setSyncError(error instanceof Error ? error.message : 'Mise à jour impossible')
+        setSyncError(error instanceof Error ? error.message : 'Unable to update event')
       })
       .finally(() => {
         if (patchedEvent) {
@@ -768,7 +792,7 @@ export default function CalendarPageClient() {
     setActiveMonth(new Date(d.getFullYear(), d.getMonth(), 1))
   }
 
-  const viewLabels: Record<CalendarView, string> = { month: 'Mois', week: 'Semaine', day: 'Jour' }
+  const viewLabels: Record<CalendarView, string> = { month: 'Month', week: 'Week', day: 'Day' }
 
   const chooseDate = (dateKey: string) => {
     setSelectedDate(dateKey)
@@ -807,7 +831,7 @@ export default function CalendarPageClient() {
       })
       .catch((error) => {
         setEvents((current) => current.map((event) => (event.id === movedEvent.id ? movedEvent : event)))
-        setSyncError(error instanceof Error ? error.message : 'Déplacement impossible')
+        setSyncError(error instanceof Error ? error.message : 'Unable to move event')
       })
       .finally(() => {
         setSavingIds((current) => current.filter((id) => id !== movedEvent.id))
@@ -826,53 +850,107 @@ export default function CalendarPageClient() {
     } catch (error) {
       setEvents((current) => [...current, eventToDelete])
       setSelectedEventId(eventToDelete.id)
-      setSyncError(error instanceof Error ? error.message : 'Suppression impossible')
+      setSyncError(error instanceof Error ? error.message : 'Unable to delete event')
     }
   }
 
+  const sendEventChatMessage = async (rawMessage: string) => {
+    if (!detailEvent) return
+
+    const message = rawMessage.trim()
+    if (!message || eventChatSending) return
+
+    setEventChatSending(true)
+    setEventChatError(null)
+    setEventChatMessages((current) => [
+      ...current,
+      { id: `u-${Date.now()}`, role: 'user', content: message },
+    ])
+
+    const eventContext = [
+      'Calendar event context:',
+      `Title: ${detailEvent.title}`,
+      `Date range: ${formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}`,
+      `Impact: ${impactLabels[detailEvent.impact].label}`,
+      `Type: ${getKindStyle(detailEvent.kind).label}`,
+      `Zone: ${detailEvent.zone}`,
+      detailEvent.notes ? `Current recommendation: ${detailEvent.notes}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    try {
+      const response = await fetch('/api/copilot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: eventChatSessionId || undefined,
+          message: `${message}\n\n${eventContext}`,
+        }),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Leia is unavailable right now.')
+      }
+
+      if (typeof payload?.sessionId === 'string' && payload.sessionId) {
+        setEventChatSessionId(payload.sessionId)
+      }
+
+      const assistantContent =
+        typeof payload?.message?.content === 'string'
+          ? payload.message.content
+          : 'Leia could not generate a response for this event.'
+      const reasoningSummary =
+        typeof payload?.message?.reasoning_summary === 'string'
+          ? payload.message.reasoning_summary
+          : undefined
+
+      setEventChatMessages((current) => [
+        ...current,
+        {
+          id: `a-${Date.now()}`,
+          role: 'assistant',
+          content: assistantContent,
+          reasoningSummary,
+        },
+      ])
+      setEventChatInput('')
+    } catch (error) {
+      setEventChatError(error instanceof Error ? error.message : 'Leia is unavailable right now.')
+    } finally {
+      setEventChatSending(false)
+    }
+  }
+
+  const submitEventChat = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await sendEventChatMessage(eventChatInput)
+  }
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="space-y-6">
       <section className="dashboard-card p-5 sm:p-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-700">Planning opérationnel</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Calendrier</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-            Suivez les congés, jours fériés et temps forts commerce qui peuvent impacter vos ventes, stocks et
-            livraisons.
+          <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Operational planning</p>
+          <h1 className="mt-2 font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Calendar</h1>
+          <p className="mt-2 max-w-2xl text-sm text-[#6B7480]">
+            Track time off, public holidays and commercial peak periods that may affect your sales, stock and deliveries.
           </p>
-          <div className="mt-4 inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1">
-            {([
-              { value: 'day' as CalendarView, label: 'Vue journalière' },
-              { value: 'week' as CalendarView, label: 'Vue hebdomadaire' },
-              { value: 'month' as CalendarView, label: 'Vue mensuelle' },
-            ]).map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setCalendarView(option.value)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                  calendarView === option.value
-                    ? 'bg-white text-slate-950 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {isLoading && (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                Chargement Supabase...
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-[#6B7480]">
+                Loading from Supabase…
               </span>
             )}
             {savingIds.length > 0 && (
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                Sauvegarde en cours
+              <span className="rounded-full bg-[#2764FF]/10 px-3 py-1 text-xs font-semibold text-[#004bd9]">
+                Saving…
               </span>
             )}
             {syncError && (
-              <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+              <span className="rounded-full bg-[#FFE7EC] px-3 py-1 text-xs font-semibold text-red-700">
                 {syncError}
               </span>
             )}
@@ -880,14 +958,82 @@ export default function CalendarPageClient() {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <section className="dashboard-card p-5 sm:p-7">
+        <div className="flex items-center justify-between mb-8">
+          <p className="font-serif text-base font-bold text-[#03182F]">Upcoming events</p>
+          <div className="inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
+            {[{ v: 30, l: '30 days' }, { v: 90, l: '3 months' }, { v: 180, l: '6 months' }].map((o) => (
+              <button key={o.v} type="button" onClick={() => setTlRange(o.v)}
+                className={`rounded-md px-3 py-1 font-serif text-[13px] font-medium transition ${tlRange === o.v ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
+              >{o.l}</button>
+            ))}
+          </div>
+        </div>
+        {(() => {
+          const rs = parseDateKey(todayKey)
+          const re = new Date(rs.getFullYear(), rs.getMonth(), rs.getDate() + tlRange)
+          const rek = toDateKey(re)
+          const td = Math.max(1, tlRange)
+          const tl = events.filter((e) => e.kind !== 'leave' && e.endDate >= todayKey && e.startDate <= rek).sort((a, b) => a.startDate.localeCompare(b.startDate))
+          const pc = (dk: string) => {
+            const d = parseDateKey(dk)
+            return Math.max(0, Math.min(100, (Math.round((d.getTime() - rs.getTime()) / 86400000) / td) * 100))
+          }
+          const sd = (dk: string) => new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' }).format(parseDateKey(dk))
+          // Fewer events + wider breathing room on longer ranges (30j: 5 · 3mo: 6 · 6mo: 7)
+          const mx = tlRange <= 30 ? 5 : tlRange <= 90 ? 6 : 7
+          const vis = tl.slice(0, mx)
+          // Keep points spaced while preserving order.
+          const mg = Math.max(13, (92 / Math.max(vis.length, 1)))
+          const pos: number[] = []
+          vis.forEach((e, index) => {
+            let p = pc(e.startDate < todayKey ? todayKey : e.startDate)
+            if (index === 0) p = Math.max(8, p)
+            if (pos.length > 0 && p - pos[pos.length - 1] < mg) {
+              p = pos[pos.length - 1] + mg
+            }
+            pos.push(Math.min(100, p))
+          })
+          const trackX = (pct: number) => `clamp(48px, ${pct}%, calc(100% - 48px))`
+          if (vis.length === 0) return <p className="text-sm text-[#6B7480]">No events in this period.</p>
+          return (
+            <div className="relative px-4 sm:px-6">
+              <div className="absolute left-12 right-12 top-3 h-px bg-slate-200" />
+              <div className="absolute top-0" style={{ left: trackX(0) }}>
+                <p className="absolute -top-4 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-[#6B7480] whitespace-nowrap">Today</p>
+                <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
+              </div>
+              {vis.map((evt, i) => { const k = getKindStyle(evt.kind); return (
+                <div key={evt.id} className="absolute cursor-pointer group" style={{ left: trackX(pos[i]) }}
+                  onClick={() => { setDetailEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
+                  <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} /></div>
+                  <div className="mt-2 -translate-x-1/2 w-24 text-center">
+                    <p className="font-serif text-[12px] font-bold text-[#03182F] truncate leading-tight">{evt.title}</p>
+                    <p className="font-serif text-[11px] text-[#6B7480] capitalize mt-0.5">{sd(evt.startDate)}</p>
+                  </div>
+                </div>
+              ) })}
+              <div className="h-20" />
+            </div>
+          )
+        })()}
+      </section>
+
+      <div>
         <section className="dashboard-card overflow-hidden p-4 sm:p-5">
+          <div className="mb-4 inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
+            {[{ value: 'day' as CalendarView, label: 'Day' }, { value: 'week' as CalendarView, label: 'Week' }, { value: 'month' as CalendarView, label: 'Month' }].map((o) => (
+              <button key={o.value} type="button" onClick={() => setCalendarView(o.value)}
+                className={`rounded-md px-4 py-2 font-serif text-[13px] font-medium transition ${calendarView === o.value ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
+              >{o.label}</button>
+            ))}
+          </div>
           {/* --- Navigation bar --- */}
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <button
               type="button"
               onClick={() => calendarView === 'month' ? moveMonth(-1) : calendarView === 'week' ? moveWeek(-1) : moveDay(-1)}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[#6B7480] transition hover:bg-slate-100 hover:text-[#30373E]"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
               {calendarView === 'month' && (
@@ -895,25 +1041,25 @@ export default function CalendarPageClient() {
               )}
             </button>
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold capitalize text-slate-950 sm:text-2xl">
+              <h2 className="font-serif text-lg font-bold capitalize text-[#03182F] sm:text-xl">
                 {calendarView === 'month' && monthLabel(activeMonth)}
-                {calendarView === 'week' && `Semaine du ${parseDateKey(activeWeekStart).getDate()} ${new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(parseDateKey(activeWeekStart))}`}
-                {calendarView === 'day' && new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(parseDateKey(selectedDate))}
+                {calendarView === 'week' && `Week of ${new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(parseDateKey(activeWeekStart))}`}
+                {calendarView === 'day' && new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(parseDateKey(selectedDate))}
               </h2>
               {isAwayFromToday && (
                 <button
                   type="button"
                   onClick={goToToday}
-                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-[#6B7480] transition hover:bg-slate-50"
                 >
-                  Aujourd&apos;hui
+                  Today
                 </button>
               )}
             </div>
             <button
               type="button"
               onClick={() => calendarView === 'month' ? moveMonth(1) : calendarView === 'week' ? moveWeek(1) : moveDay(1)}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[#6B7480] transition hover:bg-slate-100 hover:text-[#30373E]"
             >
               {calendarView === 'month' && (
                 <span className="hidden sm:inline capitalize">{monthLabel(new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1))}</span>
@@ -925,8 +1071,8 @@ export default function CalendarPageClient() {
           {/* --- Month view --- */}
           {calendarView === 'month' && (
             <>
-              <div className="mt-4 grid grid-cols-7 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
+              <div className="mt-4 grid grid-cols-7 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                   <div key={day} className="border-r border-slate-200 px-2 py-3 last:border-r-0">
                     {day}
                   </div>
@@ -946,13 +1092,13 @@ export default function CalendarPageClient() {
                       onDoubleClick={() => startCreateFromDate(day.key)}
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={() => dropEvent(day.key)}
-                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-blue-50/60 ${
+                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-[#2764FF]/10/60 ${
                         day.inMonth ? 'bg-white' : 'bg-slate-50 text-slate-300'
                       } ${isSelected ? 'ring-2 ring-inset ring-blue-500' : ''}`}
                     >
                       <span
                         className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
-                          day.isToday ? 'bg-blue-600 text-white' : day.inMonth ? 'text-slate-700' : 'text-slate-300'
+                          day.isToday ? 'bg-[#2764FF] text-white' : day.inMonth ? 'text-[#30373E]' : 'text-slate-300'
                         }`}
                       >
                         {day.date.getDate()}
@@ -968,7 +1114,7 @@ export default function CalendarPageClient() {
                               draggable
                               onClick={(click) => {
                                 click.stopPropagation()
-                                setSelectedEventId(event.id)
+                                setDetailEventId(event.id)
                                 setSelectedDate(day.key)
                               }}
                               onDragStart={() => setDraggedEventId(event.id)}
@@ -985,7 +1131,7 @@ export default function CalendarPageClient() {
                           )
                         })}
                         {dayEvents.length > 4 && (
-                          <p className="text-xs font-medium text-slate-400">+{dayEvents.length - 4}</p>
+                          <p className="text-xs font-medium text-[#6B7480]">+{dayEvents.length - 4}</p>
                         )}
                       </div>
                     </button>
@@ -1016,11 +1162,11 @@ export default function CalendarPageClient() {
             return (
               <div className="mt-4 space-y-0">
                 {/* Header */}
-                <div className="grid grid-cols-[56px_repeat(7,1fr)] rounded-t-xl border border-b-0 border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <div className="grid grid-cols-[56px_repeat(7,1fr)] rounded-t-xl border border-b-0 border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
                   <div className="border-r border-slate-200 px-1 py-3" />
                   {weekDays.map((wd) => (
-                    <div key={wd.key} className={`border-r border-slate-200 px-1 py-3 last:border-r-0 ${wd.isToday ? 'bg-blue-50 text-blue-700' : ''}`}>
-                      {new Intl.DateTimeFormat('fr-FR', { weekday: 'short' }).format(wd.date)} {wd.date.getDate()}
+                    <div key={wd.key} className={`border-r border-slate-200 px-1 py-3 last:border-r-0 ${wd.isToday ? 'bg-[#2764FF]/10 text-[#004bd9]' : ''}`}>
+                      {new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(wd.date)} {wd.date.getDate()}
                     </div>
                   ))}
                 </div>
@@ -1030,7 +1176,7 @@ export default function CalendarPageClient() {
                   <div className="relative border border-b-0 border-slate-200 bg-slate-50/60">
                     <div className="grid grid-cols-[56px_repeat(7,1fr)]">
                       <div className="flex items-start justify-end border-r border-slate-100 pr-2 pt-2">
-                        <span className="text-[10px] font-medium text-slate-400">Journée</span>
+                        <span className="text-[10px] font-medium text-[#6B7480]">All day</span>
                       </div>
                       <div className="col-span-7 space-y-0.5 py-1">
                         {allDaySpans.map(({ event, startCol, span }) => {
@@ -1041,7 +1187,7 @@ export default function CalendarPageClient() {
                           return (
                             <div key={event.id} className="relative h-6" style={{ marginLeft: `${leftPct}%`, width: `${widthPct}%` }}>
                               <div
-                                onClick={() => { setSelectedEventId(event.id); setSelectedDate(event.startDate) }}
+                                onClick={() => { setDetailEventId(event.id); setSelectedDate(event.startDate) }}
                                 className={`absolute inset-0 mx-1 cursor-pointer truncate rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${kind.chip} ${kind.border}`}
                                 title={event.title}
                               >
@@ -1062,7 +1208,7 @@ export default function CalendarPageClient() {
                     return (
                       <div key={hour} className="grid grid-cols-[56px_repeat(7,1fr)] border-b border-slate-100 last:border-b-0">
                         <div className="flex items-start justify-end border-r border-slate-100 pr-2 pt-1">
-                          <span className="text-xs font-medium text-slate-400">{label}</span>
+                          <span className="text-xs font-medium text-[#6B7480]">{label}</span>
                         </div>
                         {weekDays.map((wd) => {
                           const hourEvents = events.filter((event) => {
@@ -1072,8 +1218,8 @@ export default function CalendarPageClient() {
                           return (
                             <div
                               key={wd.key}
-                              className={`min-h-10 border-r border-slate-100 px-1 py-0.5 last:border-r-0 transition hover:bg-blue-50/40 cursor-pointer ${
-                                selectedDate === wd.key ? 'bg-blue-50/20' : ''
+                              className={`min-h-10 border-r border-slate-100 px-1 py-0.5 last:border-r-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer ${
+                                selectedDate === wd.key ? 'bg-[#2764FF]/10/20' : ''
                               }`}
                               onClick={() => chooseDate(wd.key)}
                               onDoubleClick={() => {
@@ -1086,7 +1232,7 @@ export default function CalendarPageClient() {
                                 return (
                                   <div
                                     key={event.id}
-                                    onClick={(e) => { e.stopPropagation(); setSelectedEventId(event.id); setSelectedDate(wd.key) }}
+                                    onClick={(e) => { e.stopPropagation(); setDetailEventId(event.id); setSelectedDate(wd.key) }}
                                     className={`mb-0.5 cursor-pointer truncate rounded border px-1.5 py-0.5 text-[11px] font-semibold ${kind.chip} ${kind.border}`}
                                     title={`${event.title} · ${event.startTime}${event.endTime ? `-${event.endTime}` : ''}`}
                                   >
@@ -1124,7 +1270,7 @@ export default function CalendarPageClient() {
               <div className="mt-4 space-y-0">
                 {allDayEvents.length > 0 && (
                   <div className="mb-2 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5">
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Journée entière</p>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#6B7480]">All day</p>
                     <div className="space-y-1">
                       {allDayEvents.map((event) => {
                         const kind = getKindStyle(event.kind)
@@ -1132,14 +1278,14 @@ export default function CalendarPageClient() {
                           <button
                             key={event.id}
                             type="button"
-                            onClick={() => setSelectedEventId(event.id)}
+                            onClick={() => setDetailEventId(event.id)}
                             className={`w-full rounded-lg border px-3 py-2 text-left transition hover:border-blue-200 ${kind.border} ${kind.chip} ${
                               selectedEventId === event.id ? 'ring-2 ring-blue-500' : ''
                             }`}
                           >
                             <div className="flex items-center gap-2">
                               <span className={`h-2 w-2 shrink-0 rounded-full ${kind.color}`} />
-                              <span className="text-sm font-semibold text-slate-950 truncate">{event.title}</span>
+                              <span className="text-sm font-semibold text-[#03182F] truncate">{event.title}</span>
                               <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${impactLabels[event.impact].chip}`}>
                                 {impactLabels[event.impact].label}
                               </span>
@@ -1158,14 +1304,14 @@ export default function CalendarPageClient() {
                   return (
                     <div
                       key={hour}
-                      className="group flex border-b border-slate-100 last:border-b-0 transition hover:bg-blue-50/40 cursor-pointer"
+                      className="group flex border-b border-slate-100 last:border-b-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer"
                       onDoubleClick={() => {
                         setNaturalInput(`le ${formatDateFr(selectedDate).replaceAll('-', '/')} de ${hour}h à ${hour + 1}h `)
                         startCreateFromDate(selectedDate)
                       }}
                     >
                       <div className="flex w-16 shrink-0 items-start justify-end border-r border-slate-100 pr-3 pt-2">
-                        <span className="text-xs font-medium text-slate-400">{label}</span>
+                        <span className="text-xs font-medium text-[#6B7480]">{label}</span>
                       </div>
                       <div className="min-h-14 flex-1 px-3 py-1.5">
                         {hourEvents.map((event) => {
@@ -1174,16 +1320,16 @@ export default function CalendarPageClient() {
                             <button
                               key={event.id}
                               type="button"
-                              onClick={(e) => { e.stopPropagation(); setSelectedEventId(event.id) }}
+                              onClick={(e) => { e.stopPropagation(); setDetailEventId(event.id) }}
                               className={`mb-1 w-full rounded-lg border px-3 py-2 text-left transition hover:border-blue-200 ${kind.border} ${kind.chip} ${
                                 selectedEventId === event.id ? 'ring-2 ring-blue-500' : ''
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 shrink-0 rounded-full ${kind.color}`} />
-                                <span className="text-sm font-semibold text-slate-950 truncate">{event.title}</span>
+                                <span className="text-sm font-semibold text-[#03182F] truncate">{event.title}</span>
                                 {event.startTime && (
-                                  <span className="shrink-0 text-xs text-slate-500">
+                                  <span className="shrink-0 text-xs text-[#6B7480]">
                                     {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}
                                   </span>
                                 )}
@@ -1207,180 +1353,105 @@ export default function CalendarPageClient() {
             {counts.map((kind) => (
               <div key={kind.value} className="flex items-center gap-1.5">
                 <span className={`h-2 w-2 rounded-full ${kind.color}`} />
-                <span className="text-xs text-slate-500">{kind.label}</span>
+                <span className="font-serif text-[12px] text-[#6B7480]">{kind.label}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <aside className="space-y-4">
-          <section className="dashboard-card p-5">
-            <h2 className="text-lg font-semibold text-slate-950">Créer rapidement</h2>
-            {isCreatingFromDate && (
-              <p className="mt-2 rounded-xl bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">
-                Création pour le {formatDateFr(form.startDate)}
-              </p>
-            )}
-            <form onSubmit={createEvent} className="mt-4 space-y-4">
-              <label className="block">
-                <span className="text-sm font-medium text-slate-700">Décrivez l’événement</span>
-                <textarea
-                  ref={naturalInputRef}
-                  value={naturalInput}
-                  onChange={(event) => setNaturalInput(event.target.value)}
-                  className="mt-1 min-h-28 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none ring-blue-500 transition focus:ring-2"
-                  placeholder="Ex : congés du 5 au 10 mai toute la journée"
-                  required
-                />
-              </label>
+      </div>
 
+      {detailEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setDetailEventId(null)}>
+          <div className="w-full max-w-2xl rounded-xl bg-white border border-[#DDE5EE] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className={`h-3.5 w-3.5 rounded-full ${getKindStyle(detailEvent.kind).color}`} />
+                <h3 className="font-serif text-lg font-bold text-[#03182F]">{detailEvent.title}</h3>
+              </div>
+              <button type="button" onClick={() => setDetailEventId(null)} className="rounded-lg p-1.5 text-[#6B7480] hover:bg-slate-50 hover:text-[#03182F] transition">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center gap-2 font-serif text-sm text-[#30373E]">
+                <svg className="h-4 w-4 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span>{formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}</span>
+                {detailEvent.startTime && (
+                  <span className="text-[#6B7480]">{detailEvent.startTime}{detailEvent.endTime ? ` - ${detailEvent.endTime}` : ''}</span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
-                {[
-                  'congés du 5 au 10 mai toute la journée',
-                  'campagne soldes le 7 mai après-midi',
-                  'fermeture fournisseur demain matin',
-                ].map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    onClick={() => setNaturalInput(example)}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                  >
-                    {example}
-                  </button>
-                ))}
+                <span className={`rounded-full px-2.5 py-1 font-serif text-[11px] font-bold ${getKindStyle(detailEvent.kind).chip}`}>{getKindStyle(detailEvent.kind).label}</span>
+                <span className={`rounded-full px-2.5 py-1 font-serif text-[11px] font-bold ${impactLabels[detailEvent.impact].chip}`}>Impact {impactLabels[detailEvent.impact].label.toLowerCase()}</span>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 font-serif text-[11px] font-bold text-[#30373E]">{detailEvent.zone}</span>
+              </div>
+              {detailEvent.notes && (
+                <p className="rounded-lg bg-[#F2F8FF] border border-[#DDE5EE] px-3 py-2.5 font-serif text-[13px] leading-6 text-[#30373E]">{detailEvent.notes}</p>
+              )}
+            </div>
+
+            <div className="mt-5 border-t border-[#DDE5EE] pt-4">
+              <p className="font-serif text-[14px] font-bold text-[#03182F]">Chat with Leia</p>
+              <p className="mt-1 font-serif text-[12px] text-[#6B7480]">
+                Ask for operational actions specific to this event.
+              </p>
+
+              <div className="mt-3 max-h-56 space-y-2 overflow-y-auto rounded-lg border border-[#DDE5EE] bg-slate-50 p-3">
+                {eventChatMessages.length === 0 ? (
+                  <p className="font-serif text-[12px] text-[#6B7480]">
+                    Example: What should I secure 2 weeks before this event?
+                  </p>
+                ) : (
+                  eventChatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`rounded-lg border px-3 py-2 ${
+                        message.role === 'assistant'
+                          ? 'border-[#DDE5EE] bg-white'
+                          : 'border-[#BFCBDA] bg-[#F2F8FF]'
+                      }`}
+                    >
+                      <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                        {message.role === 'assistant' ? 'Leia' : 'You'}
+                      </p>
+                      <p className="mt-1 font-serif text-[13px] leading-6 text-[#03182F]">{message.content}</p>
+                      {message.reasoningSummary && message.role === 'assistant' ? (
+                        <p className="mt-2 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-2.5 py-1.5 font-serif text-[12px] text-[#30373E]">
+                          {message.reasoningSummary}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))
+                )}
               </div>
 
-              {parsedNaturalEvent ? (
-                <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">Prévisualisation</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">{parsedNaturalEvent.summary}</p>
-                    </div>
-                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-blue-700">
-                      {parsedNaturalEvent.confidence === 'high'
-                        ? 'Confiant'
-                        : parsedNaturalEvent.confidence === 'medium'
-                          ? 'À vérifier'
-                          : 'Date par défaut'}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getKindStyle(parsedNaturalEvent.event.kind).chip}`}>
-                      {getKindStyle(parsedNaturalEvent.event.kind).label}
-                    </span>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${impactLabels[parsedNaturalEvent.event.impact].chip}`}>
-                      Impact {impactLabels[parsedNaturalEvent.event.impact].label.toLowerCase()}
-                    </span>
-                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
-                      {parsedNaturalEvent.event.zone}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <p className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500">
-                  Écrivez une phrase avec une période ou une date. Exemple : “congés du 5 au 10 mai toute la journée”.
+              {eventChatError && (
+                <p className="mt-2 rounded-lg border border-[#ba1a1a]/30 bg-[#FFE7EC] px-3 py-2 font-serif text-[12px] text-[#ba1a1a]">
+                  {eventChatError}
                 </p>
               )}
 
-              <button
-                type="submit"
-                disabled={!parsedNaturalEvent}
-                className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                Ajouter l’événement
-              </button>
-            </form>
-          </section>
-
-          <section className="dashboard-card p-5">
-            <h2 className="text-lg font-semibold text-slate-950">Détails / édition</h2>
-            {selectedEvent ? (
-              <div className="mt-4 space-y-3">
+              <form className="mt-3 flex gap-2" onSubmit={submitEventChat}>
                 <input
-                  value={selectedEvent.title}
-                  onChange={(event) => updateSelectedEvent({ title: event.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold outline-none ring-blue-500 transition focus:ring-2"
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="date"
-                    value={selectedEvent.startDate}
-                    onChange={(event) => updateSelectedEvent({ startDate: event.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 transition focus:ring-2"
-                  />
-                  <input
-                    type="date"
-                    value={selectedEvent.endDate}
-                    onChange={(event) => updateSelectedEvent({ endDate: event.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 transition focus:ring-2"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getKindStyle(selectedEvent.kind).chip}`}>
-                    {getKindStyle(selectedEvent.kind).label}
-                  </span>
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${impactLabels[selectedEvent.impact].chip}`}>
-                    Impact {impactLabels[selectedEvent.impact].label.toLowerCase()}
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                    {selectedEvent.zone}
-                  </span>
-                </div>
-                <textarea
-                  value={selectedEvent.notes}
-                  onChange={(event) => updateSelectedEvent({ notes: event.target.value })}
-                  className="min-h-28 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 outline-none ring-blue-500 transition focus:ring-2"
+                  type="text"
+                  value={eventChatInput}
+                  onChange={(event) => setEventChatInput(event.target.value)}
+                  placeholder={`Ask Leia about "${detailEvent.title}"...`}
+                  className="h-10 flex-1 rounded-lg border border-[#DDE5EE] px-3 font-serif text-[13px] text-[#03182F] outline-none focus:border-[#2764FF] focus:ring-1 focus:ring-[#2764FF]"
                 />
                 <button
-                  type="button"
-                  onClick={deleteSelectedEvent}
-                  className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                  type="submit"
+                  disabled={eventChatSending || !eventChatInput.trim()}
+                  className="h-10 rounded-lg bg-[#2764FF] px-4 font-serif text-[13px] font-bold text-white transition hover:bg-[#004bd9] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Supprimer
+                  {eventChatSending ? 'Sending...' : 'Send'}
                 </button>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm leading-6 text-slate-500">Cliquez sur un événement pour voir ses détails.</p>
-            )}
-          </section>
-
-          <section className="dashboard-card p-5">
-            <h2 className="text-lg font-semibold text-slate-950">{formatDateFr(selectedDate)}</h2>
-            <div className="mt-3 space-y-2">
-              {selectedDateEvents.length > 0 ? (
-                selectedDateEvents.map((event) => {
-                  const kind = getKindStyle(event.kind)
-                  return (
-                    <button
-                      key={event.id}
-                      type="button"
-                      onClick={() => setSelectedEventId(event.id)}
-                      className={`w-full rounded-xl border bg-white p-3 text-left transition hover:border-blue-200 hover:bg-blue-50 ${kind.border}`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`h-2.5 w-2.5 rounded-full ${kind.color}`} />
-                          <span className="text-xs font-semibold text-slate-500">
-                            {formatDateRangeFr(event.startDate, event.endDate)}
-                          </span>
-                        </div>
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${impactLabels[event.impact].chip}`}>
-                          {impactLabels[event.impact].label}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-slate-950">{event.title}</p>
-                    </button>
-                  )
-                })
-              ) : (
-                <p className="text-sm text-slate-500">Aucun événement sur cette date.</p>
-              )}
+              </form>
             </div>
-          </section>
-        </aside>
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

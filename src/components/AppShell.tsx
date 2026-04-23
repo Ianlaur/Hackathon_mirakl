@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
+import MascotOrb from '@/components/MascotOrb'
+import { PluginProvider } from '@/contexts/PluginContext'
 
 const CHUNK_RETRY_COUNT_KEY = 'mirakl_chunk_retry_count'
 const CHUNK_RETRY_TS_KEY = 'mirakl_chunk_retry_ts'
@@ -10,7 +13,13 @@ const CHUNK_MAX_RETRIES = 3
 const CHUNK_RETRY_WINDOW_MS = 20000
 
 export default function AppShell({ children }: { children: ReactNode }) {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const pathname = usePathname()
+  const shouldHideSidebar = pathname.startsWith('/onboarding')
+  const shouldHideOrb =
+    shouldHideSidebar ||
+    pathname.startsWith('/dashboard')
+  const [sidebarExpanded, setSidebarExpanded] = useState(true)
+  const handleSidebarChange = useCallback((expanded: boolean) => setSidebarExpanded(expanded), [])
 
   useEffect(() => {
     const shouldHandleChunkError = (message: string) =>
@@ -84,16 +93,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_35%),linear-gradient(180deg,#f8fbff_0%,#eef3f9_100%)]">
-      <Sidebar onExpandedChange={setSidebarExpanded} />
-      {/* Margin synced with sidebar width: w-20 (80px) collapsed, w-64 (256px) expanded */}
-      <main
-        className={`min-h-screen transition-[margin] duration-300 ease-out ${
-          sidebarExpanded ? 'lg:ml-64' : 'lg:ml-20'
-        }`}
-      >
-        <div className="px-4 pb-10 pt-6 sm:px-6 lg:px-8">{children}</div>
-      </main>
-    </div>
+    <PluginProvider>
+      <div className="min-h-screen bg-[#F2F8FF]">
+        {!shouldHideSidebar && <Sidebar onExpandedChange={handleSidebarChange} />}
+        <main className={`min-h-screen transition-[margin] duration-300 ease-out ${shouldHideSidebar ? '' : sidebarExpanded ? 'lg:ml-60' : 'lg:ml-[68px]'}`}>
+          <div className="p-6 max-w-[1440px] mx-auto w-full">{children}</div>
+        </main>
+        {!shouldHideOrb && <MascotOrb />}
+      </div>
+    </PluginProvider>
   )
 }

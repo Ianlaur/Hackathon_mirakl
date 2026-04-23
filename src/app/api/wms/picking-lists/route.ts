@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(pickingLists)
   } catch (error) {
     console.error('Error fetching picking lists:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
@@ -91,6 +91,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(pickingList, { status: 201 })
   } catch (error) {
     console.error('Error creating picking list:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
