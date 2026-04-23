@@ -216,13 +216,12 @@ export default function StockPageClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <header>
+      <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Stock</h1>
-              <p className="font-serif text-[13px] text-[#6B7480] mt-1 italic">{stats.totalProducts} produits en stock</p>
-            </div>
+          <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Stock</h1>
+          <p className="font-serif text-[13px] text-[#6B7480] mt-1 italic">{stats.totalProducts} produits en stock</p>
+        </div>
+        <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
               {/* Import/Export Dropdown */}
               <div className="relative group">
@@ -283,10 +282,8 @@ export default function StockPageClient({
                 <span className="text-sm">+</span>
                 Nouveau produit
               </button>
-            </div>
-          </div>
         </div>
-      </header>
+      </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
