@@ -4,22 +4,16 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import {
   AlertTriangle,
-  BarChart3 as BarChart,
-  Calendar,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Globe2,
   LayoutDashboard,
-  MessageSquare,
   MousePointer2,
   Package,
   Puzzle,
-  Settings,
-  Ship,
   Sparkles,
   Star,
-  Wallet,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { usePluginContext } from '@/contexts/PluginContext'
@@ -38,7 +32,7 @@ const narrationStep1 =
   "The 'Global Control Tower' plugin is essential for your imports. It cross-references your Mirakl data with @shippo international tracking and prepares your @stripe payments."
 const step3UserMessage = 'I will be away from August 1st to August 15th.'
 const step3AssistantMessage =
-  '⚠️ Stockout risk detected. In August, your Mirakl sales rise by 30%. Would you like me to prepare an automatic restock to cover your absence?'
+  'Stockout risk detected. In August, your Mirakl sales rise by 30%. Would you like me to prepare an automatic restock to cover your absence?'
 const STEP1_TIMING_FACTOR = 2.6
 const STEP2_TIMING_FACTOR = 2.5
 const STEP1_TYPING_INTERVAL_MS = 46
@@ -506,22 +500,22 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
             description="Configure your dashboard the way you want."
           />
 
-          <div className="relative rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="relative rounded-xl border border-[#DDE5EE] bg-[#EEF4FB] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
+              <div className="inline-flex items-center gap-2 font-serif text-sm font-semibold text-[#03182F]">
                 <LayoutDashboard className="h-4 w-4" />
-                Personal Dashboard
+                Dashboard Preview
               </div>
               <button
                 type="button"
                 className={cn(
                   'rounded-lg border px-2.5 py-1 text-sm font-semibold transition-colors',
                   dashboardWidgets.includes('weather')
-                    ? 'border-blue-300 bg-blue-50 text-blue-700'
-                    : 'border-slate-300 bg-slate-100 text-slate-600'
+                    ? 'border-[#2764FF]/30 bg-[#2764FF]/10 text-[#2764FF]'
+                    : 'border-[#DDE5EE] bg-white text-[#6B7480]'
                 )}
               >
-                +
+                Add widget
               </button>
             </div>
 
@@ -532,21 +526,24 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                     <motion.article
                       key={widget}
                       layout
-                      className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                      className="rounded-lg border border-[#DDE5EE] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.1)]"
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Sales</p>
-                          <p className="mt-2 text-2xl font-semibold text-slate-900">45 200 €</p>
-                        </div>
-                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-green-500">
-                          +12.5%
-                        </span>
+                      <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                        TOTAL ORDERS TODAY
+                      </p>
+                      <div className="mt-3 flex items-baseline justify-between">
+                        <p className="font-serif text-[40px] font-bold leading-none tracking-tight text-[#03182F]">
+                          1,284
+                        </p>
+                        <p className="font-serif text-sm italic text-[#3FA46A]">+12% vs yesterday</p>
                       </div>
-                      <div className="mt-4 flex h-20 items-end gap-1">
-                        {[26, 30, 38, 42, 48, 56, 52, 64].map((height, index) => (
-                          <div key={index} className="w-4 rounded-sm bg-blue-500/85" style={{ height }} />
-                        ))}
+                      <div className="mt-4 flex h-10 items-end gap-1">
+                        <div className="flex-1 rounded-sm bg-[#2764FF]/10" style={{ height: 16 }} />
+                        <div className="flex-1 rounded-sm bg-[#2764FF]/10" style={{ height: 24 }} />
+                        <div className="flex-1 rounded-sm bg-[#2764FF]/10" style={{ height: 20 }} />
+                        <div className="flex-1 rounded-sm bg-[#2764FF]/20" style={{ height: 30 }} />
+                        <div className="flex-1 rounded-sm bg-[#2764FF]/30" style={{ height: 38 }} />
+                        <div className="flex-1 rounded-sm bg-[#2764FF]" style={{ height: 34 }} />
                       </div>
                     </motion.article>
                   )
@@ -558,18 +555,25 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                       key={widget}
                       layout
                       className={cn(
-                        'rounded-xl border border-slate-200 bg-white p-4 shadow-sm',
-                        dashboardDragStock && 'cursor-grab border-dashed border-blue-400 shadow-xl'
+                        'rounded-lg border border-[#DDE5EE] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.1)]',
+                        dashboardDragStock && 'cursor-grab border-dashed border-[#2764FF] shadow-xl'
                       )}
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Stock</p>
-                          <p className="mt-2 text-lg font-semibold text-slate-900">Global Level</p>
-                          <p className="text-sm text-red-500">3 products out of stock</p>
-                        </div>
-                        <ProgressRing value={80} />
+                      <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                        ACTIVE SKUS
+                      </p>
+                      <div className="mt-3 flex items-end justify-between">
+                        <p className="font-serif text-[40px] font-bold leading-none tracking-tight text-[#03182F]">
+                          186
+                        </p>
+                        <p className="font-serif text-[14px] text-[#6B7480]">of 200 total</p>
                       </div>
+                      <div className="mt-4 h-2 rounded-full bg-[#2764FF]/10">
+                        <div className="h-full w-[93%] rounded-full bg-[#2764FF]" />
+                      </div>
+                      <p className="mt-3 font-serif text-[14px] text-[#6B7480]">
+                        Capacity optimization at 93%
+                      </p>
                     </motion.article>
                   )
                 }
@@ -579,23 +583,25 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                     <motion.article
                       key={widget}
                       layout
-                      className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                      className="rounded-lg border border-[#DDE5EE] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.1)]"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Alerts</p>
-                      <ul className="mt-3 space-y-2 text-sm">
-                        <li className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-700">
-                          <Ship className="h-4 w-4 text-red-500" />
-                          Ship delayed - Rotterdam
-                        </li>
-                        <li className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-700">
-                          <MessageSquare className="h-4 w-4 text-blue-500" />
-                          Negative customer review to handle
-                        </li>
-                        <li className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-700">
-                          <Wallet className="h-4 w-4 text-green-500" />
-                          Stripe payment received
-                        </li>
-                      </ul>
+                      <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                        STOCK HEALTH
+                      </p>
+                      <div className="mt-3 flex items-end justify-between">
+                        <p className="font-serif text-[40px] font-bold leading-none tracking-tight text-[#03182F]">
+                          94%
+                        </p>
+                        <CheckCircle2 className="h-7 w-7 text-[#3FA46A]" />
+                      </div>
+                      <div className="mt-4 flex h-10 gap-1">
+                        <div className="flex-1 rounded-sm bg-[#3FA46A]/20" />
+                        <div className="flex-1 rounded-sm bg-[#3FA46A]/20" />
+                        <div className="flex-1 rounded-sm bg-[#3FA46A]/20" />
+                        <div className="flex-1 rounded-sm bg-[#3FA46A]/20" />
+                        <div className="flex-1 rounded-sm bg-[#3FA46A]/20" />
+                        <div className="flex-1 rounded-sm bg-[#3FA46A]/80" />
+                      </div>
                     </motion.article>
                   )
                 }
@@ -607,13 +613,19 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                     initial={{ opacity: 0, scale: 0.94 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-                    className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 shadow-sm"
+                    className="rounded-lg border border-[#DDE5EE] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.1)]"
                   >
-                    <div className="flex items-center gap-2 text-cyan-700">
-                      <CloudIcon />
-                      <p className="text-sm font-semibold">Supply Chain Weather</p>
+                    <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                      WEATHER ALERT
+                    </p>
+                    <div className="mt-3 rounded-md border border-[#DDE5EE] bg-[#F7FAFF] p-3">
+                      <p className="font-serif text-sm font-semibold text-[#03182F]">Port of Shanghai</p>
+                      <p className="mt-1 text-xs text-[#6B7480]">Strong wind. Potential delay: +8h</p>
                     </div>
-                    <p className="mt-2 text-sm text-cyan-700">Port of Shanghai: strong wind, delay risk +8h</p>
+                    <div className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-[#6B7480]">
+                      <CloudIcon />
+                      Monitoring active
+                    </div>
                   </motion.article>
                 )
               })}
@@ -653,7 +665,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
           <div className="flex items-center justify-between border-b border-slate-200 pb-3">
             <div className="inline-flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-blue-600" />
-              <p className="text-sm font-semibold text-slate-900">Mira Assistant</p>
+              <p className="text-sm font-semibold text-slate-900">Leia Assistant</p>
             </div>
             <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
               Smart Assistant
@@ -668,7 +680,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
 
             {step3ShowLoader && (
               <div className="max-w-[84%] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Mira is thinking...
+                Leia is thinking...
               </div>
             )}
 
@@ -680,7 +692,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
               >
                 <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-blue-200 bg-white px-2 py-0.5 text-xs font-medium text-blue-700">
                   <Sparkles className="h-3 w-3" />
-                  Mira Assistant
+                  Leia Assistant
                 </div>
                 <p>
                   {step3AssistantMessage.slice(0, step3AssistantTyped)}
@@ -699,7 +711,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                           : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                       )}
                     >
-                      ✨ Approve the plan
+                      Approve the plan
                     </button>
                     <button
                       type="button"
@@ -800,7 +812,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
           </Button>
         ) : (
           <Button onClick={onFinish} className="bg-slate-900 text-white hover:bg-slate-800">
-            🚀 Finish and go to Dashboard
+            Finish and go to Dashboard
           </Button>
         )}
       </div>
@@ -810,7 +822,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
 
 function CloudIcon() {
   return (
-    <div className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-cyan-200/70 text-cyan-700">
+    <div className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#EEF4FB] text-[#2764FF]">
       <Package className="h-3.5 w-3.5" />
     </div>
   )

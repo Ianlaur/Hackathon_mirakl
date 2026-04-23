@@ -43,7 +43,7 @@ type ChoiceCardProps = {
 
 const loadingMessages = [
   'Analyzing your supply chain...',
-  "Configuring the Mira assistant...",
+  "Configuring the Leia assistant...",
   'Preparing the Dashboard...',
 ]
 
