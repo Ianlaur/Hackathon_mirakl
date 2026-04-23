@@ -88,6 +88,7 @@ export default function StockPageClient({
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [productsCollapsed, setProductsCollapsed] = useState(false)
   const [showAllProducts, setShowAllProducts] = useState(false)
+  const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
 
   // Delete product handler
   const handleDeleteProduct = async (productId: string, productName: string) => {
@@ -246,8 +247,15 @@ export default function StockPageClient({
             </div>
             <div className="flex items-center gap-2">
               {/* Import/Export Dropdown */}
-              <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 text-[#30373E] hover:bg-[#F2F8FF] rounded-xl transition-colors">
+              <div
+                className="relative group"
+                onMouseLeave={() => setIsImportMenuOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsImportMenuOpen((value) => !value)}
+                  className="flex items-center gap-2 px-3 py-2 text-[#30373E] hover:bg-[#F2F8FF] rounded-xl transition-colors outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+                >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
@@ -256,9 +264,18 @@ export default function StockPageClient({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-[#DDE5EE] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div
+                  className={`absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-[#DDE5EE] transition-all z-50 ${
+                    isImportMenuOpen
+                      ? 'opacity-100 visible'
+                      : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'
+                  }`}
+                >
                   <button
-                    onClick={() => setShowImportModal(true)}
+                    onClick={() => {
+                      setShowImportModal(true)
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF] rounded-t-xl"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -267,7 +284,10 @@ export default function StockPageClient({
                     Import (CSV/JSON)
                   </button>
                   <button
-                    onClick={handleExportCSV}
+                    onClick={() => {
+                      handleExportCSV()
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF]"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,7 +296,10 @@ export default function StockPageClient({
                     Export CSV
                   </button>
                   <button
-                    onClick={handleExportJSON}
+                    onClick={() => {
+                      handleExportJSON()
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF]"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -286,7 +309,10 @@ export default function StockPageClient({
                   </button>
                   <div className="border-t border-[#DDE5EE]"></div>
                   <button
-                    onClick={handleDeleteAll}
+                    onClick={() => {
+                      handleDeleteAll()
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#F22E75] hover:bg-[#FFE7EC] rounded-b-xl"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

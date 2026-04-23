@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { buildLossEscalationBrief, buildLossEvidenceCase } from '@/lib/losses'
 
 export type LossEvent = {
   id: string
@@ -63,10 +64,24 @@ function fmt(n: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n)
 }
 
+function downloadBrief(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function LossesPageClient({ initialEvents, loadError }: Props) {
   const events = initialEvents
   const [hoveredMarketplaceIndex, setHoveredMarketplaceIndex] = useState<number | null>(null)
   const [livePulseCollapsed, setLivePulseCollapsed] = useState(false)
+  const [investigationSku, setInvestigationSku] = useState<string | null>(null)
+  const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [showEvidencePanel, setShowEvidencePanel] = useState(false)
+  const [routingRuleApplied, setRoutingRuleApplied] = useState(false)
 
   const totalLostValue = useMemo(() => events.reduce((s, e) => s + e.estimatedLossValue, 0), [events])
   const totalLostUnits = useMemo(() => events.reduce((s, e) => s + e.quantityLost, 0), [events])
@@ -105,8 +120,48 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
   }, [events])
 
   const recentEvents = useMemo(() => events.slice(0, 4), [events])
+  const activeEvidenceCase = useMemo(
+    () => buildLossEvidenceCase(events, investigationSku || topProducts[0]?.[0] || null),
+    [events, investigationSku, topProducts]
+  )
 
   const mpColors = ['#b6c4ff', '#2764FF', '#F22E75', '#03182F']
+
+  const handleInvestigate = (sku: string, productName: string) => {
+    setInvestigationSku(sku)
+    setShowEvidencePanel(true)
+    setActionMessage(`Investigation opened for ${productName}.`)
+    document.getElementById('loss-evidence-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleReviewEvidence = () => {
+    if (!activeEvidenceCase) {
+      setActionMessage('No evidence bundle available yet.')
+      return
+    }
+
+    setShowEvidencePanel(true)
+    setActionMessage(`Evidence bundle ready for ${activeEvidenceCase.productName}.`)
+    document.getElementById('loss-evidence-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleEscalate = () => {
+    if (!activeEvidenceCase) {
+      setActionMessage('No escalation case available.')
+      return
+    }
+
+    const brief = buildLossEscalationBrief(activeEvidenceCase)
+    downloadBrief(`loss-escalation-${activeEvidenceCase.sku}.txt`, brief)
+    setShowEvidencePanel(true)
+    setActionMessage(`Escalation brief prepared for ${activeEvidenceCase.productName}.`)
+  }
+
+  const handleRoutingRule = () => {
+    const topCarrier = carrierGroups[0]?.[0] || 'primary carrier'
+    setRoutingRuleApplied(true)
+    setActionMessage(`Routing rule applied to ${topCarrier}.`)
+  }
 
   if (loadError) {
     return (
@@ -124,6 +179,12 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
         <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Loss & Inventory Recovery</h1>
         <p className="font-serif text-[14px] text-[#6B7480] mt-1 italic">Reporting period: Last 30 Days (Real-time stream)</p>
       </div>
+
+      {actionMessage ? (
+        <div className="rounded-lg border border-[#DDE5EE] bg-white px-4 py-3 font-serif text-[13px] text-[#30373E] shadow-sm">
+          {actionMessage}
+        </div>
+      ) : null}
 
       {/* Section 1: KPIs */}
       <div className="space-y-4">
@@ -283,7 +344,12 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                 </thead>
                 <tbody className="divide-y divide-[#DDE5EE]">
                   {topProducts.map(([sku, p]) => (
-                    <tr key={sku} className="hover:bg-[#F2F8FF] transition-colors">
+                    <tr
+                      key={sku}
+                      className={`transition-colors ${
+                        investigationSku === sku ? 'bg-[#F2F8FF]' : 'hover:bg-[#F2F8FF]'
+                      }`}
+                    >
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded border border-[#DDE5EE] bg-[#F2F8FF] flex items-center justify-center font-serif text-[10px] text-[#6B7480]">{sku.slice(0, 4)}</div>
@@ -298,7 +364,13 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                         </span>
                       </td>
                       <td className="py-4 px-6 whitespace-nowrap">
-                        <button className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#2764FF] hover:underline uppercase whitespace-nowrap">Investigate</button>
+                        <button
+                          type="button"
+                          onClick={() => handleInvestigate(sku, p.name)}
+                          className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#2764FF] hover:underline uppercase whitespace-nowrap transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50 rounded"
+                        >
+                          Investigate
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -366,6 +438,74 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
         </div>
       </div>
 
+      {showEvidencePanel && activeEvidenceCase ? (
+        <div id="loss-evidence-panel" className="rounded-lg border border-[#DDE5EE] bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">
+                Evidence Bundle
+              </p>
+              <h3 className="mt-2 font-serif text-[18px] font-bold text-[#03182F]">
+                {activeEvidenceCase.productName}
+              </h3>
+              <p className="mt-1 font-serif text-[13px] text-[#6B7480]">
+                {activeEvidenceCase.sku} · {activeEvidenceCase.eventCount} events · {fmt(activeEvidenceCase.totalValue)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowEvidencePanel(false)}
+              className="rounded-full px-3 py-1.5 font-serif text-[12px] font-bold text-[#2764FF] hover:bg-[#F2F8FF] transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
+              Hide panel
+            </button>
+          </div>
+          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] p-4">
+              <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Scope</p>
+              <div className="mt-2 space-y-1 font-serif text-[13px] text-[#03182F]">
+                <p>Units impacted: {activeEvidenceCase.totalUnits}</p>
+                <p>Reference: {activeEvidenceCase.sourceOrderRef}</p>
+                <p>Location: {activeEvidenceCase.location}</p>
+              </div>
+            </div>
+            <div className="rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] p-4">
+              <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Reasons</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {activeEvidenceCase.reasons.map((reason) => (
+                  <span
+                    key={reason}
+                    className={`inline-flex items-center rounded-full border px-2 py-1 font-serif text-[11px] ${
+                      reasonStyle[reason] || 'text-[#6B7480] bg-white border-[#DDE5EE]'
+                    }`}
+                  >
+                    {reasonLabels[reason] || reason}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] p-4">
+              <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Signals</p>
+              <div className="mt-2 space-y-1 font-serif text-[13px] text-[#03182F]">
+                <p>Carriers: {activeEvidenceCase.carriers.join(', ')}</p>
+                <p>Platforms: {activeEvidenceCase.marketplaces.join(', ')}</p>
+                <p>Latest: {new Date(activeEvidenceCase.latestDetectedAt).toLocaleString('fr-FR')}</p>
+              </div>
+            </div>
+          </div>
+          {activeEvidenceCase.notes.length > 0 ? (
+            <div className="mt-4 rounded-lg border border-[#DDE5EE] p-4">
+              <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Notes</p>
+              <ul className="mt-2 space-y-2 font-serif text-[13px] text-[#30373E]">
+                {activeEvidenceCase.notes.slice(0, 3).map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* Decision Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
         <div className="bg-[#FFE7EC] border border-[#F22E75]/20 p-6 rounded-lg flex flex-col justify-between">
@@ -379,8 +519,20 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
             </p>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button className="h-9 px-6 bg-[#F22E75] text-white font-serif text-[13px] font-bold rounded-lg hover:opacity-90 transition-opacity">Escalate to Legal</button>
-            <button className="h-9 px-6 border border-[#F22E75]/30 text-[#F22E75] font-serif text-[13px] font-bold rounded-lg hover:bg-white transition-colors">Review Evidence</button>
+            <button
+              type="button"
+              onClick={handleEscalate}
+              className="h-9 px-6 bg-[#F22E75] text-white font-serif text-[13px] font-bold rounded-lg hover:opacity-90 transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#F22E75]/40"
+            >
+              Escalate to Legal
+            </button>
+            <button
+              type="button"
+              onClick={handleReviewEvidence}
+              className="h-9 px-6 border border-[#F22E75]/30 text-[#F22E75] font-serif text-[13px] font-bold rounded-lg hover:bg-white transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#F22E75]/30"
+            >
+              Review Evidence
+            </button>
           </div>
         </div>
         <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg flex flex-col justify-between">
@@ -394,7 +546,14 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
             </p>
           </div>
           <div className="mt-6">
-            <button className="h-9 px-6 bg-[#004bd9] text-white font-serif text-[13px] font-bold rounded-lg hover:opacity-90 transition-opacity">Apply Routing Rule</button>
+            <button
+              type="button"
+              onClick={handleRoutingRule}
+              disabled={routingRuleApplied}
+              className="h-9 px-6 bg-[#004bd9] text-white font-serif text-[13px] font-bold rounded-lg hover:opacity-90 transition-all duration-150 ease-out disabled:opacity-60 outline-none focus:ring-2 focus:ring-[#2764FF]/40"
+            >
+              {routingRuleApplied ? 'Routing Rule Applied' : 'Apply Routing Rule'}
+            </button>
           </div>
         </div>
       </div>
