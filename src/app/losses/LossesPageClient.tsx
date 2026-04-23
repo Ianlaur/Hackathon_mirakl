@@ -73,8 +73,8 @@ const reasonLabels: Record<string, string> = {
 const statusLabels: Record<string, { label: string; className: string }> = {
   open: { label: 'Ouvert', className: 'bg-rose-50 text-rose-700 ring-rose-100' },
   investigating: { label: 'En analyse', className: 'bg-[#E0A93A]/10 text-amber-700 ring-amber-100' },
-  resolved: { label: 'Résolu', className: 'bg-[#3FA46A]/10 text-emerald-700 ring-emerald-100' },
-  ignored: { label: 'Ignoré', className: 'bg-slate-100 text-[#6B7480] ring-slate-200' },
+  resolved: { label: 'Résolu', className: 'bg-[#3FA46A]/10 text-[#3FA46A] ring-[#3FA46A]/20' },
+  ignored: { label: 'Ignoré', className: 'bg-[#F2F8FF] text-[#6B7480] ring-[#DDE5EE]' },
 }
 
 const confidenceLabels: Record<string, string> = {
@@ -91,7 +91,7 @@ const stageAccent: Record<string, string> = {
   packing: 'bg-orange-500',
   shipping: 'bg-rose-500',
   customer_return: 'bg-violet-500',
-  inventory_count: 'bg-slate-600',
+  inventory_count: 'bg-[#6B7480]',
   marketplace_adjustment: 'bg-fuchsia-500',
 }
 
@@ -484,7 +484,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                   <th className="px-5 py-3 font-semibold">Statut</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#DDE5EE]">
                 {filteredEvents.map((event) => (
                   <tr
                     key={event.id}
@@ -504,7 +504,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                       <p className="mt-1 text-xs text-[#6B7480]">{event.quantityLost} unité{event.quantityLost > 1 ? 's' : ''}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-[#30373E]">
+                      <span className="inline-flex items-center gap-2 rounded-full bg-[#F2F8FF] px-2.5 py-1 text-xs font-semibold text-[#30373E]">
                         <span className={`h-2 w-2 rounded-full ${stageAccent[event.detectedStage] || 'bg-[#F2F8FF]0'}`} />
                         {labelFromMap(stageLabels, event.detectedStage)}
                       </span>
@@ -512,7 +512,7 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                     <td className="px-5 py-4 text-[#30373E]">{labelFromMap(reasonLabels, event.reasonCategory)}</td>
                     <td className="px-5 py-4 text-[#30373E]">{event.carrierName || '—'}</td>
                     <td className="px-5 py-4">
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${statusLabels[event.status]?.className || 'bg-slate-100 text-[#6B7480] ring-slate-200'}`}>
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${statusLabels[event.status]?.className || 'bg-[#F2F8FF] text-[#6B7480] ring-[#DDE5EE]'}`}>
                         {statusLabels[event.status]?.label || event.status}
                       </span>
                     </td>
