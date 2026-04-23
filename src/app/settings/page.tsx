@@ -2,6 +2,8 @@
 
 import { useEffect, useState, ChangeEvent, FormEvent } from 'react'
 import Image from 'next/image'
+import { NAVIGATION_CONFIG } from '@/lib/navigation'
+import { useActivePlugins } from '@/hooks/useActivePlugins'
 
 type Profile = {
   name: string
@@ -38,6 +40,7 @@ const emptyProfile: Profile = {
 }
 
 export default function SettingsPage() {
+  const { isActive, togglePlugin } = useActivePlugins()
   const [profile, setProfile] = useState<Profile>(emptyProfile)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -210,6 +213,48 @@ export default function SettingsPage() {
           <p className="text-gray-500 mt-1">Mettez à jour vos informations personnelles</p>
         </div>
       </div>
+
+      <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900">Plugins de navigation</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Activez les plugins pour afficher leurs onglets dans la sidebar.
+        </p>
+        <div className="mt-4 space-y-3">
+          {NAVIGATION_CONFIG.plugins
+            .slice()
+            .sort((a, b) => a.position - b.position)
+            .map((plugin) => {
+              const active = isActive(plugin.id)
+              const tabs = plugin.items.flatMap((item) =>
+                item.subitems?.length ? [item.label, ...item.subitems.map((subitem) => subitem.label)] : [item.label]
+              )
+
+              return (
+                <div
+                  key={plugin.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{plugin.label}</p>
+                    <p className="text-xs text-gray-600">{plugin.description}</p>
+                    <p className="mt-1 text-xs text-gray-500">Ajoute: {tabs.join(' · ')}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => togglePlugin(plugin.id)}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                      active
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {active ? 'Actif' : 'Inactif'}
+                  </button>
+                </div>
+              )
+            })}
+        </div>
+      </section>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
         {error && (

@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   Bell,
-  Bot,
   CheckCircle2,
   Clock3,
   DollarSign,
@@ -14,16 +13,12 @@ import {
   MapPin,
   Package,
   Search,
-  SendHorizontal,
-  Sparkles,
   Truck,
   Wallet,
-  X,
   Zap,
 } from 'lucide-react'
 import type { Shipment, ShipmentStatus } from '@/types/shipment'
-
-const PRO_PLUGIN_KEY = 'mirakl_global_control_tower_active'
+import { usePluginContext } from '@/contexts/PluginContext'
 
 const GlobalShipmentTracker = dynamic(
   () => import('@/components/map/GlobalShipmentTracker'),
@@ -199,15 +194,11 @@ function lowStockStatusClass(status: string) {
 }
 
 export default function DashboardPage() {
-  const [isPro, setIsPro] = useState(false)
+  const { isProPluginActive } = usePluginContext()
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [lowStockAlerts, setLowStockAlerts] = useState<LowStockAlert[]>([])
   const [lowStockLoading, setLowStockLoading] = useState(true)
-
-  useEffect(() => {
-    setIsPro(window.localStorage.getItem(PRO_PLUGIN_KEY) === 'true')
-  }, [])
-
+  const isPro = isProPluginActive
   const orders = isPro ? PRO_ORDERS : BASIC_ORDERS
   const trackerShipments = useMemo(() => orders.map(orderToShipment), [orders])
   const inventory = isPro ? PRO_INVENTORY : BASIC_INVENTORY
@@ -276,11 +267,13 @@ export default function DashboardPage() {
                   isPro ? 'border border-indigo-200 bg-indigo-50 text-indigo-700' : 'border border-slate-200 bg-slate-100 text-slate-600'
                 }`}
               >
-                {isPro ? 'PRO · AI ACTIVE' : 'BASIC'}
+                {isPro ? 'Optimisé flux internationaux' : 'Optimisé activité atelier'}
               </span>
             </div>
             <p className="mt-1 text-sm text-slate-500">
-              {isPro ? 'Global Control Tower plugin active' : 'BASIC mode with simplified automation rules'}
+              {isPro
+                ? 'Dashboard optimisé pour vos opérations globales avec supervision temps réel.'
+                : 'Dashboard optimisé pour votre activité locale, avec les indicateurs essentiels.'}
             </p>
           </div>
 
@@ -362,7 +355,7 @@ export default function DashboardPage() {
         <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Low Stock Dust Trigger</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-700">Low Stock Mira Trigger</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Trigger threshold rule: max(min_quantity, 10)
               </p>
@@ -376,7 +369,7 @@ export default function DashboardPage() {
               </div>
             ) : lowStockAlerts.length === 0 ? (
               <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
-                No low-stock alerts yet. Update stock below threshold to trigger Dust analysis.
+                No low-stock alerts yet. Update stock below threshold to trigger Mira analysis.
               </div>
             ) : (
               lowStockAlerts.map((alert) => (

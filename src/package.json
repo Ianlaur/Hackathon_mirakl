@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
+    "dev:reset": "rm -rf .next && next dev -p 3000",
+    "clean": "rm -rf .next",
     "build": "prisma generate && next build",
     "db:push": "prisma db push --accept-data-loss",
     "db:migrate": "prisma migrate deploy",
@@ -41,7 +43,6 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
     "@react-pdf/renderer": "^3.3.8",
-
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -53,6 +54,7 @@
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
     "deck.gl": "^9.3.1",
+    "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "linkup-sdk": "^1.0.0",
