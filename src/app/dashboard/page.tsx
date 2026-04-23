@@ -245,8 +245,10 @@ export default function DashboardPage() {
       if (!blob) return
       setTranscribing(true)
       try {
+        const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
         const fd = new FormData()
-        fd.append('audio', blob, 'prompt.webm')
+        fd.append('file', blob, `leia-${Date.now()}.${ext}`)
+        // No `language` → Whisper auto-detects (FR, EN, and 50+ others).
         const res = await fetch('/api/mascot/transcribe', { method: 'POST', body: fd })
         if (res.ok) {
           const { text } = await res.json()

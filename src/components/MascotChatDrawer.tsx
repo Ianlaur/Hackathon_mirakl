@@ -187,7 +187,7 @@ export default function MascotChatDrawer({
         const form = new FormData()
         const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
         form.append('file', blob, `iris-${Date.now()}.${ext}`)
-        form.append('language', 'en')
+        // No `language` → Whisper auto-detects (FR, EN, and 50+ others).
         const resp = await fetch('/api/mascot/transcribe', {
           method: 'POST',
           body: form,

@@ -36,13 +36,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const language = (formData.get('language') as string | null) || 'fr'
+    // Pass `language` through only if the client explicitly sets it — otherwise
+    // Whisper auto-detects (works for FR + EN and 50+ other languages).
+    const language = (formData.get('language') as string | null)?.trim() || null
     const model = (formData.get('model') as string | null) || DEFAULT_MODEL
 
     const upstream = new FormData()
     upstream.append('file', file, file.name || 'audio.webm')
     upstream.append('model', model)
-    upstream.append('language', language)
+    if (language) upstream.append('language', language)
     upstream.append('response_format', 'json')
 
     const response = await fetch(WHISPER_ENDPOINT, {
@@ -62,10 +64,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const data = (await response.json()) as { text?: string }
+    const data = (await response.json()) as { text?: string; language?: string }
     return NextResponse.json({
       text: (data.text ?? '').trim(),
-      language,
+      language: data.language ?? language ?? 'auto',
       model,
     })
   } catch (error) {

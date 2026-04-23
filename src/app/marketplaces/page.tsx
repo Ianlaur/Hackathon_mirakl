@@ -95,11 +95,13 @@ function ProposalsTab({
   proposals,
   loading,
   onDecide,
+  onMessage,
 }: {
   connectors: Connector[]
   proposals: Proposal[]
   loading: boolean
   onDecide: (id: string, action: 'accept' | 'decline') => void
+  onMessage: (proposalId: string) => void
 }) {
   const pendingProposals = proposals.filter((p) => p.status === 'pending')
 
@@ -192,9 +194,10 @@ function ProposalsTab({
                       <X className="h-4 w-4" />
                     </button>
                     <button
+                      onClick={() => onMessage(p.id)}
                       className="h-9 w-9 bg-[#004bd9] text-white hover:bg-[#004bd9]/90 transition-colors rounded shadow-sm flex items-center justify-center"
                       aria-label="Message"
-                      title="Message"
+                      title="Open conversation"
                     >
                       <Mail className="h-4 w-4" />
                     </button>
@@ -243,10 +246,14 @@ function ActiveConnectionTab({
   dialogues,
   loading,
   onSend,
+  focusProposalId,
+  onFocusConsumed,
 }: {
   dialogues: Dialogue[]
   loading: boolean
   onSend: (dialogueId: string, body: string) => Promise<void>
+  focusProposalId?: string | null
+  onFocusConsumed?: () => void
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(dialogues[0]?.id ?? null)
   const [draft, setDraft] = useState('')
@@ -259,6 +266,14 @@ function ActiveConnectionTab({
       setSelectedId(dialogues[0].id)
     }
   }, [dialogues, selectedId])
+
+  // When Proposals' Message button asks to focus a specific proposal's dialogue.
+  useEffect(() => {
+    if (!focusProposalId) return
+    const match = dialogues.find((d) => d.proposal?.id === focusProposalId)
+    if (match) setSelectedId(match.id)
+    onFocusConsumed?.()
+  }, [focusProposalId, dialogues, onFocusConsumed])
 
   const selected = useMemo(
     () => dialogues.find((d) => d.id === selectedId) ?? null,
@@ -471,6 +486,8 @@ function ActiveConnectionTab({
   )
 }
 
+type Toast = { id: string; message: string; tone: 'success' | 'error' | 'info' } | null
+
 export default function MarketplacesPage() {
   const [tab, setTab] = useState<Tab>('proposals')
   const [connectors, setConnectors] = useState<Connector[]>([])
@@ -478,6 +495,14 @@ export default function MarketplacesPage() {
   const [dialogues, setDialogues] = useState<Dialogue[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshToken, setRefreshToken] = useState(0)
+  const [toast, setToast] = useState<Toast>(null)
+  const [focusDialogueForProposal, setFocusDialogueForProposal] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 3500)
+    return () => clearTimeout(t)
+  }, [toast])
 
   useEffect(() => {
     let cancelled = false
@@ -499,22 +524,38 @@ export default function MarketplacesPage() {
   }, [refreshToken])
 
   const handleDecide = useCallback(async (id: string, action: 'accept' | 'decline') => {
+    const target = proposals.find((p) => p.id === id)
+    const name = target?.name ?? 'Proposal'
     const optimistic = proposals.map((p) =>
       p.id === id ? { ...p, status: action === 'accept' ? 'accepted' : 'declined' } : p,
     )
     setProposals(optimistic)
     try {
-      await fetch(`/api/marketplaces/proposals/${id}`, {
+      const resp = await fetch(`/api/marketplaces/proposals/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       })
+      if (!resp.ok) throw new Error('Request failed')
+      setToast({
+        id: `${Date.now()}`,
+        message:
+          action === 'accept'
+            ? `${name} accepted — dialogue opened in Active Connections`
+            : `${name} declined`,
+        tone: action === 'accept' ? 'success' : 'info',
+      })
     } catch {
-      // revert on error
+      setToast({ id: `${Date.now()}`, message: `Could not ${action} ${name}`, tone: 'error' })
       setRefreshToken((n) => n + 1)
     }
     setRefreshToken((n) => n + 1)
   }, [proposals])
+
+  const handleMessage = useCallback((proposalId: string) => {
+    setFocusDialogueForProposal(proposalId)
+    setTab('active')
+  }, [])
 
   const handleSendMessage = useCallback(
     async (dialogueId: string, body: string) => {
@@ -591,11 +632,35 @@ export default function MarketplacesPage() {
           proposals={proposals}
           loading={loading}
           onDecide={handleDecide}
+          onMessage={handleMessage}
         />
       )}
       {tab === 'active' && (
-        <ActiveConnectionTab dialogues={dialogues} loading={loading} onSend={handleSendMessage} />
+        <ActiveConnectionTab
+          dialogues={dialogues}
+          loading={loading}
+          onSend={handleSendMessage}
+          focusProposalId={focusDialogueForProposal}
+          onFocusConsumed={() => setFocusDialogueForProposal(null)}
+        />
       )}
+
+      {/* Toast */}
+      {toast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full px-5 py-3 font-serif text-[13px] font-semibold shadow-[0_10px_30px_rgba(3,24,47,0.22)] ${
+            toast.tone === 'success'
+              ? 'bg-[#03182F] text-white'
+              : toast.tone === 'error'
+                ? 'bg-[#ba1a1a] text-white'
+                : 'bg-[#F2F8FF] text-[#03182F] border border-[#DDE5EE]'
+          }`}
+        >
+          {toast.message}
+        </div>
+      ) : null}
     </div>
   )
 }
