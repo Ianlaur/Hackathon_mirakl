@@ -26,10 +26,9 @@ import type { NavItem as NavItemType } from '@/types/navigation'
 function LeiaIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="10" r="4" />
-      <circle cx="6.5" cy="9.5" r="2.5" />
-      <circle cx="17.5" cy="9.5" r="2.5" />
-      <path d="M8 14C8 14 6 20 6 21L18 21C18 20 16 14 16 14" />
+      <circle cx="12" cy="13" r="5" />
+      <circle cx="6" cy="8" r="2.5" />
+      <circle cx="18" cy="8" r="2.5" />
     </svg>
   )
 }
