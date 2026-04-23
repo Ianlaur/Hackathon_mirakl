@@ -51,7 +51,11 @@ INSERT INTO public.decision_templates (id, description) VALUES
   ('calendar_posture_v1',        'Buffer adjustment driven by commercial calendar event'),
   ('listing_pause_v1',           'Paused a listing on a channel'),
   ('listing_resume_v1',          'Resumed a listing on a channel'),
-  ('buffer_adjustment_v1',       'Adjusted safety buffer for a SKU')
+  ('buffer_adjustment_v1',       'Adjusted safety buffer for a SKU'),
+  ('reputation_shield_v1',       'Auto-protection of primary storefront when founder is away'),
+  ('seasonal_prediction_v1',     'Predicted demand growth for a SKU around a commercial event'),
+  ('carrier_audit_v1',           'Carrier damage-rate audit for a SKU (F5 RADAR)'),
+  ('supplier_scorecard_v1',      'Supplier lead-time and defect-rate summary (F5 RADAR)')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3) decision_ledger: template-only action trace. Every row is rendered by a known template.

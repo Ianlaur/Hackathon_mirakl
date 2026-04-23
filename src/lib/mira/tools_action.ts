@@ -3,7 +3,7 @@
 // execute_action, which builds a template-backed record the DB trigger accepts.
 
 import type { PrismaClient } from '@prisma/client'
-import { evaluatePolicy, type ActionType } from './policy'
+import { evaluatePolicy, evaluateReputationShield, type ActionType, type FounderStateValue } from './policy'
 import { type TemplateId, type TemplateInputs } from './templates'
 import type { OpenAITool } from './tools_read'
 import { loadGovernance, resolveAutonomy } from './agents/founderContext'
@@ -262,21 +262,50 @@ async function executeAction(ctx: ActionToolContext, args: ExecuteArgs) {
 
 async function setFounderState(ctx: ActionToolContext, args: Record<string, any>) {
   const until = args.until ? new Date(String(args.until)) : null
+  const newState = String(args.state) as FounderStateValue
   const row = await ctx.prisma.founderState.upsert({
     where: { user_id: ctx.userId },
     create: {
       user_id: ctx.userId,
-      state: String(args.state),
+      state: newState,
       until,
       notes: args.notes ? String(args.notes) : null,
     },
     update: {
-      state: String(args.state),
+      state: newState,
       until,
       notes: args.notes ? String(args.notes) : null,
     },
   })
-  return { updated: true, founder: row }
+
+  // Reputation Shield — deterministic rule. Entering Vacation/Sick protects the
+  // primary storefront by reducing exposure on secondary channels. Fires once here
+  // (not per decision) and writes a single reputation_shield_v1 ledger entry.
+  const shield = await evaluateReputationShield(ctx.prisma, ctx.userId, newState)
+  let shieldDecision = null
+  if (shield?.shouldApply) {
+    shieldDecision = await ctx.prisma.decisionRecord.create({
+      data: {
+        user_id: ctx.userId,
+        action_type: 'reputation_shield',
+        template_id: 'reputation_shield_v1',
+        logical_inference: shield.rendered,
+        raw_payload: {
+          primary_channel: shield.primary_channel,
+          paused_channels: shield.paused_channels,
+          reason: shield.reason,
+        },
+        status: 'auto_executed',
+        reversible: true,
+        source_agent: 'founder_policy',
+        triggered_by: 'set_founder_state',
+        executed_at: new Date(),
+      },
+      select: { id: true, logical_inference: true, template_id: true },
+    })
+  }
+
+  return { updated: true, founder: row, reputation_shield: shieldDecision }
 }
 
 async function updateAutonomy(ctx: ActionToolContext, args: Record<string, any>) {

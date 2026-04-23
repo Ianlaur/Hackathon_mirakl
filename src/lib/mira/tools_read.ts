@@ -120,6 +120,58 @@ export const READ_TOOLS: OpenAITool[] = [
       parameters: { type: 'object', properties: {} },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'query_returns',
+      description:
+        'Liste les retours ingérés (operational_objects kind=return). Filtres: sku, période en jours. Expose reason_code quand présent dans raw_payload.',
+      parameters: {
+        type: 'object',
+        properties: {
+          sku: { type: 'string' },
+          period_days: { type: 'number', description: 'Fenêtre en jours, défaut 30.' },
+          limit: { type: 'number' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'compare_channels',
+      description:
+        "Compare les 6 storefronts sur la période (défaut 30j) par revenus, nombre de commandes et quantités. Optionnellement filtrable par sku. Utilise-le pour répondre à \"quel canal marche le mieux\" ou \"meilleur canal pour ce SKU\".",
+      parameters: {
+        type: 'object',
+        properties: {
+          sku: { type: 'string' },
+          period_days: { type: 'number', description: 'Fenêtre en jours, défaut 30.' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_top_products',
+      description:
+        'Top N produits sur une période, classés par metric (revenue | units | orders). Filtre optionnel par channel. Utilise-le pour "meilleurs produits en Allemagne", "top vente cette semaine".',
+      parameters: {
+        type: 'object',
+        properties: {
+          channel: { type: 'string' },
+          period_days: { type: 'number', description: 'Fenêtre en jours, défaut 30.' },
+          metric: {
+            type: 'string',
+            enum: ['revenue', 'units', 'orders'],
+            description: 'Défaut: revenue.',
+          },
+          limit: { type: 'number', description: 'Défaut 10.' },
+        },
+      },
+    },
+  },
 ]
 
 type Args = Record<string, any>
@@ -286,6 +338,135 @@ async function getFounderState(ctx: ReadToolContext) {
   }
 }
 
+async function queryReturns(ctx: ReadToolContext, a: Args) {
+  const periodDays = Number(a.period_days) || 30
+  const limit = Math.min(Number(a.limit) || 50, 200)
+  const since = new Date(Date.now() - periodDays * 86400_000)
+
+  const rows = await ctx.prisma.operationalObject.findMany({
+    where: {
+      user_id: ctx.userId,
+      kind: 'return',
+      ...(a.sku ? { sku: String(a.sku) } : {}),
+      occurred_at: { gte: since },
+    },
+    orderBy: { occurred_at: 'desc' },
+    take: limit,
+    select: {
+      external_id: true,
+      source_channel: true,
+      sku: true,
+      quantity: true,
+      amount_cents: true,
+      occurred_at: true,
+      raw_payload: true,
+    },
+  })
+
+  const byReasonCounts: Record<string, number> = {}
+  const returns = rows.map((r) => {
+    const payload = (r.raw_payload ?? {}) as Record<string, unknown>
+    const reason = typeof payload.reason_code === 'string' ? payload.reason_code : 'unknown'
+    byReasonCounts[reason] = (byReasonCounts[reason] ?? 0) + 1
+    return {
+      id: r.external_id,
+      channel: r.source_channel,
+      sku: r.sku,
+      quantity: r.quantity,
+      refund_amount: r.amount_cents !== null ? r.amount_cents / 100 : null,
+      occurred_at: r.occurred_at?.toISOString(),
+      reason_code: reason,
+    }
+  })
+
+  return {
+    count: rows.length,
+    period_days: periodDays,
+    returns,
+    by_reason: byReasonCounts,
+  }
+}
+
+async function compareChannels(ctx: ReadToolContext, a: Args) {
+  const periodDays = Number(a.period_days) || 30
+  const since = new Date(Date.now() - periodDays * 86400_000)
+
+  const grouped = await ctx.prisma.operationalObject.groupBy({
+    by: ['source_channel'],
+    where: {
+      user_id: ctx.userId,
+      kind: 'order',
+      ...(a.sku ? { sku: String(a.sku) } : {}),
+      occurred_at: { gte: since },
+    },
+    _count: { _all: true },
+    _sum: { amount_cents: true, quantity: true },
+  })
+
+  const channels = grouped
+    .map((g) => ({
+      channel: g.source_channel,
+      orders: g._count._all,
+      units: g._sum.quantity ?? 0,
+      revenue: g._sum.amount_cents !== null ? (g._sum.amount_cents ?? 0) / 100 : 0,
+    }))
+    .sort((x, y) => y.revenue - x.revenue)
+
+  const totalRevenue = channels.reduce((n, c) => n + c.revenue, 0)
+  const withShare = channels.map((c) => ({
+    ...c,
+    share_pct: totalRevenue > 0 ? Number(((c.revenue / totalRevenue) * 100).toFixed(1)) : 0,
+  }))
+
+  return {
+    period_days: periodDays,
+    sku: a.sku ?? null,
+    total_revenue: Number(totalRevenue.toFixed(2)),
+    channels: withShare,
+  }
+}
+
+async function getTopProducts(ctx: ReadToolContext, a: Args) {
+  const periodDays = Number(a.period_days) || 30
+  const limit = Math.min(Number(a.limit) || 10, 50)
+  const metric = (String(a.metric || 'revenue') as 'revenue' | 'units' | 'orders')
+  const since = new Date(Date.now() - periodDays * 86400_000)
+
+  const grouped = await ctx.prisma.operationalObject.groupBy({
+    by: ['sku'],
+    where: {
+      user_id: ctx.userId,
+      kind: 'order',
+      sku: { not: null },
+      ...(a.channel ? { source_channel: String(a.channel) } : {}),
+      occurred_at: { gte: since },
+    },
+    _count: { _all: true },
+    _sum: { amount_cents: true, quantity: true },
+  })
+
+  const products = grouped.map((g) => ({
+    sku: g.sku,
+    orders: g._count._all,
+    units: g._sum.quantity ?? 0,
+    revenue: g._sum.amount_cents !== null ? (g._sum.amount_cents ?? 0) / 100 : 0,
+  }))
+
+  products.sort((x, y) => {
+    if (metric === 'units') return y.units - x.units
+    if (metric === 'orders') return y.orders - x.orders
+    return y.revenue - x.revenue
+  })
+
+  return {
+    period_days: periodDays,
+    channel: a.channel ?? 'all',
+    metric,
+    count: products.length,
+    top: products.slice(0, limit),
+  }
+}
+
 export async function executeReadTool(
   name: string,
   args: Record<string, unknown>,
@@ -299,6 +480,9 @@ export async function executeReadTool(
     case 'query_decisions': return queryDecisions(ctx, args)
     case 'predict_stockout': return predictStockout(ctx, args)
     case 'get_founder_state': return getFounderState(ctx)
+    case 'query_returns': return queryReturns(ctx, args)
+    case 'compare_channels': return compareChannels(ctx, args)
+    case 'get_top_products': return getTopProducts(ctx, args)
     default: throw new Error(`Unknown read tool: ${name}`)
   }
 }

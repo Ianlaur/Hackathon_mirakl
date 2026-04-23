@@ -14,6 +14,10 @@ export type TemplateId =
   | 'listing_pause_v1'
   | 'listing_resume_v1'
   | 'buffer_adjustment_v1'
+  | 'reputation_shield_v1'
+  | 'seasonal_prediction_v1'
+  | 'carrier_audit_v1'
+  | 'supplier_scorecard_v1'
 
 export type TemplateInputs = {
   oversell_risk_v1: {
@@ -81,6 +85,28 @@ export type TemplateInputs = {
     new_buffer: number
     reason: string
   }
+  reputation_shield_v1: {
+    primary_channel: string
+    paused_channels: string[]
+    reason: string
+  }
+  seasonal_prediction_v1: {
+    sku: string
+    event: string
+    growth_factor: number
+    recommended_buffer: number
+  }
+  carrier_audit_v1: {
+    sku: string
+    carrier: string
+    damage_rate: number
+    recommended_carrier: string
+  }
+  supplier_scorecard_v1: {
+    supplier: string
+    avg_delay_days: number
+    defect_rate: number
+  }
 }
 
 type Renderer<K extends TemplateId> = (input: TemplateInputs[K]) => string
@@ -116,6 +142,18 @@ const TEMPLATES: { [K in TemplateId]: Renderer<K> } = {
 
   buffer_adjustment_v1: ({ sku, old_buffer, new_buffer, reason }) =>
     `Buffer ${sku} passé de ${old_buffer} à ${new_buffer} sem. Raison: ${reason}.`,
+
+  reputation_shield_v1: ({ primary_channel, paused_channels, reason }) =>
+    `Reputation Shield activé. Canal principal protégé: ${primary_channel}. Exposition réduite sur: ${paused_channels.join(', ')}. ${reason}`,
+
+  seasonal_prediction_v1: ({ sku, event, growth_factor, recommended_buffer }) =>
+    `Prévision saisonnière ${sku} pour ${event}. Facteur croissance attendu ×${growth_factor}. Buffer recommandé ${recommended_buffer} sem.`,
+
+  carrier_audit_v1: ({ sku, carrier, damage_rate, recommended_carrier }) =>
+    `Audit transporteur ${sku}: ${carrier} taux de casse ${damage_rate}%. Transporteur recommandé: ${recommended_carrier}.`,
+
+  supplier_scorecard_v1: ({ supplier, avg_delay_days, defect_rate }) =>
+    `Fiche fournisseur ${supplier}: retard moyen ${avg_delay_days}j, taux défauts ${defect_rate}%.`,
 }
 
 export function render<K extends TemplateId>(templateId: K, input: TemplateInputs[K]): string {
