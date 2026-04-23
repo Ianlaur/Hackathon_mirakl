@@ -3,6 +3,9 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 const profileSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
   email: z.string().email('Email invalide'),
