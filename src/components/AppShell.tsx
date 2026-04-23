@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import MascotOrb from '@/components/MascotOrb'
@@ -13,7 +13,6 @@ const CHUNK_MAX_RETRIES = 3
 const CHUNK_RETRY_WINDOW_MS = 20000
 
 export default function AppShell({ children }: { children: ReactNode }) {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const pathname = usePathname()
   const shouldHideSidebar = pathname.startsWith('/onboarding')
 
@@ -91,12 +90,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <PluginProvider>
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_35%),linear-gradient(180deg,#f8fbff_0%,#eef3f9_100%)]">
-        {!shouldHideSidebar && <Sidebar onExpandedChange={setSidebarExpanded} />}
-        {/* Margin synced with sidebar width: w-20 (80px) collapsed, w-64 (256px) expanded */}
+        {!shouldHideSidebar && <Sidebar />}
         <main
-          className={`min-h-screen transition-[margin] duration-300 ease-out ${
-            shouldHideSidebar ? '' : sidebarExpanded ? 'lg:ml-64' : 'lg:ml-20'
-          }`}
+          className={`min-h-screen transition-[margin] duration-200 ease-out ${shouldHideSidebar ? '' : 'lg:ml-[240px]'}`}
         >
           <div className="px-4 pb-10 pt-6 sm:px-6 lg:px-8">{children}</div>
         </main>
