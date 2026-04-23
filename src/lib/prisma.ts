@@ -49,7 +49,9 @@ export async function prismaWithRetry<T>(
         error.code === 'P2024' ||
         errorMessage.includes('Connection') ||
         errorMessage.includes('Closed') ||
-        errorMessage.includes('timeout')
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('EMAXCONNSESSION') ||
+        errorMessage.includes('max clients reached')
       
       // Check if it's a connection error (Neon idle database)
       if (isConnectionError && attempt < maxRetries) {

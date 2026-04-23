@@ -27,42 +27,44 @@ export function RecommendationCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`w-full rounded-xl border p-4 text-left transition hover:border-blue-500 ${
-        selected ? 'border-blue-600 bg-[#2764FF]/10' : 'border-slate-200 bg-white'
+      className={`w-full rounded-lg border p-4 text-left transition ${
+        selected
+          ? 'border-[#2764FF] bg-[#F2F8FF] shadow-[0_1px_4px_rgba(0,0,0,0.1)]'
+          : 'border-[#DDE5EE] bg-white hover:border-[#BFCBDA] hover:bg-[#F2F8FF]/40'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-[#03182F]">
+          <p className="truncate font-serif text-[14px] font-bold leading-6 text-[#03182F]">
             {recommendation.title}
           </p>
-          <p className="mt-1 line-clamp-2 text-xs text-[#6B7480]">
+          <p className="mt-1 line-clamp-2 font-serif text-[12px] text-[#6B7480]">
             {recommendation.reasoning_summary}
           </p>
         </div>
         <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${badge.className}`}
         >
           {badge.text}
         </span>
       </div>
 
       {payload && isPending && (payload.items_count || payload.total_estimated_cost_eur) ? (
-        <div className="mt-3 flex flex-wrap gap-3 text-xs text-[#6B7480]">
+        <div className="mt-3 flex flex-wrap gap-2 font-serif text-[11px] text-[#6B7480]">
           {typeof payload.items_count === 'number' && (
-            <span>{payload.items_count} commandes</span>
+            <span className="rounded-full border border-[#DDE5EE] px-2 py-0.5">
+              {payload.items_count} commandes
+            </span>
           )}
           {typeof payload.total_estimated_cost_eur === 'number' && (
-            <>
-              {typeof payload.items_count === 'number' && <span>•</span>}
-              <span>{payload.total_estimated_cost_eur.toFixed(0)} €</span>
-            </>
+            <span className="rounded-full border border-[#DDE5EE] px-2 py-0.5">
+              {payload.total_estimated_cost_eur.toFixed(0)} €
+            </span>
           )}
           {payload.order_deadline && (
-            <>
-              <span>•</span>
-              <span>Deadline {payload.order_deadline}</span>
-            </>
+            <span className="rounded-full border border-[#DDE5EE] px-2 py-0.5">
+              Deadline {payload.order_deadline}
+            </span>
           )}
         </div>
       ) : null}
