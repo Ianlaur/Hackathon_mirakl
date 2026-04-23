@@ -1,6 +1,7 @@
 'use client'
 
-import { MoreVertical, Plus, Settings } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { MoreVertical, Plus, RefreshCw, Settings } from 'lucide-react'
 
 const marketplaces = [
   {
@@ -69,7 +70,133 @@ const apiRows = [
   { name: 'Leroy Merlin EU', lastSync: '2026-04-23 13:59:30', latency: '520ms', errorRate: '1.20%', errorColor: 'text-[#F22E75]' },
 ]
 
+type ShopifyConnectionStatus = {
+  id: string
+  shopDomain: string
+  shopName?: string | null
+  status: string
+  installedAt?: string | null
+  lastSyncedAt?: string | null
+  lastWebhookAt?: string | null
+  ordersCount: number
+}
+
+type ShopifyStatusPayload = {
+  connected: boolean
+  connections: ShopifyConnectionStatus[]
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export default function ActiveConnectionPage() {
+  const [shopDomain, setShopDomain] = useState('')
+  const [shopifyStatus, setShopifyStatus] = useState<ShopifyStatusPayload | null>(null)
+  const [shopifyLoading, setShopifyLoading] = useState(true)
+  const [syncingShopify, setSyncingShopify] = useState(false)
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
+
+  const loadShopifyStatus = useCallback(async () => {
+    setShopifyLoading(true)
+    try {
+      const response = await fetch('/api/integrations/shopify/status', { cache: 'no-store' })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to load Shopify status')
+      }
+      setShopifyStatus(data)
+    } catch (error) {
+      console.error('Shopify status error:', error)
+      setStatusMessage(
+        error instanceof Error ? error.message : 'Unable to load Shopify status'
+      )
+    } finally {
+      setShopifyLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadShopifyStatus()
+  }, [loadShopifyStatus])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const status = params.get('shopify')
+    const reason = params.get('reason')
+
+    if (status === 'connected') {
+      setStatusMessage('Shopify connected successfully. Initial sync started.')
+      params.delete('shopify')
+      params.delete('reason')
+      const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`
+      window.history.replaceState({}, '', next)
+      return
+    }
+
+    if (status === 'error') {
+      setStatusMessage(`Shopify connection failed${reason ? `: ${reason}` : ''}`)
+      params.delete('shopify')
+      params.delete('reason')
+      const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`
+      window.history.replaceState({}, '', next)
+    }
+  }, [])
+
+  const hasShopifyConnection = useMemo(
+    () => Boolean(shopifyStatus?.connections?.length),
+    [shopifyStatus]
+  )
+
+  const handleConnectShopify = () => {
+    if (!shopDomain.trim()) {
+      setStatusMessage('Please enter your Shopify shop domain (example: your-store.myshopify.com).')
+      return
+    }
+
+    window.location.href = `/api/integrations/shopify/install?shop=${encodeURIComponent(
+      shopDomain.trim()
+    )}`
+  }
+
+  const handleSyncShopify = async () => {
+    setSyncingShopify(true)
+    setStatusMessage(null)
+    try {
+      const response = await fetch('/api/integrations/shopify/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ limit: 75 }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Shopify sync failed')
+      }
+
+      const syncedOrders = Array.isArray(data.results)
+        ? data.results.reduce((acc: number, result: { upserted?: number }) => acc + (result.upserted || 0), 0)
+        : 0
+      setStatusMessage(`Shopify sync completed: ${syncedOrders} orders updated.`)
+      await loadShopifyStatus()
+    } catch (error) {
+      console.error('Shopify sync error:', error)
+      setStatusMessage(
+        error instanceof Error ? error.message : 'Unable to sync Shopify data'
+      )
+    } finally {
+      setSyncingShopify(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -86,6 +213,95 @@ export default function ActiveConnectionPage() {
           <Plus className="h-4 w-4" />
           Connect New Channel
         </button>
+      </div>
+
+      {/* Shopify App Control */}
+      <div className="bg-white border border-[#DDE5EE] rounded-xl p-5 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-serif text-base font-bold text-[#03182F]">Shopify App</h3>
+            <p className="text-[13px] text-[#6B7480] mt-1">
+              Connect your Shopify store and sync orders into Mirakl Connect.
+            </p>
+          </div>
+          <span
+            className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+              shopifyStatus?.connected
+                ? 'bg-[#3FA46A]/10 text-[#3FA46A]'
+                : 'bg-[#FFE7EC] text-[#F22E75]'
+            }`}
+          >
+            {shopifyStatus?.connected ? 'Connected' : 'Not Connected'}
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            type="text"
+            value={shopDomain}
+            onChange={(event) => setShopDomain(event.target.value)}
+            placeholder="your-store.myshopify.com"
+            className="h-10 w-[320px] rounded border border-[#DDE5EE] px-3 font-serif text-[13px] outline-none focus:border-[#004bd9] focus:ring-1 focus:ring-[#004bd9]"
+          />
+          <button
+            type="button"
+            onClick={handleConnectShopify}
+            className="h-10 px-4 bg-[#004bd9] text-white text-[13px] font-semibold rounded-lg hover:bg-[#004bd9]/90 transition-colors"
+          >
+            Connect Shopify
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleSyncShopify()}
+            disabled={!hasShopifyConnection || syncingShopify}
+            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${syncingShopify ? 'animate-spin' : ''}`} />
+            Sync Orders
+          </button>
+          <button
+            type="button"
+            onClick={() => void loadShopifyStatus()}
+            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            Refresh Status
+          </button>
+        </div>
+
+        {statusMessage ? (
+          <p className="text-[12px] text-[#30373E] bg-[#F2F8FF] border border-[#DDE5EE] rounded px-3 py-2">
+            {statusMessage}
+          </p>
+        ) : null}
+
+        <div className="border border-[#DDE5EE] rounded-lg overflow-hidden">
+          <div className="px-4 py-2 bg-slate-50/60 border-b border-[#DDE5EE] text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">
+            Shopify Connections
+          </div>
+          {shopifyLoading ? (
+            <div className="px-4 py-4 text-[13px] text-[#6B7480]">Loading Shopify status...</div>
+          ) : shopifyStatus?.connections?.length ? (
+            <div className="divide-y divide-slate-100">
+              {shopifyStatus.connections.map((connection) => (
+                <div key={connection.id} className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-serif text-[14px] font-bold text-[#03182F]">
+                      {connection.shopName || connection.shopDomain}
+                    </p>
+                    <p className="text-[12px] text-[#6B7480]">{connection.shopDomain}</p>
+                  </div>
+                  <div className="text-[12px] text-[#6B7480] flex flex-wrap gap-4">
+                    <span>Status: <strong>{connection.status}</strong></span>
+                    <span>Orders: <strong>{connection.ordersCount}</strong></span>
+                    <span>Last sync: <strong>{formatDateTime(connection.lastSyncedAt)}</strong></span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="px-4 py-4 text-[13px] text-[#6B7480]">No Shopify shop connected yet.</div>
+          )}
+        </div>
       </div>
 
       {/* Marketplace Cards Grid */}

@@ -468,3 +468,56 @@ model ExternalContextSignal {
   @@map("external_context_signals")
   @@schema("public")
 }
+
+model ShopifyConnection {
+  id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                String         @db.Uuid
+  shop_domain            String         @unique
+  shop_name              String?
+  external_shop_id       String?
+  encrypted_access_token String
+  scopes                 String[]
+  status                 String         @default("active")
+  installed_at           DateTime?
+  uninstalled_at         DateTime?
+  last_synced_at         DateTime?
+  last_webhook_at        DateTime?
+  created_at             DateTime       @default(now())
+  updated_at             DateTime       @updatedAt
+  orders                 ShopifyOrder[]
+
+  @@index([user_id, status])
+  @@index([user_id, created_at])
+  @@map("shopify_connections")
+  @@schema("public")
+}
+
+model ShopifyOrder {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String            @db.Uuid
+  connection_id       String            @db.Uuid
+  shopify_order_id    String
+  order_name          String?
+  email               String?
+  currency            String?
+  financial_status    String?
+  fulfillment_status  String?
+  order_status_url    String?
+  line_items_count    Int               @default(0)
+  total_price         Decimal?          @db.Decimal(12, 2)
+  subtotal_price      Decimal?          @db.Decimal(12, 2)
+  total_tax           Decimal?          @db.Decimal(12, 2)
+  total_discounts     Decimal?          @db.Decimal(12, 2)
+  processed_at        DateTime?
+  order_created_at    DateTime?
+  raw_payload         Json?
+  created_at          DateTime          @default(now())
+  updated_at          DateTime          @updatedAt
+  connection          ShopifyConnection @relation(fields: [connection_id], references: [id], onDelete: Cascade)
+
+  @@unique([connection_id, shopify_order_id])
+  @@index([user_id, order_created_at])
+  @@index([connection_id, order_created_at])
+  @@map("shopify_orders")
+  @@schema("public")
+}
