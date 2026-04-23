@@ -94,7 +94,7 @@ export function useAudioRecorder(): AudioRecorderHook {
       }
       recorder.onerror = (event) => {
         const err = (event as Event & { error?: Error }).error
-        setError(err?.message ?? "Erreur d'enregistrement")
+        setError(err?.message ?? 'Recording error')
         cleanup()
         setState('idle')
       }
@@ -112,9 +112,9 @@ export function useAudioRecorder(): AudioRecorderHook {
       const msg =
         err instanceof Error
           ? err.name === 'NotAllowedError'
-            ? 'Permission microphone refusée.'
+            ? 'Microphone permission denied.'
             : err.message
-          : "Impossible d'accéder au micro."
+          : 'Unable to access microphone.'
       setError(msg)
       cleanup()
       setState('idle')

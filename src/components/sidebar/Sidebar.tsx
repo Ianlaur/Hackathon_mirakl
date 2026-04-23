@@ -82,7 +82,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
       <button
         type="button"
         onClick={() => setIsMobileOpen(true)}
-        aria-label="Ouvrir la navigation"
+        aria-label="Open navigation"
         className="fixed left-4 top-4 z-50 rounded-lg border border-[#DDE5EE] bg-white p-2 text-[#30373E] shadow-sm lg:hidden"
       >
         <Menu className="h-5 w-5" />
@@ -91,7 +91,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
       {isMobileOpen && (
         <button
           type="button"
-          aria-label="Fermer la navigation"
+          aria-label="Close navigation"
           onClick={() => setIsMobileOpen(false)}
           className="fixed inset-0 z-40 bg-[#03182F]/40 lg:hidden"
         />
@@ -110,16 +110,27 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
               type="button"
               onClick={() => setIsMobileOpen(false)}
               className="rounded-lg border border-[#DDE5EE] bg-white p-1.5 text-[#6B7480]"
-              aria-label="Fermer le menu"
+              aria-label="Close menu"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Header with collapse toggle */}
-        <div className="flex items-center justify-between px-4 pb-4 pt-6">
-          <div className={`overflow-hidden transition-all duration-300 ${collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+        {/* Header — Mirakl logo when collapsed, "MIRAKL CONNECT / Operations" when expanded */}
+        <div className="relative flex items-center px-4 pb-4 pt-6 min-h-[52px]">
+          <img
+            src="/mirakl-logo.png"
+            alt="Mirakl"
+            className={`absolute left-1/2 top-1 -translate-x-1/2 h-16 w-16 object-contain transition-opacity duration-200 pointer-events-none ${
+              collapsed ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          <div
+            className={`overflow-hidden transition-all duration-300 ${
+              collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+            }`}
+          >
             <div className="text-lg font-bold text-[#03182F] tracking-widest font-serif whitespace-nowrap">MIRAKL CONNECT</div>
             <div className="text-xs text-[#6B7480] uppercase mt-1 tracking-wider">Operations</div>
           </div>

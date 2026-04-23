@@ -21,17 +21,17 @@ export function RecommendationDetailPanel({
   const items = payload?.items ?? []
 
   const [checked, setChecked] = useState<Set<string>>(
-    () => new Set(items.map((i) => i.product_id))
+    () => new Set(items.map((item) => item.product_id))
   )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const selectedItems = useMemo(
-    () => items.filter((i) => checked.has(i.product_id)),
+    () => items.filter((item) => checked.has(item.product_id)),
     [items, checked]
   )
   const selectedCost = useMemo(
-    () => selectedItems.reduce((s, i) => s + i.estimated_cost_eur, 0),
+    () => selectedItems.reduce((sum, item) => sum + item.estimated_cost_eur, 0),
     [selectedItems]
   )
 
@@ -50,12 +50,12 @@ export function RecommendationDetailPanel({
       const body =
         action === 'approve'
           ? {
-              comment: `Approuvé sur ${selectedItems.length}/${items.length} lignes, ${selectedCost.toFixed(2)} €`,
+              comment: `Approved on ${selectedItems.length}/${items.length} lines, ${selectedCost.toFixed(2)} EUR`,
               selected_product_ids: Array.from(checked),
             }
           : {}
 
-      const resp = await fetch(
+      const response = await fetch(
         `/api/copilot/recommendations/${recommendation.id}/${action}`,
         {
           method: 'POST',
@@ -64,14 +64,15 @@ export function RecommendationDetailPanel({
         }
       )
 
-      if (!resp.ok) {
-        const data = await resp.json().catch(() => ({}))
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
         throw new Error(data?.error ?? 'Request failed')
       }
-      const data = await resp.json()
+
+      const data = await response.json()
       onStatusChange({ ...recommendation, status: data.recommendation.status })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setBusy(false)
     }
@@ -79,7 +80,9 @@ export function RecommendationDetailPanel({
 
   if (!payload) {
     return (
-      <p className="text-sm text-[#6B7480]">Pas de détails disponibles pour cette action.</p>
+      <p className="text-sm text-[#6B7480]">
+        No details available for this action.
+      </p>
     )
   }
 
@@ -89,7 +92,10 @@ export function RecommendationDetailPanel({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-wide text-[#6B7480]">
-              Congés détectés{payload.leave_duration_days ? ` • ${payload.leave_duration_days} jours` : ''}
+              Leave detected
+              {payload.leave_duration_days
+                ? ` | ${payload.leave_duration_days} days`
+                : ''}
             </p>
             <h2 className="mt-1 text-xl font-semibold text-[#03182F]">
               {recommendation.title}
@@ -97,22 +103,30 @@ export function RecommendationDetailPanel({
           </div>
           {payload.order_deadline && (
             <div className="rounded-md bg-[#FFE7EC] px-3 py-2 text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#F22E75]">Deadline commande</p>
-              <p className="mt-0.5 text-sm font-semibold text-[#03182F]">{payload.order_deadline}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#F22E75]">
+                Order deadline
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-[#03182F]">
+                {payload.order_deadline}
+              </p>
             </div>
           )}
         </div>
-        <p className="mt-3 text-sm text-[#30373E]">{recommendation.reasoning_summary}</p>
+        <p className="mt-3 text-sm text-[#30373E]">
+          {recommendation.reasoning_summary}
+        </p>
         {recommendation.expected_impact && (
-          <p className="mt-2 text-xs text-[#3FA46A]">{recommendation.expected_impact}</p>
+          <p className="mt-2 text-xs text-[#3FA46A]">
+            {recommendation.expected_impact}
+          </p>
         )}
       </header>
 
       {(payload.supplementary_notes?.length ?? 0) > 0 && (
         <div className="mt-4 space-y-1 rounded-md bg-[#E0A93A]/10 p-3">
-          {(payload.supplementary_notes ?? []).map((n, idx) => (
-            <p key={idx} className="text-xs text-[#30373E]">
-              {n}
+          {(payload.supplementary_notes ?? []).map((note, index) => (
+            <p key={index} className="text-xs text-[#30373E]">
+              {note}
             </p>
           ))}
         </div>
@@ -122,15 +136,15 @@ export function RecommendationDetailPanel({
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-[#6B7480]">
             <tr>
-              <th className="p-3 text-left">☑</th>
-              <th className="p-3 text-left">Priorité</th>
+              <th className="p-3 text-left">Select</th>
+              <th className="p-3 text-left">Priority</th>
               <th className="p-3 text-left">SKU</th>
-              <th className="p-3 text-left">Produit</th>
+              <th className="p-3 text-left">Product</th>
               <th className="p-3 text-right">Stock</th>
               <th className="p-3 text-right">Projection</th>
-              <th className="p-3 text-right">Reco qty</th>
-              <th className="p-3 text-left">Fournisseur</th>
-              <th className="p-3 text-right">Coût</th>
+              <th className="p-3 text-right">Rec. qty</th>
+              <th className="p-3 text-left">Supplier</th>
+              <th className="p-3 text-right">Cost</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -151,13 +165,17 @@ export function RecommendationDetailPanel({
                     {item.priority}
                   </span>
                 </td>
-                <td className="p-3 font-mono text-xs text-[#30373E]">{item.sku ?? '—'}</td>
+                <td className="p-3 font-mono text-xs text-[#30373E]">
+                  {item.sku ?? '-'}
+                </td>
                 <td className="p-3 text-[#03182F]">{item.product_name}</td>
-                <td className="p-3 text-right tabular-nums">{item.current_stock}</td>
+                <td className="p-3 text-right tabular-nums">
+                  {item.current_stock}
+                </td>
                 <td
                   className={`p-3 text-right tabular-nums ${
                     item.projected_stock_end_of_leave < 0
-                      ? 'text-[#F22E75] font-medium'
+                      ? 'font-medium text-[#F22E75]'
                       : 'text-[#30373E]'
                   }`}
                 >
@@ -166,9 +184,13 @@ export function RecommendationDetailPanel({
                 <td className="p-3 text-right tabular-nums font-semibold text-[#03182F]">
                   +{item.recommended_qty}
                 </td>
-                <td className="p-3 text-xs text-[#30373E]">{item.supplier ?? '—'}</td>
+                <td className="p-3 text-xs text-[#30373E]">
+                  {item.supplier ?? '-'}
+                </td>
                 <td className="p-3 text-right tabular-nums">
-                  {typeof item.estimated_cost_eur === 'number' ? `${item.estimated_cost_eur.toFixed(2)} €` : '—'}
+                  {typeof item.estimated_cost_eur === 'number'
+                    ? `${item.estimated_cost_eur.toFixed(2)} EUR`
+                    : '-'}
                 </td>
               </tr>
             ))}
@@ -181,8 +203,10 @@ export function RecommendationDetailPanel({
           {error && <p className="mb-3 text-sm text-[#F22E75]">{error}</p>}
           <div className="flex items-center justify-between">
             <div className="text-sm text-[#6B7480]">
-              {selectedItems.length}/{items.length} lignes sélectionnées •{' '}
-              <strong className="text-[#03182F]">{selectedCost.toFixed(2)} €</strong>
+              {selectedItems.length}/{items.length} lines selected |{' '}
+              <strong className="text-[#03182F]">
+                {selectedCost.toFixed(2)} EUR
+              </strong>
             </div>
             <div className="flex gap-2">
               <button
@@ -191,7 +215,7 @@ export function RecommendationDetailPanel({
                 disabled={busy}
                 className="rounded-xl border border-[#BFCBDA] bg-white px-4 py-2 text-sm font-medium text-[#30373E] hover:bg-slate-50 disabled:opacity-50"
               >
-                Rejeter
+                Reject
               </button>
               <button
                 type="button"
@@ -199,7 +223,7 @@ export function RecommendationDetailPanel({
                 disabled={busy || selectedItems.length === 0}
                 className="rounded-xl bg-[#2764FF] px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                Approuver la sélection
+                Approve selection
               </button>
             </div>
           </div>

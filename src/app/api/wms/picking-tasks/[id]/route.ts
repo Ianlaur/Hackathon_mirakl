@@ -78,6 +78,6 @@ export async function PATCH(
     return NextResponse.json(task)
   } catch (error) {
     console.error('Error updating picking task:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

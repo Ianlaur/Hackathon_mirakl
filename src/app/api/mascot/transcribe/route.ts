@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('transcribe error:', error)
     return NextResponse.json(
-      { error: 'Erreur serveur pendant la transcription' },
+      { error: 'Server error during transcription' },
       { status: 500 }
     )
   }

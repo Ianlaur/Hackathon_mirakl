@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(binContents)
   } catch (error) {
     console.error('Error fetching bin contents:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       where: { id: data.product_id, user_id: userId }
     })
     if (!product) {
-      return NextResponse.json({ error: 'Produit introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
     // Upsert bin content (create or update)
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
     }
     console.error('Error creating bin content:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
@@ -141,6 +141,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting bin content:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
