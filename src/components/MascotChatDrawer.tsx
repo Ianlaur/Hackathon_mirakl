@@ -324,7 +324,7 @@ export default function MascotChatDrawer({
                   ? 'Transcribing…'
                   : placeholderActive
                     ? animatedPlaceholder || '\u00a0'
-                    : 'Mira'
+                    : 'Leia'
             }
             rows={1}
             className="iris-searchbar__input"
@@ -346,8 +346,8 @@ export default function MascotChatDrawer({
               type="button"
               onClick={handleMicClick}
               disabled={transcribing || isStarting}
-              aria-label={isRecording ? "Stop recording" : 'Talk to Mira'}
-              title={isRecording ? "Stop recording" : 'Talk to Mira'}
+              aria-label={isRecording ? "Stop recording" : 'Talk to Leia'}
+              title={isRecording ? "Stop recording" : 'Talk to Leia'}
               className={`iris-searchbar__mic ${
                 isRecording ? 'iris-searchbar__mic--recording' : ''
               } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
