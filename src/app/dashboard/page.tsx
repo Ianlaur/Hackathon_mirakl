@@ -9,13 +9,11 @@ import {
   CheckCircle2,
   Clock3,
   DollarSign,
-  Filter,
   MapPin,
   Package,
   Search,
   Truck,
   Wallet,
-  Zap,
 } from 'lucide-react'
 import type { Shipment, ShipmentStatus } from '@/types/shipment'
 import { usePluginContext } from '@/contexts/PluginContext'
@@ -160,16 +158,16 @@ function orderToShipment(order: Order): Shipment {
 function statusStyle(status: Order['status']) {
   if (status === 'Delivered') return 'border-emerald-200 bg-[#3FA46A]/10 text-emerald-700'
   if (status === 'In Transit') return 'border-amber-200 bg-[#E0A93A]/10 text-amber-700'
-  if (status === 'Blocked') return 'border-rose-200 bg-rose-50 text-rose-700'
-  return 'border-indigo-200 bg-indigo-50 text-indigo-700'
+  if (status === 'Blocked') return 'bg-[#FFE7EC] text-[#F22E75]'
+  return 'bg-[#E9F0FF] text-[#2764FF]'
 }
 
 function inventoryTone(status: InventoryItem['status']) {
   if (status === 'critical') {
     return {
-      chip: 'border-rose-200 bg-rose-50 text-rose-700',
-      qty: 'text-rose-700',
-      bar: 'bg-rose-500',
+      chip: 'bg-[#FFE7EC] text-[#F22E75]',
+      qty: 'text-[#F22E75]',
+      bar: 'bg-[#F22E75]',
     }
   }
   if (status === 'low') {
@@ -188,7 +186,7 @@ function inventoryTone(status: InventoryItem['status']) {
 
 function lowStockStatusClass(status: string) {
   if (status === 'review_ready') return 'bg-[#3FA46A]/10 text-emerald-700'
-  if (status === 'failed') return 'bg-rose-50 text-rose-700'
+  if (status === 'failed') return 'bg-[#FFE7EC] text-[#F22E75]'
   if (status === 'processing') return 'bg-[#E0A93A]/10 text-amber-700'
   return 'bg-slate-100 text-[#30373E]'
 }
@@ -207,7 +205,7 @@ export default function DashboardPage() {
     ? [
         { label: 'Total Revenue', value: '€2.47M', trend: '+12.4% vs last month', icon: DollarSign, trendColor: 'text-[#3FA46A]' },
         { label: 'Stripe Liquidity Available', value: '€184,300', trend: '+€23,500 this week', icon: Wallet, trendColor: 'text-[#3FA46A]' },
-        { label: 'Active Shipments', value: '127', trend: '-3 blocked at port', icon: Package, trendColor: 'text-rose-600' },
+        { label: 'Active Shipments', value: '127', trend: '-3 blocked at port', icon: Package, trendColor: 'text-[#F22E75]' },
       ]
     : [
         { label: 'Total Revenue', value: '€8,240', trend: '+6.2% vs last month', icon: DollarSign, trendColor: 'text-[#3FA46A]' },
@@ -256,45 +254,41 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]">
+    <div className="min-h-screen bg-[#F2F8FF]">
       <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8">
-        <header className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <header className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight text-[#03182F]">Control Tower</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="font-serif text-[22px] font-bold leading-[32px] tracking-tight text-[#03182F]">Control Tower</h1>
               <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                  isPro ? 'border border-indigo-200 bg-indigo-50 text-indigo-700' : 'border border-slate-200 bg-slate-100 text-[#6B7480]'
+                className={`rounded-md px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${
+                  isPro ? 'bg-[#E9F0FF] text-[#2764FF]' : 'bg-white text-[#6B7480] border border-[#DDE5EE]'
                 }`}
               >
-                {isPro ? 'Optimisé flux internationaux' : 'Optimisé activité atelier'}
+                {isPro ? 'Flux internationaux' : 'Activité atelier'}
               </span>
             </div>
-            <p className="mt-1 text-sm text-[#6B7480]">
+            <p className="mt-2 text-sm text-[#6B7480]">
               {isPro
-                ? 'Dashboard optimisé pour vos opérations globales avec supervision temps réel.'
-                : 'Dashboard optimisé pour votre activité locale, avec les indicateurs essentiels.'}
+                ? 'Supervision temps réel de vos opérations globales.'
+                : 'Indicateurs essentiels de votre activité locale.'}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/app-store"
-              className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+              className="inline-flex items-center gap-2 rounded-md border border-[#DDE5EE] bg-white px-4 py-2 text-sm font-semibold text-[#03182F] transition hover:border-[#2764FF] hover:text-[#2764FF]"
             >
-              <Zap className="h-4 w-4" /> Manage Plugins <ArrowRight className="h-4 w-4" />
+              Plugins <ArrowRight className="h-3.5 w-3.5" />
             </Link>
 
-            <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#6B7480]">
+            <label className="inline-flex items-center gap-2 rounded-md border border-[#DDE5EE] bg-white px-3 py-2 text-sm text-[#6B7480]">
               <Search className="h-4 w-4" />
-              <input className="w-44 border-none bg-transparent text-[#30373E] outline-none placeholder:text-[#6B7480]" placeholder="Search orders..." />
+              <input className="w-44 border-none bg-transparent text-[#30373E] outline-none placeholder:text-[#6B7480]" placeholder="Rechercher une commande" />
             </label>
 
-            <button className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#6B7480] transition hover:bg-slate-50">
-              <Filter className="h-4 w-4" /> Filter
-            </button>
-
-            <button className="rounded-xl border border-slate-200 bg-white p-2.5 text-[#6B7480] transition hover:bg-slate-50">
+            <button className="rounded-md border border-[#DDE5EE] bg-white p-2.5 text-[#6B7480] transition hover:text-[#03182F]" aria-label="Notifications">
               <Bell className="h-4 w-4" />
             </button>
           </div>
@@ -309,8 +303,8 @@ export default function DashboardPage() {
                   <p className="mt-3 text-4xl font-semibold tracking-tight text-[#03182F]">{item.value}</p>
                   <p className={`mt-2 text-base font-medium ${item.trendColor}`}>↗ {item.trend}</p>
                 </div>
-                <div className="rounded-xl bg-indigo-100 p-3 text-indigo-700">
-                  <item.icon className="h-5 w-5" />
+                <div className="rounded-md bg-[#E9F0FF] p-2.5 text-[#2764FF]">
+                  <item.icon className="h-4 w-4" strokeWidth={2} />
                 </div>
               </div>
             </article>
@@ -320,8 +314,8 @@ export default function DashboardPage() {
         <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#30373E]">Inventory Alerts</h2>
-            <span className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
-              {alertCount} alerts
+            <span className="rounded-md bg-[#FFE7EC] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#F22E75]">
+              {alertCount} alertes
             </span>
           </div>
 
@@ -416,9 +410,9 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-semibold text-[#03182F]">{isPro ? 'Global Orders' : 'Recent Orders'}</h2>
-              <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">{orders.length} orders</span>
+              <span className="rounded-full bg-[#E9F0FF] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#2764FF]">{orders.length} orders</span>
             </div>
-            <button className="text-sm font-semibold text-indigo-700">View all →</button>
+            <button className="text-sm font-semibold text-[#2764FF]">View all →</button>
           </div>
 
           <div className="overflow-x-auto">
@@ -443,11 +437,11 @@ export default function DashboardPage() {
                     aria-selected={selectedOrderId === order.id}
                     className={`cursor-pointer transition-colors ${
                       selectedOrderId === order.id
-                        ? 'bg-indigo-50/70'
+                        ? 'bg-[#E9F0FF]/70'
                         : 'hover:bg-slate-50/80'
                     }`}
                   >
-                    <td className="px-4 py-4 font-semibold text-indigo-700">{order.id}</td>
+                    <td className="px-4 py-4 font-semibold text-[#2764FF]">{order.id}</td>
                     <td className="px-4 py-4 font-medium text-[#03182F]">{order.product}</td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${statusStyle(order.status)}`}>
@@ -461,7 +455,7 @@ export default function DashboardPage() {
                       <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4 text-[#6B7480]" /> {order.origin}</span>{' '}
                       <span className="text-[#6B7480]">→</span> {order.destination}
                     </td>
-                    <td className={`px-4 py-4 font-semibold ${order.status === 'Blocked' ? 'text-rose-700' : 'text-[#03182F]'}`}>{order.eta}</td>
+                    <td className={`px-4 py-4 font-semibold ${order.status === 'Blocked' ? 'text-[#F22E75]' : 'text-[#03182F]'}`}>{order.eta}</td>
                     <td className="px-4 py-4 text-[#30373E]">{order.carrier}</td>
                     <td className="px-4 py-4 font-medium text-emerald-700">{order.co2}</td>
                     <td className="px-4 py-4 font-semibold text-[#03182F]">{order.stock}</td>

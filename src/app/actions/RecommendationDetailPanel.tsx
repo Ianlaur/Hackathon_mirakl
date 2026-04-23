@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react'
 import type { PlanItemDTO, RecommendationDTO } from './types'
 
 const priorityStyles: Record<PlanItemDTO['priority'], string> = {
-  critical: 'bg-rose-100 text-rose-700',
+  critical: 'bg-[#FFE7EC] text-[#F22E75]',
   high: 'bg-[#E0A93A]/10 text-amber-700',
-  medium: 'bg-sky-100 text-sky-700',
+  medium: 'bg-[#E9F0FF] text-[#2764FF]',
 }
 
 export function RecommendationDetailPanel({
@@ -96,23 +96,23 @@ export function RecommendationDetailPanel({
             </h2>
           </div>
           {payload.order_deadline && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-right">
-              <p className="text-xs text-rose-700">Deadline commande</p>
-              <p className="text-sm font-semibold text-rose-900">{payload.order_deadline}</p>
+            <div className="rounded-md bg-[#FFE7EC] px-3 py-2 text-right">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#F22E75]">Deadline commande</p>
+              <p className="mt-0.5 text-sm font-semibold text-[#03182F]">{payload.order_deadline}</p>
             </div>
           )}
         </div>
         <p className="mt-3 text-sm text-[#30373E]">{recommendation.reasoning_summary}</p>
         {recommendation.expected_impact && (
-          <p className="mt-2 text-xs text-emerald-700">💡 {recommendation.expected_impact}</p>
+          <p className="mt-2 text-xs text-[#3FA46A]">{recommendation.expected_impact}</p>
         )}
       </header>
 
       {(payload.supplementary_notes?.length ?? 0) > 0 && (
-        <div className="mt-4 space-y-1 rounded-xl border border-amber-200 bg-[#E0A93A]/10 p-3">
+        <div className="mt-4 space-y-1 rounded-md bg-[#E0A93A]/10 p-3">
           {(payload.supplementary_notes ?? []).map((n, idx) => (
-            <p key={idx} className="text-xs text-amber-900">
-              ⚠️ {n}
+            <p key={idx} className="text-xs text-[#30373E]">
+              {n}
             </p>
           ))}
         </div>
@@ -157,7 +157,7 @@ export function RecommendationDetailPanel({
                 <td
                   className={`p-3 text-right tabular-nums ${
                     item.projected_stock_end_of_leave < 0
-                      ? 'text-rose-700 font-medium'
+                      ? 'text-[#F22E75] font-medium'
                       : 'text-[#30373E]'
                   }`}
                 >
@@ -178,7 +178,7 @@ export function RecommendationDetailPanel({
 
       {isPending && (
         <footer className="mt-6 border-t border-slate-200 pt-4">
-          {error && <p className="mb-3 text-sm text-rose-700">{error}</p>}
+          {error && <p className="mb-3 text-sm text-[#F22E75]">{error}</p>}
           <div className="flex items-center justify-between">
             <div className="text-sm text-[#6B7480]">
               {selectedItems.length}/{items.length} lignes sélectionnées •{' '}
