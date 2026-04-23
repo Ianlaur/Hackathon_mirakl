@@ -20,7 +20,7 @@ export default function AppStorePage() {
   const { activePlugins, togglePlugin, isActive, setPlugins } = useActivePlugins()
   const allPluginIds = NAVIGATION_CONFIG.plugins.map((plugin) => plugin.id)
   const isBasicMode = activePlugins.length === 0
-  const isComplexMode = allPluginIds.every((pluginId) => activePlugins.includes(pluginId))
+  const isProMode = allPluginIds.every((pluginId) => activePlugins.includes(pluginId))
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -53,12 +53,12 @@ export default function AppStorePage() {
               type="button"
               onClick={() => setPlugins(allPluginIds)}
               className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
-                isComplexMode
+                isProMode
                   ? 'border-blue-200 bg-blue-50 text-blue-700'
                   : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
               }`}
             >
-              COMPLEXE
+              PRO
             </button>
           </div>
         </div>

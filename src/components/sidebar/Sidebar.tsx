@@ -92,7 +92,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-screen w-60 flex-col border-r border-slate-100 bg-white transition-transform duration-200 ${
+        className={`fixed left-0 top-0 z-50 flex h-screen w-[240px] flex-col border-r border-slate-200 bg-white font-sans transition-transform duration-200 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
