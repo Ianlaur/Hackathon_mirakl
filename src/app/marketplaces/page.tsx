@@ -123,11 +123,27 @@ function ProposalsTab() {
                   <p className="font-serif text-lg font-bold text-[#03182F]">{p.revenue}</p>
                 </div>
                 <div className="flex justify-end gap-2">
-                  <button className="h-9 px-4 bg-[#ba1a1a] text-white text-[13px] font-bold hover:bg-[#ba1a1a]/90 transition-colors rounded shadow-sm">DECLINE</button>
-                  <button className="h-9 px-4 bg-[#004bd9] text-white text-[13px] font-bold hover:bg-[#004bd9]/90 transition-colors flex items-center gap-1 rounded shadow-sm">
-                    <Mail className="h-3.5 w-3.5" />MESSAGE
+                  <button
+                    className="h-9 w-9 bg-[#ba1a1a] text-white hover:bg-[#ba1a1a]/90 transition-colors rounded shadow-sm flex items-center justify-center"
+                    aria-label="Decline"
+                    title="Decline"
+                  >
+                    <X className="h-4 w-4" />
                   </button>
-                  <button className="h-9 px-4 bg-[#3FA46A] text-white text-[13px] font-bold hover:bg-[#3FA46A]/90 transition-colors rounded shadow-sm">ACCEPT</button>
+                  <button
+                    className="h-9 w-9 bg-[#004bd9] text-white hover:bg-[#004bd9]/90 transition-colors rounded shadow-sm flex items-center justify-center"
+                    aria-label="Message"
+                    title="Message"
+                  >
+                    <Mail className="h-4 w-4" />
+                  </button>
+                  <button
+                    className="h-9 w-9 bg-[#3FA46A] text-white hover:bg-[#3FA46A]/90 transition-colors rounded shadow-sm flex items-center justify-center"
+                    aria-label="Accept"
+                    title="Accept"
+                  >
+                    <Check className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             </div>

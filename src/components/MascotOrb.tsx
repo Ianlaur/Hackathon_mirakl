@@ -13,6 +13,7 @@ const SPEECH_LINES = [
 export default function MascotOrb() {
   const [open, setOpen] = useState(false)
   const [speechIndex, setSpeechIndex] = useState(0)
+  const [speechDismissed, setSpeechDismissed] = useState(false)
 
   useEffect(() => {
     if (open) return
@@ -25,15 +26,27 @@ export default function MascotOrb() {
   return (
     <>
       <div className="fixed bottom-6 right-6 z-30 h-24 w-24 select-none lg:h-28 lg:w-28">
-        {!open && (
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="pointer-events-auto absolute bottom-[calc(100%+8px)] right-0 z-20 w-[260px] max-w-[calc(100vw-32px)] rounded-xl border border-[#DDE5EE] bg-white/95 px-3 py-2 text-left shadow-[0_4px_16px_rgba(3,24,47,0.16)] backdrop-blur-sm transition hover:bg-white"
-          >
-            <p className="font-serif text-[11px] font-bold uppercase tracking-[0.1em] text-[#2764FF]">Leia</p>
-            <p className="font-serif text-[12px] leading-5 text-[#30373E]">{SPEECH_LINES[speechIndex]}</p>
-          </button>
+        {!open && !speechDismissed && (
+          <div className="pointer-events-auto absolute bottom-[calc(100%+8px)] right-0 z-20 w-[260px] max-w-[calc(100vw-32px)] rounded-xl border border-[#DDE5EE] bg-white/95 px-3 py-2 text-left shadow-[0_4px_16px_rgba(3,24,47,0.16)] backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={() => setSpeechDismissed(true)}
+              className="absolute right-1 top-1 rounded p-1 text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F]"
+              aria-label="Close Leia suggestion"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="w-full pr-5 text-left transition hover:bg-white"
+            >
+              <p className="font-serif text-[11px] font-bold uppercase tracking-[0.1em] text-[#2764FF]">Leia</p>
+              <p className="font-serif text-[12px] leading-5 text-[#30373E]">{SPEECH_LINES[speechIndex]}</p>
+            </button>
+          </div>
         )}
 
         <button

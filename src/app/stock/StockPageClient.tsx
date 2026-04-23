@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { Wallet } from 'lucide-react'
 
 interface Product {
   id: string
@@ -64,6 +65,8 @@ const MOVEMENT_TYPES = {
   initial: { label: 'Initial stock', icon: '○', color: 'text-teal-600 bg-teal-50' },
 }
 
+const DEFAULT_VISIBLE_PRODUCTS = 16
+
 export default function StockPageClient({
   products,
   categories,
@@ -83,6 +86,8 @@ export default function StockPageClient({
   const [showStockModal, setShowStockModal] = useState<string | null>(null)
   const [showImportModal, setShowImportModal] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [productsCollapsed, setProductsCollapsed] = useState(false)
+  const [showAllProducts, setShowAllProducts] = useState(false)
 
   // Delete product handler
   const handleDeleteProduct = async (productId: string, productName: string) => {
@@ -213,6 +218,15 @@ export default function StockPageClient({
     return matchesSearch && matchesCategory && matchesLowStock
   })
 
+  const hasHiddenProducts = filteredProducts.length > DEFAULT_VISIBLE_PRODUCTS
+  const displayedProducts = showAllProducts
+    ? filteredProducts
+    : filteredProducts.slice(0, DEFAULT_VISIBLE_PRODUCTS)
+
+  useEffect(() => {
+    setShowAllProducts(false)
+  }, [searchQuery, selectedCategory, showLowStock])
+
   return (
     <div className="min-h-screen bg-[#F2F8FF]">
       {/* Header */}
@@ -317,9 +331,7 @@ export default function StockPageClient({
           <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DDE5EE]">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-[#3FA46A]/10 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-[#3FA46A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Wallet className="w-6 h-6 text-[#3FA46A]" />
               </div>
               <div>
                 <p className="text-sm text-[#6B7480]">Stock value</p>
@@ -361,7 +373,7 @@ export default function StockPageClient({
           {/* Products List */}
           <div className="lg:col-span-2">
             {/* Filters */}
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-[#DDE5EE] mb-6">
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-[#DDE5EE] mb-6 font-serif">
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex-1 min-w-[200px]">
                   <div className="relative">
@@ -373,7 +385,7 @@ export default function StockPageClient({
                       placeholder="Search a product..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff] focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff] focus:border-transparent font-serif"
                     />
                   </div>
                 </div>
@@ -381,7 +393,7 @@ export default function StockPageClient({
                 <select
                   value={selectedCategory || ''}
                   onChange={(e) => setSelectedCategory(e.target.value || null)}
-                  className="px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff] focus:border-transparent max-w-[200px] truncate"
+                  className="px-4 py-2 border border-[#DDE5EE] rounded-xl focus:ring-2 focus:ring-[#2764ff] focus:border-transparent max-w-[200px] truncate font-serif"
                 >
                   <option value="">All categories</option>
                   {categories.map(cat => (
@@ -403,7 +415,7 @@ export default function StockPageClient({
                         }
                       }
                     }}
-                    className="px-3 py-2 text-sm text-[#F22E75] hover:bg-[#FFE7EC] rounded-xl font-medium transition-colors"
+                    className="px-3 py-2 text-sm text-[#F22E75] hover:bg-[#FFE7EC] rounded-xl font-medium transition-colors font-serif"
                     title="Delete empty categories"
                   >
                     Clean categories
@@ -412,7 +424,7 @@ export default function StockPageClient({
 
                 <button
                   onClick={() => setShowLowStock(!showLowStock)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl font-medium transition-colors font-serif ${
                     showLowStock 
                       ? 'bg-[#E0A93A]/10 text-amber-700' 
                       : 'bg-[#F2F8FF] text-[#30373E] hover:bg-gray-200'
@@ -424,122 +436,164 @@ export default function StockPageClient({
             </div>
 
             {/* Products Grid */}
-            <div className="space-y-3">
-              {filteredProducts.length === 0 ? (
-                <div className="bg-white rounded-lg p-12 shadow-sm border border-[#DDE5EE] text-center">
+            <div className="bg-white rounded-lg shadow-sm border border-[#DDE5EE] font-serif">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DDE5EE] px-4 py-3">
+                <div>
+                  <h2 className="text-base font-semibold text-[#03182F] font-serif">Products list</h2>
+                  <p className="text-xs text-[#6B7480] font-serif">
+                    {filteredProducts.length} result{filteredProducts.length > 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!productsCollapsed && hasHiddenProducts && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllProducts((value) => !value)}
+                      className="rounded-lg border border-[#DDE5EE] px-3 py-1.5 text-xs font-medium text-[#30373E] hover:bg-[#F2F8FF] font-serif"
+                    >
+                      {showAllProducts
+                        ? `Show less (${DEFAULT_VISIBLE_PRODUCTS})`
+                        : `Show all (${filteredProducts.length})`}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setProductsCollapsed((value) => !value)}
+                    className="rounded-lg border border-[#DDE5EE] px-2.5 py-1.5 text-[#30373E] hover:bg-[#F2F8FF] font-serif"
+                    aria-label={productsCollapsed ? 'Expand products list' : 'Collapse products list'}
+                    title={productsCollapsed ? 'Expand products list' : 'Collapse products list'}
+                  >
+                    <svg
+                      className={`h-4 w-4 transition-transform ${productsCollapsed ? '' : 'rotate-180'}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {productsCollapsed ? (
+                <div className="px-4 py-5 text-sm text-[#6B7480] font-serif">List collapsed.</div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="p-12 text-center font-serif">
                   <div className="w-16 h-16 mx-auto mb-4 bg-[#F2F8FF] rounded-full flex items-center justify-center">
                     <svg className="w-8 h-8 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#03182F] mb-2">No products</h3>
-                  <p className="text-[#6B7480] mb-6">Start by adding your first product</p>
+                  <h3 className="text-lg font-semibold text-[#03182F] mb-2 font-serif">No products</h3>
+                  <p className="text-[#6B7480] mb-6 font-serif">Start by adding your first product</p>
                   <button
                     onClick={() => setShowNewProductModal(true)}
-                    className="px-6 py-3 bg-[#004bd9] text-white font-medium rounded-xl"
+                    className="px-6 py-3 bg-[#004bd9] text-white font-medium rounded-xl font-serif"
                   >
                     Add a product
                   </button>
                 </div>
               ) : (
-                filteredProducts.map(product => (
-                  <div
-                    key={product.id}
-                    className="bg-white rounded-xl p-4 shadow-sm border border-[#DDE5EE] hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Product Image/Icon */}
-                      <div className="relative w-16 h-16 bg-[#F2F8FF] rounded-xl flex items-center justify-center flex-shrink-0">
-                        {product.image_url ? (
-                          <Image
-                            src={product.image_url}
-                            alt={product.name}
-                            fill
-                            sizes="64px"
-                            unoptimized
-                            className="object-cover rounded-xl"
-                          />
-                        ) : (
-                          <svg className="w-6 h-6 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                        )}
-                      </div>
-
-                      {/* Product Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-[#03182F] truncate">{product.name}</h3>
-                          {product.category && (
-                            <span 
-                              className="px-2 py-0.5 text-xs font-medium rounded-full"
-                              style={{ 
-                                backgroundColor: `${product.category.color}20`,
-                                color: product.category.color || '#6366f1'
-                              }}
-                            >
-                              {product.category.name}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-[#6B7480]">
-                          {product.sku && <span>SKU: {product.sku}</span>}
-                          <span>{product.selling_price.toLocaleString('en-US')}€/{product.unit}</span>
-                        </div>
-                      </div>
-
-                      {/* Stock Level */}
-                      <div className="text-right">
-                        <div className={`text-2xl font-bold ${
-                          product.quantity === 0 ? 'text-[#F22E75]' :
-                          product.quantity <= product.min_quantity ? 'text-[#E0A93A]' :
-                          'text-[#03182F]'
-                        }`}>
-                          {product.quantity}
-                        </div>
-                        <div className="text-xs text-[#6B7480]">
-                          {product.unit}s in stock
-                        </div>
-                        {product.quantity <= product.min_quantity && product.quantity > 0 && (
-                          <span className="text-xs text-[#E0A93A] font-medium">Low stock</span>
-                        )}
-                        {product.quantity === 0 && (
-                          <span className="text-xs text-[#F22E75] font-medium">Out of stock</span>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setShowStockModal(product.id)}
-                          className="p-2 bg-[#3FA46A]/10 text-[#3FA46A] rounded-lg hover:bg-[#3FA46A]/10 transition-colors"
-                          title="Stock movement"
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(product.id, product.name)}
-                          disabled={deletingId === product.id}
-                          className="p-2 bg-[#FFE7EC] text-[#F22E75] rounded-lg hover:bg-[#FFE7EC] transition-colors disabled:opacity-50"
-                          title="Delete product"
-                        >
-                          {deletingId === product.id ? (
-                            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
+                <div className="max-h-[70vh] overflow-y-auto p-4 space-y-3 font-serif">
+                  {displayedProducts.map(product => (
+                    <div
+                      key={product.id}
+                      className="bg-white rounded-xl p-4 shadow-sm border border-[#DDE5EE] hover:shadow-md transition-shadow font-serif"
+                    >
+                      <div className="flex items-center gap-4">
+                        {/* Product Image/Icon */}
+                        <div className="relative w-16 h-16 bg-[#F2F8FF] rounded-xl flex items-center justify-center flex-shrink-0">
+                          {product.image_url ? (
+                            <Image
+                              src={product.image_url}
+                              alt={product.name}
+                              fill
+                              sizes="64px"
+                              unoptimized
+                              className="object-cover rounded-xl"
+                            />
                           ) : (
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg className="w-6 h-6 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
                           )}
-                        </button>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-[#03182F] truncate">{product.name}</h3>
+                            {product.category && (
+                              <span 
+                                className="px-2 py-0.5 text-xs font-medium rounded-full"
+                                style={{ 
+                                  backgroundColor: `${product.category.color}20`,
+                                  color: product.category.color || '#6366f1'
+                                }}
+                              >
+                                {product.category.name}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-[#6B7480]">
+                            {product.sku && <span>SKU: {product.sku}</span>}
+                            <span>{product.selling_price.toLocaleString('en-US')}€/{product.unit}</span>
+                          </div>
+                        </div>
+
+                        {/* Stock Level */}
+                        <div className="text-right">
+                          <div className={`text-2xl font-bold ${
+                            product.quantity === 0 ? 'text-[#F22E75]' :
+                            product.quantity <= product.min_quantity ? 'text-[#E0A93A]' :
+                            'text-[#03182F]'
+                          }`}>
+                            {product.quantity}
+                          </div>
+                          <div className="text-xs text-[#6B7480]">
+                            {product.unit}s in stock
+                          </div>
+                          {product.quantity <= product.min_quantity && product.quantity > 0 && (
+                            <span className="text-xs text-[#E0A93A] font-medium">Low stock</span>
+                          )}
+                          {product.quantity === 0 && (
+                            <span className="text-xs text-[#F22E75] font-medium">Out of stock</span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setShowStockModal(product.id)}
+                            className="p-2 bg-[#3FA46A]/10 text-[#3FA46A] rounded-lg hover:bg-[#3FA46A]/10 transition-colors"
+                            title="Stock movement"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id, product.name)}
+                            disabled={deletingId === product.id}
+                            className="p-2 bg-[#FFE7EC] text-[#F22E75] rounded-lg hover:bg-[#FFE7EC] transition-colors disabled:opacity-50"
+                            title="Delete product"
+                          >
+                            {deletingId === product.id ? (
+                              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            ) : (
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </div>

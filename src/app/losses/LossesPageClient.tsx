@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 export type LossEvent = {
   id: string
@@ -65,6 +65,8 @@ function fmt(n: number) {
 
 export default function LossesPageClient({ initialEvents, loadError }: Props) {
   const events = initialEvents
+  const [hoveredMarketplaceIndex, setHoveredMarketplaceIndex] = useState<number | null>(null)
+  const [livePulseCollapsed, setLivePulseCollapsed] = useState(false)
 
   const totalLostValue = useMemo(() => events.reduce((s, e) => s + e.estimatedLossValue, 0), [events])
   const totalLostUnits = useMemo(() => events.reduce((s, e) => s + e.quantityLost, 0), [events])
@@ -85,6 +87,11 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4)
   }, [events])
   const mpTotal = marketplaceGroups.reduce((s, [, v]) => s + v, 0) || 1
+  const activeMarketplaceIndex =
+    hoveredMarketplaceIndex !== null && marketplaceGroups[hoveredMarketplaceIndex]
+      ? hoveredMarketplaceIndex
+      : 0
+  const activeMarketplace = marketplaceGroups[activeMarketplaceIndex]
 
   const topProducts = useMemo(() => {
     const map = new Map<string, { name: string; units: number; value: number; reason: string }>()
@@ -193,20 +200,57 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
                   {marketplaceGroups.map(([, value], i) => {
                     const pct = (value / mpTotal) * 100
                     const offset = marketplaceGroups.slice(0, i).reduce((s, [, v]) => s + (v / mpTotal) * 100, 0)
+                    const isActive = i === activeMarketplaceIndex
                     return (
-                      <circle key={i} cx="18" cy="18" r="16" fill="none" stroke={mpColors[i % mpColors.length]} strokeWidth="4"
-                        strokeDasharray={`${pct} ${100 - pct}`} strokeDashoffset={`${-offset}`} />
+                      <circle
+                        key={i}
+                        cx="18"
+                        cy="18"
+                        r="16"
+                        fill="none"
+                        stroke={mpColors[i % mpColors.length]}
+                        strokeWidth={isActive ? '5.2' : '4'}
+                        strokeDasharray={`${pct} ${100 - pct}`}
+                        strokeDashoffset={`${-offset}`}
+                        className="cursor-pointer transition-all duration-150"
+                        style={{ opacity: isActive ? 1 : 0.55 }}
+                        onMouseEnter={() => setHoveredMarketplaceIndex(i)}
+                        onMouseLeave={() => setHoveredMarketplaceIndex(null)}
+                        onFocus={() => setHoveredMarketplaceIndex(i)}
+                        onBlur={() => setHoveredMarketplaceIndex(null)}
+                      />
                     )
                   })}
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="font-serif text-[10px] text-[#6B7480]">DOMINANT</span>
-                  <span className="font-serif font-bold text-[#03182F] text-center px-2">{marketplaceGroups[0]?.[0] || 'N/A'}</span>
+                  <span className="font-serif text-[10px] text-[#6B7480]">
+                    {hoveredMarketplaceIndex !== null ? 'PREVIEW' : 'DOMINANT'}
+                  </span>
+                  <span className="font-serif font-bold text-[#03182F] text-center px-2">
+                    {activeMarketplace?.[0] || 'N/A'}
+                  </span>
+                  {activeMarketplace ? (
+                    <span className="mt-1 font-serif text-[10px] text-[#6B7480]">
+                      {Math.round((activeMarketplace[1] / mpTotal) * 100)}% · {fmt(activeMarketplace[1])}
+                    </span>
+                  ) : null}
                 </div>
               </div>
+              {activeMarketplace ? (
+                <p className="mt-3 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-1.5 font-serif text-[12px] text-[#30373E]">
+                  {activeMarketplace[0]}: {fmt(activeMarketplace[1])} ({Math.round((activeMarketplace[1] / mpTotal) * 100)}%)
+                </p>
+              ) : null}
               <div className="mt-6 grid w-full grid-cols-1 gap-y-1 sm:grid-cols-2 sm:gap-x-4">
                 {marketplaceGroups.map(([name, value], i) => (
-                  <div key={name} className="flex items-center gap-2 min-w-0">
+                  <div
+                    key={name}
+                    className={`flex items-center gap-2 min-w-0 rounded px-1.5 py-1 cursor-pointer transition-colors ${
+                      i === activeMarketplaceIndex ? 'bg-[#F2F8FF]' : 'hover:bg-[#F2F8FF]/70'
+                    }`}
+                    onMouseEnter={() => setHoveredMarketplaceIndex(i)}
+                    onMouseLeave={() => setHoveredMarketplaceIndex(null)}
+                  >
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: mpColors[i % mpColors.length] }} />
                     <span className="font-serif text-[12px] text-[#30373E] break-words">{name} {Math.round((value / mpTotal) * 100)}%</span>
                   </div>
@@ -271,33 +315,53 @@ export default function LossesPageClient({ initialEvents, loadError }: Props) {
             <div className="p-6 border-b border-[#DDE5EE]">
               <div className="flex items-center justify-between">
                 <h3 className="font-serif text-base font-bold text-[#03182F]">Live Pulse</h3>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-[#3FA46A] rounded-full animate-pulse mr-2" />
-                  <span className="font-serif text-[10px] uppercase text-[#3FA46A]">Streaming</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-[#3FA46A] rounded-full animate-pulse mr-2" />
+                    <span className="font-serif text-[10px] uppercase text-[#3FA46A]">Streaming</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLivePulseCollapsed((value) => !value)}
+                    className="rounded-md border border-[#DDE5EE] p-1 text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F]"
+                    aria-label={livePulseCollapsed ? 'Expand Live Pulse' : 'Collapse Live Pulse'}
+                    title={livePulseCollapsed ? 'Expand Live Pulse' : 'Collapse Live Pulse'}
+                  >
+                    <svg
+                      className={`h-4 w-4 transition-transform ${livePulseCollapsed ? '' : 'rotate-180'}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {recentEvents.map((e) => {
-                const borderColor = e.status === 'open' ? 'border-[#F22E75]' : e.status === 'resolved' ? 'border-[#2764FF]' : 'border-[#E0A93A]'
-                const tagColor = e.status === 'open' ? 'text-[#F22E75]' : e.status === 'resolved' ? 'text-[#2764FF]' : 'text-[#E0A93A]'
-                const tagLabel = e.status === 'open' ? 'URGENT' : e.status === 'resolved' ? 'RECOVERY' : 'CLAIM'
-                return (
-                  <div key={e.id} className={`flex gap-4 border-l-2 ${borderColor} pl-4 py-1`}>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <span className="font-serif text-[10px] text-[#6B7480]">{new Date(e.detectedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                        <span className={`font-serif text-[9px] font-bold ${tagColor}`}>{tagLabel}</span>
+            {!livePulseCollapsed && (
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {recentEvents.map((e) => {
+                  const borderColor = e.status === 'open' ? 'border-[#F22E75]' : e.status === 'resolved' ? 'border-[#2764FF]' : 'border-[#E0A93A]'
+                  const tagColor = e.status === 'open' ? 'text-[#F22E75]' : e.status === 'resolved' ? 'text-[#2764FF]' : 'text-[#E0A93A]'
+                  const tagLabel = e.status === 'open' ? 'URGENT' : e.status === 'resolved' ? 'RECOVERY' : 'CLAIM'
+                  return (
+                    <div key={e.id} className={`flex gap-4 border-l-2 ${borderColor} pl-4 py-1`}>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <span className="font-serif text-[10px] text-[#6B7480]">{new Date(e.detectedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                          <span className={`font-serif text-[9px] font-bold ${tagColor}`}>{tagLabel}</span>
+                        </div>
+                        <p className="font-serif text-[13px] text-[#03182F] mt-1">{e.productName} — {reasonLabels[e.reasonCategory] || e.reasonCategory} ({e.quantityLost} units, {fmt(e.estimatedLossValue)})</p>
                       </div>
-                      <p className="font-serif text-[13px] text-[#03182F] mt-1">{e.productName} — {reasonLabels[e.reasonCategory] || e.reasonCategory} ({e.quantityLost} units, {fmt(e.estimatedLossValue)})</p>
                     </div>
-                  </div>
-                )
-              })}
-              {recentEvents.length === 0 && (
-                <p className="font-serif text-[13px] text-[#6B7480] text-center py-4">No recent events</p>
-              )}
-            </div>
+                  )
+                })}
+                {recentEvents.length === 0 && (
+                  <p className="font-serif text-[13px] text-[#6B7480] text-center py-4">No recent events</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
