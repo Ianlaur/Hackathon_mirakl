@@ -27,6 +27,12 @@ type ParsedNaturalEvent = {
   confidence: 'high' | 'medium' | 'low'
   summary: string
 }
+type EventChatMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  reasoningSummary?: string
+}
 
 const eventKinds: Record<EventKind, { label: string; color: string; chip: string; border: string }> = {
   holiday: {
@@ -596,6 +602,11 @@ export default function CalendarPageClient() {
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [naturalInput, setNaturalInput] = useState('')
   const [tlRange, setTlRange] = useState(90)
+  const [eventChatInput, setEventChatInput] = useState('')
+  const [eventChatMessages, setEventChatMessages] = useState<EventChatMessage[]>([])
+  const [eventChatError, setEventChatError] = useState<string | null>(null)
+  const [eventChatSessionId, setEventChatSessionId] = useState<string | null>(null)
+  const [eventChatSending, setEventChatSending] = useState(false)
 
   useEffect(() => {
     let ignore = false
@@ -636,6 +647,14 @@ export default function CalendarPageClient() {
       ignore = true
     }
   }, [])
+
+  useEffect(() => {
+    setEventChatInput('')
+    setEventChatMessages([])
+    setEventChatError(null)
+    setEventChatSessionId(null)
+    setEventChatSending(false)
+  }, [detailEventId])
 
   const monthDays = useMemo(() => buildMonthDays(activeMonth), [activeMonth])
   const selectedEvent = useMemo(
@@ -834,6 +853,81 @@ export default function CalendarPageClient() {
       setSelectedEventId(eventToDelete.id)
       setSyncError(error instanceof Error ? error.message : 'Suppression impossible')
     }
+  }
+
+  const sendEventChatMessage = async (rawMessage: string) => {
+    if (!detailEvent) return
+
+    const message = rawMessage.trim()
+    if (!message || eventChatSending) return
+
+    setEventChatSending(true)
+    setEventChatError(null)
+    setEventChatMessages((current) => [
+      ...current,
+      { id: `u-${Date.now()}`, role: 'user', content: message },
+    ])
+
+    const eventContext = [
+      'Calendar event context:',
+      `Title: ${detailEvent.title}`,
+      `Date range: ${formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}`,
+      `Impact: ${impactLabels[detailEvent.impact].label}`,
+      `Type: ${getKindStyle(detailEvent.kind).label}`,
+      `Zone: ${detailEvent.zone}`,
+      detailEvent.notes ? `Current recommendation: ${detailEvent.notes}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    try {
+      const response = await fetch('/api/copilot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: eventChatSessionId || undefined,
+          message: `${message}\n\n${eventContext}`,
+        }),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Leia is unavailable right now.')
+      }
+
+      if (typeof payload?.sessionId === 'string' && payload.sessionId) {
+        setEventChatSessionId(payload.sessionId)
+      }
+
+      const assistantContent =
+        typeof payload?.message?.content === 'string'
+          ? payload.message.content
+          : 'Leia could not generate a response for this event.'
+      const reasoningSummary =
+        typeof payload?.message?.reasoning_summary === 'string'
+          ? payload.message.reasoning_summary
+          : undefined
+
+      setEventChatMessages((current) => [
+        ...current,
+        {
+          id: `a-${Date.now()}`,
+          role: 'assistant',
+          content: assistantContent,
+          reasoningSummary,
+        },
+      ])
+      setEventChatInput('')
+    } catch (error) {
+      setEventChatError(error instanceof Error ? error.message : 'Leia is unavailable right now.')
+    } finally {
+      setEventChatSending(false)
+    }
+  }
+
+  const submitEventChat = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await sendEventChatMessage(eventChatInput)
   }
 
   return (
@@ -1260,7 +1354,7 @@ export default function CalendarPageClient() {
 
       {detailEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setDetailEventId(null)}>
-          <div className="w-full max-w-md rounded-xl bg-white border border-[#DDE5EE] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-2xl rounded-xl bg-white border border-[#DDE5EE] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className={`h-3.5 w-3.5 rounded-full ${getKindStyle(detailEvent.kind).color}`} />
@@ -1286,6 +1380,65 @@ export default function CalendarPageClient() {
               {detailEvent.notes && (
                 <p className="rounded-lg bg-[#F2F8FF] border border-[#DDE5EE] px-3 py-2.5 font-serif text-[13px] leading-6 text-[#30373E]">{detailEvent.notes}</p>
               )}
+            </div>
+
+            <div className="mt-5 border-t border-[#DDE5EE] pt-4">
+              <p className="font-serif text-[14px] font-bold text-[#03182F]">Chat with Leia</p>
+              <p className="mt-1 font-serif text-[12px] text-[#6B7480]">
+                Ask for operational actions specific to this event.
+              </p>
+
+              <div className="mt-3 max-h-56 space-y-2 overflow-y-auto rounded-lg border border-[#DDE5EE] bg-slate-50 p-3">
+                {eventChatMessages.length === 0 ? (
+                  <p className="font-serif text-[12px] text-[#6B7480]">
+                    Example: What should I secure 2 weeks before this event?
+                  </p>
+                ) : (
+                  eventChatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`rounded-lg border px-3 py-2 ${
+                        message.role === 'assistant'
+                          ? 'border-[#DDE5EE] bg-white'
+                          : 'border-[#BFCBDA] bg-[#F2F8FF]'
+                      }`}
+                    >
+                      <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                        {message.role === 'assistant' ? 'Leia' : 'You'}
+                      </p>
+                      <p className="mt-1 font-serif text-[13px] leading-6 text-[#03182F]">{message.content}</p>
+                      {message.reasoningSummary && message.role === 'assistant' ? (
+                        <p className="mt-2 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-2.5 py-1.5 font-serif text-[12px] text-[#30373E]">
+                          {message.reasoningSummary}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {eventChatError && (
+                <p className="mt-2 rounded-lg border border-[#ba1a1a]/30 bg-[#FFE7EC] px-3 py-2 font-serif text-[12px] text-[#ba1a1a]">
+                  {eventChatError}
+                </p>
+              )}
+
+              <form className="mt-3 flex gap-2" onSubmit={submitEventChat}>
+                <input
+                  type="text"
+                  value={eventChatInput}
+                  onChange={(event) => setEventChatInput(event.target.value)}
+                  placeholder={`Ask Leia about "${detailEvent.title}"...`}
+                  className="h-10 flex-1 rounded-lg border border-[#DDE5EE] px-3 font-serif text-[13px] text-[#03182F] outline-none focus:border-[#2764FF] focus:ring-1 focus:ring-[#2764FF]"
+                />
+                <button
+                  type="submit"
+                  disabled={eventChatSending || !eventChatInput.trim()}
+                  className="h-10 rounded-lg bg-[#2764FF] px-4 font-serif text-[13px] font-bold text-white transition hover:bg-[#004bd9] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {eventChatSending ? 'Sending...' : 'Send'}
+                </button>
+              </form>
             </div>
           </div>
         </div>
