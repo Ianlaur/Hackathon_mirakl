@@ -6,7 +6,7 @@ import { MoreVertical, Plus, RefreshCw, Settings } from 'lucide-react'
 const marketplaces = [
   {
     name: 'Amazon',
-    bgColor: 'bg-[#232F3E]',
+    bgColor: 'bg-[#03182F]',
     icon: '🛒',
     status: 'Active · Live',
     statusColor: 'text-[#3FA46A]',
@@ -20,7 +20,7 @@ const marketplaces = [
   },
   {
     name: 'Rakuten',
-    bgColor: 'bg-[#BF0000]',
+    bgColor: 'bg-[#770031]',
     icon: 'R',
     isText: true,
     status: 'Active · Live',
@@ -35,7 +35,7 @@ const marketplaces = [
   },
   {
     name: 'Cdiscount',
-    bgColor: 'bg-[#FF6600]',
+    bgColor: 'bg-[#2764FF]',
     icon: '🛍️',
     status: 'Active · Live',
     statusColor: 'text-[#3FA46A]',
@@ -49,7 +49,7 @@ const marketplaces = [
   },
   {
     name: 'Leroy Merlin',
-    bgColor: 'bg-[#008A49]',
+    bgColor: 'bg-[#3FA46A]',
     icon: '🏠',
     status: 'Syncing · 98%',
     statusColor: 'text-[#E0A93A]',
@@ -209,14 +209,14 @@ export default function ActiveConnectionPage() {
             Real-time operational status across your global distribution network.
           </p>
         </div>
-        <button className="h-9 px-4 bg-[#004bd9] text-white text-[13px] font-semibold rounded-lg hover:bg-[#004bd9]/90 transition-colors flex items-center gap-2 shadow-sm">
+        <button className="h-9 px-4 bg-[#2764FF] text-white text-[13px] font-semibold rounded-lg hover:bg-[#2764FF]/90 transition-colors flex items-center gap-2 shadow-sm">
           <Plus className="h-4 w-4" />
           Connect New Channel
         </button>
       </div>
 
       {/* Shopify App Control */}
-      <div className="bg-white border border-[#DDE5EE] rounded-xl p-5 space-y-4">
+      <div className="bg-white border border-[#DDE5EE] rounded-lg p-6 space-y-4 shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-serif text-base font-bold text-[#03182F]">Shopify App</h3>
@@ -241,12 +241,12 @@ export default function ActiveConnectionPage() {
             value={shopDomain}
             onChange={(event) => setShopDomain(event.target.value)}
             placeholder="your-store.myshopify.com"
-            className="h-10 w-[320px] rounded border border-[#DDE5EE] px-3 font-serif text-[13px] outline-none focus:border-[#004bd9] focus:ring-1 focus:ring-[#004bd9]"
+            className="h-10 w-[320px] rounded border border-[#DDE5EE] px-3 font-serif text-[13px] outline-none focus:border-[#2764FF] focus:ring-1 focus:ring-[#2764FF]"
           />
           <button
             type="button"
             onClick={handleConnectShopify}
-            className="h-10 px-4 bg-[#004bd9] text-white text-[13px] font-semibold rounded-lg hover:bg-[#004bd9]/90 transition-colors"
+            className="h-10 px-4 bg-[#2764FF] text-white text-[13px] font-semibold rounded-lg hover:bg-[#2764FF]/90 transition-colors"
           >
             Connect Shopify
           </button>
@@ -254,7 +254,7 @@ export default function ActiveConnectionPage() {
             type="button"
             onClick={() => void handleSyncShopify()}
             disabled={!hasShopifyConnection || syncingShopify}
-            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-[#F2F8FF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${syncingShopify ? 'animate-spin' : ''}`} />
             Sync Orders
@@ -262,7 +262,7 @@ export default function ActiveConnectionPage() {
           <button
             type="button"
             onClick={() => void loadShopifyStatus()}
-            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-[#F2F8FF] transition-colors"
           >
             Refresh Status
           </button>
@@ -275,13 +275,13 @@ export default function ActiveConnectionPage() {
         ) : null}
 
         <div className="border border-[#DDE5EE] rounded-lg overflow-hidden">
-          <div className="px-4 py-2 bg-slate-50/60 border-b border-[#DDE5EE] text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">
+          <div className="px-4 py-2 bg-[#F2F8FF] border-b border-[#DDE5EE] text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">
             Shopify Connections
           </div>
           {shopifyLoading ? (
             <div className="px-4 py-4 text-[13px] text-[#6B7480]">Loading Shopify status...</div>
           ) : shopifyStatus?.connections?.length ? (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[#DDE5EE]">
               {shopifyStatus.connections.map((connection) => (
                 <div key={connection.id} className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -309,7 +309,7 @@ export default function ActiveConnectionPage() {
         {marketplaces.map((mp) => (
           <div
             key={mp.name}
-            className="bg-white border border-[#DDE5EE] rounded-xl p-6 transition-all hover:border-[#2764ff]/30"
+            className="bg-white border border-[#DDE5EE] rounded-lg p-6 transition-all hover:border-[#2764FF]/30 shadow-[0_1px_4px_rgba(0,0,0,0.1)]"
           >
             {/* Header */}
             <div className="flex justify-between items-start mb-8">
@@ -350,7 +350,7 @@ export default function ActiveConnectionPage() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-50">
+              <div className="grid grid-cols-2 gap-4 py-4 border-y border-[#DDE5EE]">
                 <div>
                   <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase mb-1">
                     Items Sold
@@ -370,7 +370,7 @@ export default function ActiveConnectionPage() {
                 <svg className="w-24 h-8 overflow-visible" viewBox="0 0 100 30">
                   <path d={mp.sparkPath} fill="none" stroke={mp.sparkColor} strokeWidth="1.5" />
                 </svg>
-                <button className="text-[#004bd9] text-[13px] font-semibold hover:underline">
+                <button className="text-[#2764FF] text-[13px] font-semibold hover:underline">
                   View Ledger
                 </button>
               </div>
@@ -380,8 +380,8 @@ export default function ActiveConnectionPage() {
       </div>
 
       {/* API Health Table */}
-      <div className="bg-white border border-[#DDE5EE] rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#DDE5EE] bg-slate-50/50 flex justify-between items-center">
+      <div className="bg-white border border-[#DDE5EE] rounded-lg overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+        <div className="px-6 py-4 border-b border-[#DDE5EE] bg-[#F2F8FF] flex justify-between items-center">
           <h3 className="font-serif text-base font-bold text-[#03182F]">API Health & Sync Status</h3>
           <span className="px-2 py-1 bg-[#3FA46A]/10 text-[#3FA46A] text-[10px] font-bold rounded uppercase tracking-wider">
             All Systems Operational
@@ -389,7 +389,7 @@ export default function ActiveConnectionPage() {
         </div>
         <table className="w-full text-left">
           <thead>
-            <tr className="bg-slate-50/30">
+            <tr className="bg-[#F2F8FF]">
               <th className="px-6 py-3 border-b border-[#DDE5EE] font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase">
                 Marketplace
               </th>
@@ -407,9 +407,9 @@ export default function ActiveConnectionPage() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-[#DDE5EE]">
             {apiRows.map((row) => (
-              <tr key={row.name} className="hover:bg-slate-50/50 transition-colors">
+              <tr key={row.name} className="hover:bg-[#F2F8FF] transition-colors">
                 <td className="px-6 py-4 flex items-center gap-3">
                   <div className="w-6 h-6 rounded bg-[#03182F]/5 flex items-center justify-center text-[#03182F] text-xs">
                     ☁️
@@ -420,7 +420,7 @@ export default function ActiveConnectionPage() {
                 <td className="px-6 py-4 text-[13px]">{row.latency}</td>
                 <td className={`px-6 py-4 text-[13px] ${row.errorColor}`}>{row.errorRate}</td>
                 <td className="px-6 py-4 text-right">
-                  <button className="text-[#004bd9] hover:text-[#004bd9]/70">
+                  <button className="text-[#2764FF] hover:text-[#2764FF]/70">
                     <Settings className="h-4 w-4" />
                   </button>
                 </td>
