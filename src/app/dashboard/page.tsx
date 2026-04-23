@@ -345,56 +345,47 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Global Map Card with plugin logic */}
-      <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
-        <div className="p-6 border-b border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="font-serif text-lg font-bold text-[#03182F]">Global Shipment Map Pro</h2>
-            <p className="font-serif text-[13px] text-[#6B7480] mt-1">
-              Active en mode plugin complex. Masquée en mode basic.
-            </p>
+      {isProPluginActive && (
+        <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+          <div className="p-6 border-b border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-serif text-lg font-bold text-[#03182F]">Global Shipment Map Pro</h2>
+              <p className="font-serif text-[13px] text-[#6B7480] mt-1">
+                Active en mode plugin complex.
+              </p>
+            </div>
+
+            <div className="inline-flex items-center rounded-full border border-[#DDE5EE] bg-[#F2F8FF] p-1">
+              <button
+                type="button"
+                onClick={() => setMapTheme('light')}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                  mapTheme === 'light'
+                    ? 'bg-white text-[#03182F] shadow-sm'
+                    : 'text-[#6B7480] hover:text-[#30373E]'
+                }`}
+              >
+                Clair
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapTheme('dark')}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                  mapTheme === 'dark'
+                    ? 'bg-[#03182F] text-white shadow-sm'
+                    : 'text-[#6B7480] hover:text-[#30373E]'
+                }`}
+              >
+                Sombre
+              </button>
+            </div>
           </div>
 
-          <div className="inline-flex items-center rounded-full border border-[#DDE5EE] bg-[#F2F8FF] p-1">
-            <button
-              type="button"
-              onClick={() => setMapTheme('light')}
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
-                mapTheme === 'light'
-                  ? 'bg-white text-[#03182F] shadow-sm'
-                  : 'text-[#6B7480] hover:text-[#30373E]'
-              }`}
-            >
-              Clair
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapTheme('dark')}
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
-                mapTheme === 'dark'
-                  ? 'bg-[#03182F] text-white shadow-sm'
-                  : 'text-[#6B7480] hover:text-[#30373E]'
-              }`}
-            >
-              Sombre
-            </button>
-          </div>
-        </div>
-
-        {isProPluginActive ? (
           <div className={`p-4 ${mapTheme === 'dark' ? 'bg-[#0B1020]' : 'bg-[#EEF3FB]'}`}>
             <GlobalShipmentTracker height={380} mapTheme={mapTheme} />
           </div>
-        ) : (
-          <div className="p-6">
-            <div className="rounded-lg border border-dashed border-[#DDE5EE] bg-[#F2F8FF] p-5">
-              <p className="font-serif text-[14px] text-[#30373E]">
-                La carte est désactivée en mode basic. Passe en plugin complex pour l’afficher.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Orders Table */}
       <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
