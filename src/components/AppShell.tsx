@@ -89,6 +89,27 @@ export default function AppShell({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => {
+        registrations.forEach((registration) => {
+          registration.unregister().catch(() => undefined)
+        })
+      })
+      .catch(() => undefined)
+
+    if (typeof window.caches !== 'undefined') {
+      window.caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((key) => window.caches.delete(key))))
+        .catch(() => undefined)
+    }
+  }, [])
+
   return (
     <PluginProvider>
       <div className="min-h-screen bg-[#F2F8FF]">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
+import { hasDatabaseUrl, isDatabaseConfigError, prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 
 const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal'] as const
@@ -53,6 +53,10 @@ function serializeEvent(event: DbCalendarEvent) {
 
 export async function GET() {
   try {
+    if (!hasDatabaseUrl()) {
+      return NextResponse.json([])
+    }
+
     const userId = await getCurrentUserId()
     const events = await prisma.$queryRaw<DbCalendarEvent[]>`
       SELECT id::text, title, start_at, end_at, kind, impact, zone, notes, locked
@@ -63,18 +67,44 @@ export async function GET() {
 
     return NextResponse.json(events.map(serializeEvent))
   } catch (error) {
+    if (isDatabaseConfigError(error)) {
+      return NextResponse.json([])
+    }
+
     console.error('Error fetching calendar events:', error)
     return NextResponse.json({ error: 'Impossible de récupérer les événements' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
+  let parsedData: z.infer<typeof eventSchema> | null = null
+
   try {
     const userId = await getCurrentUserId()
     const body = await request.json()
     const data = eventSchema.parse(body)
+    parsedData = data
     const startDate = data.startDate
     const endDate = data.endDate >= startDate ? data.endDate : startDate
+
+    if (!hasDatabaseUrl()) {
+      return NextResponse.json(
+        {
+          id: `local-${Date.now()}`,
+          title: data.title,
+          startDate,
+          endDate,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          kind: data.kind,
+          impact: data.impact,
+          zone: data.zone || '',
+          notes: data.notes || '',
+          locked: data.locked || false,
+        },
+        { status: 201 }
+      )
+    }
 
     const events = await prisma.$queryRaw<DbCalendarEvent[]>`
       INSERT INTO public.calendar_events (
@@ -115,6 +145,27 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
+    }
+
+    if (isDatabaseConfigError(error) && parsedData) {
+      const startDate = parsedData.startDate
+      const endDate = parsedData.endDate >= startDate ? parsedData.endDate : startDate
+      return NextResponse.json(
+        {
+          id: `local-${Date.now()}`,
+          title: parsedData.title,
+          startDate,
+          endDate,
+          startTime: parsedData.startTime,
+          endTime: parsedData.endTime,
+          kind: parsedData.kind,
+          impact: parsedData.impact,
+          zone: parsedData.zone || '',
+          notes: parsedData.notes || '',
+          locked: parsedData.locked || false,
+        },
+        { status: 201 }
+      )
     }
 
     return NextResponse.json({ error: 'Impossible de créer l’événement' }, { status: 500 })

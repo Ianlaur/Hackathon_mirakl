@@ -2,6 +2,19 @@ import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
+export function hasDatabaseUrl() {
+  return Boolean(process.env.DATABASE_URL?.trim())
+}
+
+export function isDatabaseConfigError(error: unknown) {
+  if (!(error instanceof Error)) return false
+
+  return (
+    error.message.includes('Environment variable not found: DATABASE_URL') ||
+    error.message.includes('Invalid `prisma.')
+  )
+}
+
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({

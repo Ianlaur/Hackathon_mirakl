@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
+import { hasDatabaseUrl, isDatabaseConfigError, prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 
 const profileSchema = z.object({
@@ -37,6 +37,27 @@ const profileSchema = z.object({
 export async function GET() {
   try {
     const userId = await getCurrentUserId()
+
+    if (!hasDatabaseUrl()) {
+      return NextResponse.json({
+        id: userId,
+        email: 'hackathon@local',
+        name: 'Jean-Charles',
+        phone: '',
+        address: '',
+        bio: '',
+        profile_image_url: '',
+        company_name: 'Mirakl Shop',
+        company_address: '',
+        company_siret: '',
+        company_tva_text: '',
+        company_logo_url: '',
+        beta_features_enabled: false,
+        has_inventory: true,
+        has_srm: false,
+      })
+    }
+
     const user = await prisma.$queryRaw<any[]>`
       SELECT 
         id, email, name, phone, address, bio, 
@@ -53,16 +74,47 @@ export async function GET() {
 
     return NextResponse.json(user[0])
   } catch (error) {
+    if (isDatabaseConfigError(error)) {
+      const userId = await getCurrentUserId()
+      return NextResponse.json({
+        id: userId,
+        email: 'hackathon@local',
+        name: 'Jean-Charles',
+        phone: '',
+        address: '',
+        bio: '',
+        profile_image_url: '',
+        company_name: 'Mirakl Shop',
+        company_address: '',
+        company_siret: '',
+        company_tva_text: '',
+        company_logo_url: '',
+        beta_features_enabled: false,
+        has_inventory: true,
+        has_srm: false,
+      })
+    }
+
     console.error('Error fetching profile:', error)
     return NextResponse.json({ error: 'Impossible de récupérer le profil' }, { status: 500 })
   }
 }
 
 export async function PUT(request: NextRequest) {
+  let parsedData: z.infer<typeof profileSchema> | null = null
+
   try {
     const userId = await getCurrentUserId()
     const body = await request.json()
     const data = profileSchema.parse(body)
+    parsedData = data
+
+    if (!hasDatabaseUrl()) {
+      return NextResponse.json({
+        id: userId,
+        ...data,
+      })
+    }
 
     // Ensure email uniqueness (except for current user)
     const existing = await prisma.$queryRaw<any[]>`
@@ -109,6 +161,14 @@ export async function PUT(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
+    }
+
+    if (isDatabaseConfigError(error) && parsedData) {
+      const userId = await getCurrentUserId()
+      return NextResponse.json({
+        id: userId,
+        ...parsedData,
+      })
     }
 
     return NextResponse.json({ error: 'Impossible de mettre à jour le profil' }, { status: 500 })

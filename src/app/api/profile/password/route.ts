@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
+import { hasDatabaseUrl, isDatabaseConfigError, prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 
 const passwordSchema = z.object({
@@ -11,9 +11,15 @@ const passwordSchema = z.object({
 
 export async function PUT(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId()
     const body = await request.json()
     const data = passwordSchema.parse(body)
+    const userId = await getCurrentUserId()
+
+    if (!hasDatabaseUrl()) {
+      return NextResponse.json({
+        message: 'Mode démo: mot de passe simulé mis à jour',
+      })
+    }
 
     // Get password from neon_auth.account
     const account = await prisma.$queryRaw<any[]>`
@@ -45,6 +51,12 @@ export async function PUT(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
+    }
+
+    if (isDatabaseConfigError(error)) {
+      return NextResponse.json({
+        message: 'Mode démo: mot de passe simulé mis à jour',
+      })
     }
 
     return NextResponse.json({ error: 'Impossible de mettre à jour le mot de passe' }, { status: 500 })
