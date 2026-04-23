@@ -11,9 +11,20 @@ const orders = [
   { id: 'MK-8832-P', marketplace: 'Carrefour', icon: '🛍️', value: '$42.50', status: 'FULFILLED', statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10', time: '13:59:30' },
 ]
 
+type DashboardChatMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  reasoningSummary?: string
+}
+
 export default function DashboardPage() {
   const [query, setQuery] = useState('')
   const [transcribing, setTranscribing] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [chatError, setChatError] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [chatMessages, setChatMessages] = useState<DashboardChatMessage[]>([])
   const recorder = useAudioRecorder()
   const recording = recorder.state === 'recording'
   const starting = recorder.state === 'requesting'
@@ -44,6 +55,65 @@ export default function DashboardPage() {
   }
 
   const micBusy = starting || transcribing
+  const sendDisabled = sending || !query.trim()
+
+  async function handleSend() {
+    const message = query.trim()
+    if (!message || sending) return
+
+    setSending(true)
+    setChatError(null)
+    const userMessage: DashboardChatMessage = {
+      id: `u-${Date.now()}`,
+      role: 'user',
+      content: message,
+    }
+    setChatMessages((current) => [...current, userMessage])
+
+    try {
+      const response = await fetch('/api/copilot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: sessionId || undefined,
+          message,
+        }),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to contact Leia.')
+      }
+
+      if (typeof payload?.sessionId === 'string' && payload.sessionId) {
+        setSessionId(payload.sessionId)
+      }
+
+      const assistantContent =
+        typeof payload?.message?.content === 'string'
+          ? payload.message.content
+          : 'Leia could not generate an answer right now.'
+      const reasoningSummary =
+        typeof payload?.message?.reasoning_summary === 'string'
+          ? payload.message.reasoning_summary
+          : undefined
+
+      setChatMessages((current) => [
+        ...current,
+        {
+          id: `a-${Date.now()}`,
+          role: 'assistant',
+          content: assistantContent,
+          reasoningSummary,
+        },
+      ])
+      setQuery('')
+    } catch (error) {
+      setChatError(error instanceof Error ? error.message : 'Failed to contact Leia.')
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -63,10 +133,22 @@ export default function DashboardPage() {
           </svg>
           <input
             className="bg-transparent border-none focus:ring-0 focus:outline-none text-[#03182F] font-serif text-sm flex-1 placeholder:text-[#6B7480]"
-            placeholder={recording ? 'Recording… click the mic again to stop' : 'Ask Leia for operational insights…'}
+            placeholder={
+              recording
+                ? 'Recording… click the mic again to stop'
+                : sending
+                  ? 'Leia is responding…'
+                  : 'Ask Leia for operational insights…'
+            }
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                void handleSend()
+              }
+            }}
           />
           <button
             type="button"
@@ -86,12 +168,44 @@ export default function DashboardPage() {
           <button
             type="button"
             aria-label="Send"
-            className="bg-[#2764FF] text-white rounded-full p-1.5 flex items-center justify-center hover:bg-[#004bd9] transition-colors"
+            onClick={() => void handleSend()}
+            disabled={sendDisabled}
+            className="bg-[#2764FF] text-white rounded-full p-1.5 flex items-center justify-center hover:bg-[#004bd9] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <Send className="h-4 w-4" />
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </button>
         </div>
       </div>
+
+      {(chatMessages.length > 0 || chatError) && (
+        <div className="mx-auto w-full max-w-3xl space-y-3">
+          {chatMessages.slice(-4).map((message) => (
+            <div
+              key={message.id}
+              className={`rounded-lg border p-4 shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
+                message.role === 'assistant'
+                  ? 'border-[#DDE5EE] bg-white'
+                  : 'border-[#DDE5EE] bg-[#F2F8FF]'
+              }`}
+            >
+              <p className="mb-2 font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                {message.role === 'assistant' ? 'Leia' : 'You'}
+              </p>
+              <p className="font-serif text-[14px] leading-6 text-[#03182F]">{message.content}</p>
+              {message.role === 'assistant' && message.reasoningSummary ? (
+                <p className="mt-3 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2 font-serif text-[12px] text-[#30373E]">
+                  {message.reasoningSummary}
+                </p>
+              ) : null}
+            </div>
+          ))}
+          {chatError ? (
+            <p className="rounded-lg border border-[#ba1a1a]/30 bg-[#FFE7EC] px-4 py-3 font-serif text-[13px] text-[#ba1a1a]">
+              {chatError}
+            </p>
+          ) : null}
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
