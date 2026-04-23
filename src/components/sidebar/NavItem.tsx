@@ -16,6 +16,9 @@ import {
   Settings,
   ShoppingCart,
   Store,
+  TrendingDown,
+  Truck,
+  Warehouse,
 } from 'lucide-react'
 import NavSubItem from '@/components/sidebar/NavSubItem'
 import type { NavItem as NavItemType } from '@/types/navigation'
@@ -33,6 +36,9 @@ const ICONS: Record<string, ComponentType<{ className?: string }>> = {
   Inbox,
   GitBranch,
   Boxes,
+  Truck,
+  Warehouse,
+  TrendingDown,
 }
 
 function resolveIcon(iconName?: string) {

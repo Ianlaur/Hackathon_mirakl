@@ -8,6 +8,7 @@ import {
   emitActivePluginsChanged,
   hasStoredActivePlugins,
   isLegacyProEnabled,
+  LEGACY_PRO_PLUGIN_STORAGE_KEY,
   persistActivePlugins,
   readStoredActivePlugins,
   togglePluginId,
@@ -60,6 +61,7 @@ export function useActivePlugins() {
   const setPlugins = useCallback((plugins: string[]) => {
     const next = Array.from(new Set(plugins))
     persistActivePlugins(next)
+    window.localStorage.setItem(LEGACY_PRO_PLUGIN_STORAGE_KEY, String(next.length > 0))
     setActivePlugins(next)
     emitActivePluginsChanged(next)
   }, [])
@@ -68,6 +70,7 @@ export function useActivePlugins() {
     setActivePlugins((previous) => {
       const next = togglePluginId(previous, pluginId)
       persistActivePlugins(next)
+      window.localStorage.setItem(LEGACY_PRO_PLUGIN_STORAGE_KEY, String(next.length > 0))
       emitActivePluginsChanged(next)
       return next
     })

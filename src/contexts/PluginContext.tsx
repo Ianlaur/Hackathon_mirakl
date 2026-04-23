@@ -15,6 +15,7 @@ import {
   ACTIVE_PLUGINS_STORAGE_KEY,
   LEGACY_PRO_PLUGIN_STORAGE_KEY,
   emitActivePluginsChanged,
+  hasStoredActivePlugins,
   persistActivePlugins,
   readStoredActivePlugins,
 } from '@/lib/plugins'
@@ -47,9 +48,15 @@ export function PluginProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false)
 
   const syncProStateFromStorage = useCallback(() => {
+    const activePlugins = readStoredActivePlugins()
+
+    if (hasStoredActivePlugins()) {
+      setIsProPluginActive(activePlugins.length > 0)
+      return
+    }
+
     const legacyEnabled = window.localStorage.getItem(PRO_PLUGIN_STORAGE_KEY) === 'true'
-    const hasActivePluginItems = readStoredActivePlugins().length > 0
-    setIsProPluginActive(legacyEnabled || hasActivePluginItems)
+    setIsProPluginActive(legacyEnabled)
   }, [])
 
   useEffect(() => {

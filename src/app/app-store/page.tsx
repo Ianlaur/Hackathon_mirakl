@@ -17,7 +17,10 @@ function listInjectedTabs(pluginId: string) {
 }
 
 export default function AppStorePage() {
-  const { activePlugins, togglePlugin, isActive } = useActivePlugins()
+  const { activePlugins, togglePlugin, isActive, setPlugins } = useActivePlugins()
+  const allPluginIds = NAVIGATION_CONFIG.plugins.map((plugin) => plugin.id)
+  const isBasicMode = activePlugins.length === 0
+  const isComplexMode = allPluginIds.every((pluginId) => activePlugins.includes(pluginId))
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -31,6 +34,34 @@ export default function AppStorePage() {
         <p className="mt-2 text-sm text-slate-600">
           Activez les plugins pour débloquer des onglets supplémentaires dans la sidebar.
         </p>
+
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">Mode dashboard</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setPlugins([])}
+              className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                isBasicMode
+                  ? 'border-blue-200 bg-blue-50 text-blue-700'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              BASIC
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlugins(allPluginIds)}
+              className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                isComplexMode
+                  ? 'border-blue-200 bg-blue-50 text-blue-700'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              COMPLEXE
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
