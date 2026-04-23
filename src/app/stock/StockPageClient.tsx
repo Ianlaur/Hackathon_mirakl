@@ -214,21 +214,14 @@ export default function StockPageClient({
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-6">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Gestion des stocks</h1>
-                <p className="text-sm text-gray-500">{stats.totalProducts} produits en stock</p>
-              </div>
+      <header>
+        <div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Stock</h1>
+              <p className="font-serif text-[13px] text-[#6B7480] mt-1 italic">{stats.totalProducts} produits en stock</p>
             </div>
             <div className="flex items-center gap-2">
               {/* Import/Export Dropdown */}
@@ -285,11 +278,9 @@ export default function StockPageClient({
               
               <button
                 onClick={() => setShowNewProductModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl"
+                className="h-9 px-4 bg-[#004bd9] text-white font-serif text-[13px] font-bold rounded hover:bg-[#004bd9]/90 transition-colors flex items-center gap-2 shadow-sm"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
+                <span className="text-sm">+</span>
                 Nouveau produit
               </button>
             </div>
@@ -297,63 +288,23 @@ export default function StockPageClient({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Total produits</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white p-6 border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">TOTAL PRODUITS</span>
+            <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#004bd9]">{stats.totalProducts}</span>
           </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Valeur stock</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalValue.toLocaleString('fr-FR')}€</p>
-              </div>
-            </div>
+          <div className="bg-white p-6 border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">VALEUR STOCK</span>
+            <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{stats.totalValue.toLocaleString('fr-FR')}€</span>
           </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Stock bas</p>
-                <p className="text-2xl font-bold text-amber-600">{stats.lowStockCount}</p>
-              </div>
-            </div>
+          <div className="bg-white p-6 border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">STOCK BAS</span>
+            <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#E0A93A]">{stats.lowStockCount}</span>
           </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Rupture</p>
-                <p className="text-2xl font-bold text-red-600">{stats.outOfStockCount}</p>
-              </div>
-            </div>
+          <div className="bg-white p-6 border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">RUPTURE</span>
+            <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#F22E75]">{stats.lowStockCount > 0 ? stats.outOfStockCount : '0'}</span>
           </div>
         </div>
 
