@@ -35,10 +35,10 @@ type WidgetId = 'sales' | 'stock' | 'alerts' | 'weather'
 
 const steps: TutoStep[] = [1, 2, 3]
 const narrationStep1 =
-  "Le plugin 'Global Control Tower' est indispensable pour vos importations. Il croise vos donnees Mirakl avec le tracking international de @shippo et prepare vos paiements @stripe."
-const step3UserMessage = 'Je serai absent du 1er au 15 août.'
+  "The 'Global Control Tower' plugin is essential for your imports. It cross-references your Mirakl data with @shippo international tracking and prepares your @stripe payments."
+const step3UserMessage = 'I will be away from August 1st to August 15th.'
 const step3AssistantMessage =
-  '⚠️ Risque de rupture détecté. En août, vos ventes sur Mirakl augmentent de 30%. Souhaitez-vous que je prépare un réapprovisionnement automatique pour couvrir votre absence ?'
+  '⚠️ Stockout risk detected. In August, your Mirakl sales rise by 30%. Would you like me to prepare an automatic restock to cover your absence?'
 const STEP1_TIMING_FACTOR = 2.6
 const STEP2_TIMING_FACTOR = 2.5
 const STEP1_TYPING_INTERVAL_MS = 46
@@ -377,8 +377,8 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
         <div>
           <StepHeader
             icon={Puzzle}
-            title="Un écosystème à la carte"
-            description="Activez les modules dont vous avez besoin."
+            title="A modular ecosystem"
+            description="Enable the modules you need."
           />
 
           <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -399,18 +399,18 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                 <div>
                   <p className="text-base font-semibold text-slate-900">Global Control Tower</p>
                   <p className="mt-1 max-w-xl text-sm text-slate-500">
-                    Plateforme unifiée pour tracker vos flux mondiaux, automatiser le routage et sécuriser vos encaissements.
+                    Unified platform to track your global flows, automate routing, and secure your payments.
                   </p>
                 </div>
               </div>
 
               <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                Certifié Mirakl
+                Mirakl Certified
               </span>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {['Logistique', 'IA', 'Stripe'].map((tag) => (
+              {['Logistics', 'AI', 'Stripe'].map((tag) => (
                 <span
                   key={tag}
                   className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700"
@@ -428,7 +428,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                   ))}
                 </div>
                 <span className="text-sm font-semibold text-slate-800">5.0</span>
-                <span className="text-sm text-slate-500">12k installations</span>
+                <span className="text-sm text-slate-500">12k installs</span>
               </div>
 
               <button
@@ -454,7 +454,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                     className="absolute top-1 h-5 w-5 rounded-full bg-white shadow"
                   />
                 </span>
-                {pluginSimActive ? 'Actif' : 'Activer'}
+                {pluginSimActive ? 'Active' : 'Enable'}
               </button>
             </div>
 
@@ -467,7 +467,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                   className="mt-4 inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  Plugin activé avec succès.
+                  Plugin successfully enabled.
                 </motion.div>
               )}
             </AnimatePresence>
@@ -502,15 +502,15 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
         <div>
           <StepHeader
             icon={LayoutDashboard}
-            title="Votre bureau, vos règles"
-            description="Configurez votre dashboard comme vous le souhaitez."
+            title="Your workspace, your rules"
+            description="Configure your dashboard the way you want."
           />
 
           <div className="relative rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
                 <LayoutDashboard className="h-4 w-4" />
-                Dashboard Personnel
+                Personal Dashboard
               </div>
               <button
                 type="button"
@@ -536,7 +536,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Ventes</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Sales</p>
                           <p className="mt-2 text-2xl font-semibold text-slate-900">45 200 €</p>
                         </div>
                         <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-green-500">
@@ -565,8 +565,8 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Stock</p>
-                          <p className="mt-2 text-lg font-semibold text-slate-900">Niveau Global</p>
-                          <p className="text-sm text-red-500">3 produits en rupture</p>
+                          <p className="mt-2 text-lg font-semibold text-slate-900">Global Level</p>
+                          <p className="text-sm text-red-500">3 products out of stock</p>
                         </div>
                         <ProgressRing value={80} />
                       </div>
@@ -581,19 +581,19 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                       layout
                       className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Alertes</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Alerts</p>
                       <ul className="mt-3 space-y-2 text-sm">
                         <li className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-700">
                           <Ship className="h-4 w-4 text-red-500" />
-                          Bateau retardé - Rotterdam
+                          Ship delayed - Rotterdam
                         </li>
                         <li className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-700">
                           <MessageSquare className="h-4 w-4 text-blue-500" />
-                          Avis client négatif à traiter
+                          Negative customer review to handle
                         </li>
                         <li className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-700">
                           <CreditCard className="h-4 w-4 text-green-500" />
-                          Paiement Stripe reçu
+                          Stripe payment received
                         </li>
                       </ul>
                     </motion.article>
@@ -611,9 +611,9 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                   >
                     <div className="flex items-center gap-2 text-cyan-700">
                       <CloudIcon />
-                      <p className="text-sm font-semibold">Météo Supply Chain</p>
+                      <p className="text-sm font-semibold">Supply Chain Weather</p>
                     </div>
-                    <p className="mt-2 text-sm text-cyan-700">Port de Shanghai: vent fort, risque de retard +8h</p>
+                    <p className="mt-2 text-sm text-cyan-700">Port of Shanghai: strong wind, delay risk +8h</p>
                   </motion.article>
                 )
               })}
@@ -645,15 +645,15 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
       <div>
         <StepHeader
           icon={Sparkles}
-          title="L'IA qui connaît votre business"
-          description="Anticipez et protégez votre croissance."
+          title="AI that knows your business"
+          description="Anticipate and protect your growth."
         />
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 pb-3">
             <div className="inline-flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-blue-600" />
-              <p className="text-sm font-semibold text-slate-900">Assistant Mira</p>
+              <p className="text-sm font-semibold text-slate-900">Mira Assistant</p>
             </div>
             <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
               Smart Assistant
@@ -668,7 +668,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
 
             {step3ShowLoader && (
               <div className="max-w-[84%] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Mira réfléchit...
+                Mira is thinking...
               </div>
             )}
 
@@ -680,7 +680,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
               >
                 <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-blue-200 bg-white px-2 py-0.5 text-xs font-medium text-blue-700">
                   <Sparkles className="h-3 w-3" />
-                  Assistant Mira
+                  Mira Assistant
                 </div>
                 <p>
                   {step3AssistantMessage.slice(0, step3AssistantTyped)}
@@ -699,7 +699,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                           : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                       )}
                     >
-                      ✨ Valider la stratégie
+                      ✨ Approve the plan
                     </button>
                     <button
                       type="button"
@@ -711,7 +711,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                           : 'border-slate-200 bg-slate-100 text-slate-700'
                       )}
                     >
-                      Ignorer
+                      Ignore
                     </button>
                   </div>
                 )}
@@ -722,13 +722,13 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
           {step3Decision === 'approve' && (
             <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
-              Stratégie validée, les actions peuvent être planifiées.
+              Plan approved, the actions can be scheduled.
             </div>
           )}
           {step3Decision === 'ignore' && (
             <div className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
               <AlertTriangle className="h-4 w-4" />
-              Suggestion ignorée pour le moment.
+              Suggestion ignored for now.
             </div>
           )}
         </div>
@@ -741,16 +741,16 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Tutoriel interactif
+            Interactive tutorial
           </p>
           <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-            Démonstration des 3 piliers Mirakl
+            Demo of the 3 Mirakl pillars
           </h2>
         </div>
 
         {onBack && (
           <Button variant="outline" onClick={onBack}>
-            Retour
+            Back
           </Button>
         )}
       </div>
@@ -775,7 +775,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
       <div className="sticky bottom-0 mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-sm backdrop-blur">
         <Button variant="outline" onClick={goToPrev} disabled={currentStep === 1}>
           <ChevronLeft className="mr-1 h-4 w-4" />
-          Précédent
+          Previous
         </Button>
 
         <div className="flex items-center gap-2">
@@ -784,7 +784,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
               key={step}
               type="button"
               onClick={() => goToStep(step)}
-              aria-label={`Etape ${step}`}
+              aria-label={`Step ${step}`}
               className={cn(
                 'h-2.5 w-2.5 rounded-full transition-all',
                 currentStep === step ? 'w-6 bg-blue-600' : 'bg-slate-300 hover:bg-slate-400'
@@ -795,12 +795,12 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
 
         {currentStep < 3 ? (
           <Button onClick={goToNext}>
-            Suivant
+            Next
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         ) : (
           <Button onClick={onFinish} className="bg-slate-900 text-white hover:bg-slate-800">
-            🚀 Terminer et accéder au Dashboard
+            🚀 Finish and go to Dashboard
           </Button>
         )}
       </div>

@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching parcels:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la récupération des colis' },
+      { error: 'Failed to fetch parcels' },
       { status: 500 }
     );
   }
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating parcel:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création du colis' },
+      { error: 'Failed to create parcel' },
       { status: 500 }
     );
   }
@@ -194,7 +194,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('Error updating parcel:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour du colis' },
+      { error: 'Failed to update parcel' },
       { status: 500 }
     );
   }
@@ -229,7 +229,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting parcel:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la suppression du colis' },
+      { error: 'Failed to delete parcel' },
       { status: 500 }
     );
   }

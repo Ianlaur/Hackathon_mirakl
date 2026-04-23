@@ -50,7 +50,7 @@ export function RecommendationDetailPanel({
       const body =
         action === 'approve'
           ? {
-              comment: `Approuvé sur ${selectedItems.length}/${items.length} lignes, ${selectedCost.toFixed(2)} €`,
+              comment: `Approved on ${selectedItems.length}/${items.length} lines, ${selectedCost.toFixed(2)} €`,
               selected_product_ids: Array.from(checked),
             }
           : {}
@@ -71,7 +71,7 @@ export function RecommendationDetailPanel({
       const data = await resp.json()
       onStatusChange({ ...recommendation, status: data.recommendation.status })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setBusy(false)
     }
@@ -79,7 +79,7 @@ export function RecommendationDetailPanel({
 
   if (!payload) {
     return (
-      <p className="text-sm text-[#6B7480]">Pas de détails disponibles pour cette action.</p>
+      <p className="text-sm text-[#6B7480]">No details available for this action.</p>
     )
   }
 
@@ -89,7 +89,7 @@ export function RecommendationDetailPanel({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-wide text-[#6B7480]">
-              Congés détectés{payload.leave_duration_days ? ` • ${payload.leave_duration_days} jours` : ''}
+              Time off detected{payload.leave_duration_days ? ` • ${payload.leave_duration_days} days` : ''}
             </p>
             <h2 className="mt-1 text-xl font-semibold text-[#03182F]">
               {recommendation.title}
@@ -97,7 +97,7 @@ export function RecommendationDetailPanel({
           </div>
           {payload.order_deadline && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-right">
-              <p className="text-xs text-rose-700">Deadline commande</p>
+              <p className="text-xs text-rose-700">Order deadline</p>
               <p className="text-sm font-semibold text-rose-900">{payload.order_deadline}</p>
             </div>
           )}
@@ -123,14 +123,14 @@ export function RecommendationDetailPanel({
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-[#6B7480]">
             <tr>
               <th className="p-3 text-left">☑</th>
-              <th className="p-3 text-left">Priorité</th>
+              <th className="p-3 text-left">Priority</th>
               <th className="p-3 text-left">SKU</th>
-              <th className="p-3 text-left">Produit</th>
+              <th className="p-3 text-left">Product</th>
               <th className="p-3 text-right">Stock</th>
               <th className="p-3 text-right">Projection</th>
-              <th className="p-3 text-right">Reco qty</th>
-              <th className="p-3 text-left">Fournisseur</th>
-              <th className="p-3 text-right">Coût</th>
+              <th className="p-3 text-right">Rec. qty</th>
+              <th className="p-3 text-left">Supplier</th>
+              <th className="p-3 text-right">Cost</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -181,7 +181,7 @@ export function RecommendationDetailPanel({
           {error && <p className="mb-3 text-sm text-rose-700">{error}</p>}
           <div className="flex items-center justify-between">
             <div className="text-sm text-[#6B7480]">
-              {selectedItems.length}/{items.length} lignes sélectionnées •{' '}
+              {selectedItems.length}/{items.length} lines selected •{' '}
               <strong className="text-[#03182F]">{selectedCost.toFixed(2)} €</strong>
             </div>
             <div className="flex gap-2">
@@ -191,7 +191,7 @@ export function RecommendationDetailPanel({
                 disabled={busy}
                 className="rounded-xl border border-[#BFCBDA] bg-white px-4 py-2 text-sm font-medium text-[#30373E] hover:bg-slate-50 disabled:opacity-50"
               >
-                Rejeter
+                Reject
               </button>
               <button
                 type="button"
@@ -199,7 +199,7 @@ export function RecommendationDetailPanel({
                 disabled={busy || selectedItems.length === 0}
                 className="rounded-xl bg-[#2764FF] px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                Approuver la sélection
+                Approve selection
               </button>
             </div>
           </div>

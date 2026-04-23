@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting empty categories:', error)
     return NextResponse.json(
-      { error: 'Erreur lors de la suppression' },
+      { error: 'Deletion failed' },
       { status: 500 }
     )
   }

@@ -33,7 +33,7 @@ export async function GET() {
     return NextResponse.json(zones)
   } catch (error) {
     console.error('Error fetching zones:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
@@ -77,6 +77,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(zone, { status: 201 })
   } catch (error) {
     console.error('Error creating zone:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

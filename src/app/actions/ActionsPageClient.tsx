@@ -39,14 +39,14 @@ export default function ActionsPageClient({
             onClick={handleRefresh}
             className="text-xs font-medium text-[#2764FF] hover:text-blue-800"
           >
-            Rafraîchir
+            Refresh
           </button>
         </div>
 
         <div className="flex-1 space-y-2 overflow-y-auto">
           {recommendations.length === 0 && (
             <p className="rounded-xl border border-dashed border-[#BFCBDA] bg-white p-4 text-sm text-[#6B7480]">
-              {"Aucune action en attente. L'agent vous préviendra dès qu'il détecte un risque."}
+              {"No pending actions. The agent will notify you as soon as it detects a risk."}
             </p>
           )}
 
@@ -63,7 +63,7 @@ export default function ActionsPageClient({
 
       <section className="flex-1 overflow-hidden rounded-lg border border-slate-200 bg-white p-6">
         {!selected ? (
-          <p className="text-sm text-[#6B7480]">Sélectionne une action à gauche.</p>
+          <p className="text-sm text-[#6B7480]">Select an action on the left.</p>
         ) : (
           <RecommendationDetailPanel
             recommendation={selected}
