@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  CreditCard,
   Globe2,
   LayoutDashboard,
   MessageSquare,
@@ -20,6 +19,7 @@ import {
   Ship,
   Sparkles,
   Star,
+  Wallet,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { usePluginContext } from '@/contexts/PluginContext'
@@ -592,7 +592,7 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                           Negative customer review to handle
                         </li>
                         <li className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-700">
-                          <CreditCard className="h-4 w-4 text-green-500" />
+                          <Wallet className="h-4 w-4 text-green-500" />
                           Stripe payment received
                         </li>
                       </ul>
