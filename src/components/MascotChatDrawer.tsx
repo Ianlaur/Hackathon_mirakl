@@ -18,6 +18,7 @@ import {
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useAudioRecorder } from './useAudioRecorder'
+import { SimulatedBadge } from './SimulatedBadge'
 
 const STORAGE_KEY = 'iris_chat_history_v1'
 
@@ -687,6 +688,7 @@ function EmailDraftCard({ draft }: { draft: EmailDraft }) {
             {draft.items_count} SKU · {draft.total_units} unités · {draft.total_cost_eur.toFixed(0)} €
           </p>
         </div>
+        <SimulatedBadge title="Brouillon préparé — aucun envoi réel tant que tu ne cliques pas 'Ouvrir dans Gmail'." />
       </div>
       <div className="iris-email__subject">{draft.subject}</div>
       <pre className="iris-email__body">{draft.body}</pre>

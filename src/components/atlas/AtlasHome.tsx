@@ -9,6 +9,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { SimulatedBadge } from '@/components/SimulatedBadge'
+import MorningBriefingCard from './MorningBriefingCard'
 
 type StorefrontSignal = {
   channel: string
@@ -311,6 +313,7 @@ function AtlasSidebar({ data }: { data: AtlasData }) {
   const founder = data.founder
   return (
     <aside className="space-y-4">
+      <MorningBriefingCard />
       <div className="mira-card mira-card--raised p-4">
         <div className="mira-label">État fondateur</div>
         <h3 className="mira-display text-[16px] font-bold capitalize">{founder.state.toLowerCase()}</h3>
@@ -320,7 +323,10 @@ function AtlasSidebar({ data }: { data: AtlasData }) {
       </div>
       {data.shield.active ? (
         <div className="mira-card p-4" style={{ borderLeft: '3px solid var(--mira-pink)' }}>
-          <div className="mira-label">Reputation Shield</div>
+          <div className="flex items-center justify-between">
+            <div className="mira-label">Reputation Shield</div>
+            <SimulatedBadge />
+          </div>
           <p className="mt-1 text-xs text-slate-700">
             Canal principal protégé: <strong>{prettyChannel(data.shield.primary_channel ?? '')}</strong>. Exposition
             réduite sur {data.shield.paused_channels.length} storefronts.
