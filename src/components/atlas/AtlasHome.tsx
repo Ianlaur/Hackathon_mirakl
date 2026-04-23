@@ -218,9 +218,35 @@ function AtlasMap({ data }: { data: AtlasData }) {
         <CountryBlob cx={500} cy={200} r={110} />
         <CountryBlob cx={430} cy={400} r={90} />
 
-        {/* Soft line between FR and the other regions to suggest flow (no animation). */}
-        <path d="M 260 300 Q 400 220 500 200" stroke="rgba(39,100,255,0.18)" strokeWidth={2} fill="none" />
-        <path d="M 260 300 Q 345 370 430 400" stroke="rgba(39,100,255,0.18)" strokeWidth={2} fill="none" />
+        {/* Supply pulses — animated flow lines between FR and its neighbours.
+           Dashed path drifts in direction of flow; a small dot rides the curve
+           on loop. Opacity low so the pulses are atmospheric, not loud. */}
+        <path
+          id="flow-fr-de"
+          d="M 260 300 Q 400 220 500 200"
+          stroke="rgba(39,100,255,0.22)"
+          strokeWidth={2}
+          fill="none"
+          strokeDasharray="6 8"
+        >
+          <animate attributeName="stroke-dashoffset" from="0" to="-28" dur="3.5s" repeatCount="indefinite" />
+        </path>
+        <path
+          id="flow-fr-it"
+          d="M 260 300 Q 345 370 430 400"
+          stroke="rgba(39,100,255,0.22)"
+          strokeWidth={2}
+          fill="none"
+          strokeDasharray="6 8"
+        >
+          <animate attributeName="stroke-dashoffset" from="0" to="-28" dur="4.2s" repeatCount="indefinite" />
+        </path>
+        <circle r={3.5} fill="var(--mira-blue)" opacity={0.85}>
+          <animateMotion dur="3.5s" repeatCount="indefinite" path="M 260 300 Q 400 220 500 200" />
+        </circle>
+        <circle r={3.5} fill="var(--mira-blue)" opacity={0.85}>
+          <animateMotion dur="4.2s" repeatCount="indefinite" path="M 260 300 Q 345 370 430 400" />
+        </circle>
 
         {data.regions.map((region) => (
           <RegionNode key={region.region} region={region} />
