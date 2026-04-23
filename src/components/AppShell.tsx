@@ -89,12 +89,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <PluginProvider>
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_35%),linear-gradient(180deg,#f8fbff_0%,#eef3f9_100%)]">
+      <div className="min-h-screen bg-[#F2F8FF]">
         {!shouldHideSidebar && <Sidebar />}
-        <main
-          className={`min-h-screen transition-[margin] duration-200 ease-out ${shouldHideSidebar ? '' : 'lg:ml-[240px]'}`}
-        >
-          <div className="px-4 pb-10 pt-6 sm:px-6 lg:px-8">{children}</div>
+        <main className={`min-h-screen ${shouldHideSidebar ? '' : 'lg:ml-60'}`}>
+          <div className="p-6 max-w-[1440px] mx-auto w-full">{children}</div>
         </main>
         {!shouldHideSidebar && <MascotOrb />}
       </div>
