@@ -1,0 +1,129 @@
+# MIRAKL CONNECT — Design System & Rules
+
+## Brand Identity
+- Name: **MIRAKL CONNECT**
+- Sub-label: **Operations**
+- Font stack: **Noto Serif** (headings, body, labels, cards), **JetBrains Mono** (data, monospace values)
+
+## Color Palette
+
+### Primary
+- `primary`: #004bd9
+- `primary-container`: #2764ff (buttons, active states, accents)
+- `on-primary`: #ffffff
+
+### Secondary / Urgent
+- `secondary`: #b70051
+- `urgent`: #F22E75
+- `urgent-soft`: #FFE7EC
+- `error`: #ba1a1a
+
+### Surfaces
+- `background`: #F2F8FF (page background)
+- `surface`: #faf8ff
+- `surface-raised`: #FFFFFF (cards, panels)
+- `surface-container`: #ededfa
+- `surface-container-low`: #f3f2ff
+- `surface-container-high`: #e7e7f4
+
+### Text
+- `on-surface`: #191b24 (primary text)
+- `on-background`: #191b24
+- `ink`: #03182F (dark elements like chat bar)
+- `foreground-muted`: #30373E
+- `foreground-subtle`: #6B7480
+
+### Borders
+- `border`: #DDE5EE (default borders)
+- `border-strong`: #BFCBDA (emphasized borders)
+- `outline`: #737687
+- `outline-variant`: #c3c5d8
+
+### Status
+- `ok`: #3FA46A (success, fulfilled)
+- `warn`: #E0A93A (warning)
+- `error`: #ba1a1a (error)
+- `urgent`: #F22E75 (risk, critical)
+
+## Border Radius
+- Default: `0.125rem` (2px) — sharp, editorial feel
+- `rounded-lg`: `0.25rem` (4px)
+- `rounded-xl`: `0.5rem` (8px)
+- `rounded-full`: `0.75rem` (12px) — pills, badges
+- Exception: chat bar uses `rounded-full` (fully round)
+
+## Typography Classes
+- `font-h1` / `font-h2`: Noto Serif, bold, tracking-tight
+- `font-body`: Noto Serif, regular
+- `font-label-caps`: Noto Serif, uppercase, small, tracking-wide — used for section labels
+- `font-card-title`: Noto Serif, medium weight
+- `font-caption`: Noto Serif, small, subtle color
+- `font-kpi-value`: Noto Serif, large/bold — KPI numbers
+- `font-mono-data`: JetBrains Mono — order IDs, timestamps, data values
+
+## Component Patterns
+
+### Sidebar (SideNavBar)
+- Fixed left, `w-60`, white background, `border-r border-slate-100`
+- Logo: "MIRAKL CONNECT" in `text-xl font-black tracking-widest`
+- Sub-label: uppercase, `text-xs text-slate-400`
+- Nav items: `mx-2 px-3 py-2`, flex with icon + label
+- Active: `bg-slate-50 text-primary-container border border-slate-200 rounded-md`
+- Inactive: `text-slate-500`, hover → `bg-slate-50 text-slate-900`
+- Icons: Material Symbols Outlined, weight 300, size 20px
+
+### Top Bar
+- `h-14`, white, `border-b border-slate-100`, sticky top
+- Brand name left, user info + avatar right
+
+### Cards
+- `bg-surface-raised border border-border p-6`
+- No shadow by default — rely on border
+- Section label: uppercase `font-label-caps text-foreground-subtle`
+- KPI value: `font-kpi-value text-on-surface` (large)
+- Delta/change: `text-ok italic text-sm` or colored accordingly
+
+### Tables
+- Container: `bg-surface-raised border border-border`
+- Header row: `bg-surface-container-low`, uppercase labels
+- Cells: `px-6 py-4`
+- Row hover: `hover:bg-surface-container-lowest`
+- Status badges: `px-2 py-0.5 rounded-full text-[11px] font-bold`
+  - Fulfilled: `text-ok bg-ok/10`
+  - Processing: `text-primary-container bg-primary-container/10`
+  - Risk: `text-urgent bg-urgent-soft`
+
+### Decision Cards
+- Same card pattern with colored label (urgent or primary)
+- Icon top-right matching label color
+- Two buttons: primary (`bg-primary-container text-white`) + secondary (`border border-border-strong`)
+
+### AI Chat Bar
+- `bg-ink rounded-full py-3 px-6`
+- Dark bar, white text, subtle border `border-white/10`
+- Icon: `text-primary-container`
+- Submit button: `bg-primary-container text-white rounded-full`
+
+### Status Badges
+- Pill shape: `rounded-full px-2 py-0.5 text-[11px] font-bold font-serif`
+- Colors match status (ok, primary, urgent, warn)
+
+## Layout Rules
+- Max content width: `max-w-[1440px] mx-auto`
+- Page padding: `p-6`
+- Grid gaps: `gap-6`
+- Section spacing: `space-y-6`
+- Sidebar width: `w-60` (240px), main content: `ml-60`
+
+## Interaction Patterns
+- Hover transitions: `transition-all duration-200 ease-in-out`
+- Focus rings: `focus-within:ring-2 focus-within:ring-primary-container/20`
+- Button hover: darken or `hover:bg-slate-50`
+
+## General Rules
+- Use Noto Serif everywhere except data/mono values
+- Keep the editorial, clean, serif-first aesthetic
+- Borders over shadows — flat design with subtle depth
+- Status colors are semantic: green=ok, blue=info, pink/red=urgent
+- Uppercase labels for section headers with wide tracking
+- Material Symbols Outlined for all icons (weight 300)
