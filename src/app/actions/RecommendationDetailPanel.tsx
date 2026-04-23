@@ -50,7 +50,7 @@ export function RecommendationDetailPanel({
       const body =
         action === 'approve'
           ? {
-              comment: `Approuvé sur ${selectedItems.length}/${items.length} lignes, ${selectedCost.toFixed(2)} €`,
+              comment: `Approved on ${selectedItems.length}/${items.length} lines, ${selectedCost.toFixed(2)} €`,
               selected_product_ids: Array.from(checked),
             }
           : {}
@@ -71,7 +71,7 @@ export function RecommendationDetailPanel({
       const data = await resp.json()
       onStatusChange({ ...recommendation, status: data.recommendation.status })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setBusy(false)
     }
@@ -132,14 +132,14 @@ export function RecommendationDetailPanel({
           <thead className="bg-[#F2F8FF] text-[10px] uppercase tracking-[0.1em] text-[#6B7480]">
             <tr>
               <th className="p-3 text-left">☑</th>
-              <th className="p-3 text-left">Priorité</th>
+              <th className="p-3 text-left">Priority</th>
               <th className="p-3 text-left">SKU</th>
-              <th className="p-3 text-left">Produit</th>
+              <th className="p-3 text-left">Product</th>
               <th className="p-3 text-right">Stock</th>
               <th className="p-3 text-right">Projection</th>
-              <th className="p-3 text-right">Reco qty</th>
-              <th className="p-3 text-left">Fournisseur</th>
-              <th className="p-3 text-right">Coût</th>
+              <th className="p-3 text-right">Rec. qty</th>
+              <th className="p-3 text-left">Supplier</th>
+              <th className="p-3 text-right">Cost</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -190,7 +190,7 @@ export function RecommendationDetailPanel({
           {error && <p className="mb-3 font-serif text-[13px] text-[#ba1a1a]">{error}</p>}
           <div className="flex items-center justify-between">
             <div className="font-serif text-[13px] text-[#6B7480]">
-              {selectedItems.length}/{items.length} lignes sélectionnées •{' '}
+              {selectedItems.length}/{items.length} lines selected •{' '}
               <strong className="text-[#03182F]">{selectedCost.toFixed(2)} €</strong>
             </div>
             <div className="flex gap-2">
@@ -200,7 +200,7 @@ export function RecommendationDetailPanel({
                 disabled={busy}
                 className="rounded-lg border border-[#BFCBDA] bg-white px-4 py-2 font-serif text-[13px] font-bold text-[#30373E] hover:bg-[#F2F8FF] disabled:opacity-50"
               >
-                Rejeter
+                Reject
               </button>
               <button
                 type="button"
@@ -208,7 +208,7 @@ export function RecommendationDetailPanel({
                 disabled={busy || selectedItems.length === 0}
                 className="rounded-lg bg-[#2764FF] px-4 py-2 font-serif text-[13px] font-bold text-white hover:bg-[#004bd9] disabled:opacity-50"
               >
-                Approuver la sélection
+                Approve selection
               </button>
             </div>
           </div>

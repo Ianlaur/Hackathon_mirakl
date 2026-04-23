@@ -61,7 +61,7 @@ export default function SettingsPage() {
         const profileRes = await fetch('/api/profile')
 
         if (!profileRes.ok) {
-          throw new Error('Impossible de charger votre profil')
+          throw new Error('Unable to load your profile')
         }
 
         const profileData = await profileRes.json()
@@ -83,7 +83,7 @@ export default function SettingsPage() {
         setPreview(profileData.profile_image_url || null)
         setLogoPreview(profileData.company_logo_url || null)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur inconnue')
+        setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
         setLoading(false)
       }
@@ -101,7 +101,7 @@ export default function SettingsPage() {
     if (!file) return
 
     if (file.size > 1.5 * 1024 * 1024) {
-      setError('Image trop lourde (max 1.5MB)')
+      setError('Image too large (max 1.5MB)')
       return
     }
 
@@ -119,7 +119,7 @@ export default function SettingsPage() {
     if (!file) return
 
     if (file.size > 1.5 * 1024 * 1024) {
-      setError('Logo trop lourd (max 1.5MB)')
+      setError('Logo too large (max 1.5MB)')
       return
     }
 
@@ -146,11 +146,11 @@ export default function SettingsPage() {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Échec de la mise à jour')
+        throw new Error(data.error || 'Update failed')
       }
-      setSuccess('Profil mis à jour')
+      setSuccess('Profile updated')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setSaving(false)
     }
@@ -162,11 +162,11 @@ export default function SettingsPage() {
     setPwSuccess(null)
 
     if (pwNew.length < 8) {
-      setPwError('Le nouveau mot de passe doit contenir au moins 8 caractères')
+      setPwError('The new password must be at least 8 characters')
       return
     }
     if (pwNew !== pwConfirm) {
-      setPwError('Les mots de passe ne correspondent pas')
+      setPwError('Passwords do not match')
       return
     }
 
@@ -179,14 +179,14 @@ export default function SettingsPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Échec de la mise à jour du mot de passe')
+        throw new Error(data.error || 'Password update failed')
       }
-      setPwSuccess('Mot de passe mis à jour')
+      setPwSuccess('Password updated')
       setPwCurrent('')
       setPwNew('')
       setPwConfirm('')
     } catch (err) {
-      setPwError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setPwError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setPwSaving(false)
     }
@@ -208,16 +208,16 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="text-sm text-[#6B7480]">Paramètres</p>
-          <h1 className="text-3xl font-bold text-[#03182F]">Mon profil</h1>
-          <p className="text-[#6B7480] mt-1">Mettez à jour vos informations personnelles</p>
+          <p className="text-sm text-[#6B7480]">Settings</p>
+          <h1 className="text-3xl font-bold text-[#03182F]">My profile</h1>
+          <p className="text-[#6B7480] mt-1">Update your personal information</p>
         </div>
       </div>
 
       <section className="mb-6 rounded-xl border border-[#DDE5EE] bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#03182F]">Plugins de navigation</h2>
+        <h2 className="text-lg font-semibold text-[#03182F]">Navigation plugins</h2>
         <p className="mt-1 text-sm text-[#6B7480]">
-          Activez les plugins pour afficher leurs onglets dans la sidebar.
+          Enable plugins to display their tabs in the sidebar.
         </p>
         <div className="mt-4 space-y-3">
           {NAVIGATION_CONFIG.plugins
@@ -237,7 +237,7 @@ export default function SettingsPage() {
                   <div>
                     <p className="text-sm font-semibold text-[#03182F]">{plugin.label}</p>
                     <p className="text-xs text-[#30373E]">{plugin.description}</p>
-                    <p className="mt-1 text-xs text-[#6B7480]">Ajoute: {tabs.join(' · ')}</p>
+                    <p className="mt-1 text-xs text-[#6B7480]">Adds: {tabs.join(' · ')}</p>
                   </div>
                   <button
                     type="button"
@@ -248,7 +248,7 @@ export default function SettingsPage() {
                         : 'bg-gray-200 text-[#30373E] hover:bg-gray-300'
                     }`}
                   >
-                    {active ? 'Actif' : 'Inactif'}
+                    {active ? 'Active' : 'Inactive'}
                   </button>
                 </div>
               )
@@ -279,10 +279,10 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <p className="text-sm text-[#30373E] mb-2">Photo de profil</p>
+            <p className="text-sm text-[#30373E] mb-2">Profile picture</p>
             <div className="flex items-center gap-3">
               <label className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg cursor-pointer hover:bg-indigo-700 transition">
-                Changer
+                Change
                 <input type="file" accept="image/*" className="hidden" onChange={handleAvatar} />
               </label>
               {preview && (
@@ -294,7 +294,7 @@ export default function SettingsPage() {
                   }}
                   className="text-sm text-[#6B7480] hover:text-[#30373E]"
                 >
-                  Supprimer
+                  Delete
                 </button>
               )}
             </div>
@@ -304,7 +304,7 @@ export default function SettingsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#30373E] mb-2">Nom complet</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-2">Full name</label>
             <input
               type="text"
               value={profile.name}
@@ -324,35 +324,35 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#30373E] mb-2">Téléphone (optionnel)</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-2">Phone (optional)</label>
             <input
               type="tel"
               value={profile.phone || ''}
               onChange={handleChange('phone')}
-              placeholder="+33 6 12 34 56 78"
+              placeholder="+1 555 123 4567"
               className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#30373E] mb-2">Adresse (optionnel)</label>
+            <label className="block text-sm font-medium text-[#30373E] mb-2">Address (optional)</label>
             <input
               type="text"
               value={profile.address || ''}
               onChange={handleChange('address')}
-              placeholder="12 rue Exemple, 75000 Paris"
+              placeholder="12 Example Street, 75000 Paris"
               className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#30373E] mb-2">Autres infos (bio, note)</label>
+          <label className="block text-sm font-medium text-[#30373E] mb-2">Other info (bio, note)</label>
           <textarea
             value={profile.bio || ''}
             onChange={handleChange('bio')}
             rows={4}
             className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            placeholder="Parlez brièvement de vous ou ajoutez une note interne."
+            placeholder="Briefly describe yourself or add an internal note."
           />
         </div>
 
@@ -362,7 +362,7 @@ export default function SettingsPage() {
             disabled={saving}
             className="px-5 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            {saving ? 'Enregistrement...' : 'Enregistrer les changements'}
+            {saving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </form>
@@ -374,15 +374,15 @@ export default function SettingsPage() {
             <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            Informations entreprise
+            Company information
           </h2>
-          <p className="text-sm text-[#6B7480] mt-1">Ces informations apparaîtront sur vos factures et devis</p>
+          <p className="text-sm text-[#6B7480] mt-1">This information will appear on your invoices and quotes</p>
         </div>
 
         {/* Company Logo */}
         <div className="flex items-start gap-6">
           <div className="flex-shrink-0">
-            <p className="text-sm font-medium text-[#30373E] mb-2">Logo entreprise</p>
+            <p className="text-sm font-medium text-[#30373E] mb-2">Company logo</p>
             <div className="w-32 h-32 border-2 border-dashed border-[#BFCBDA] rounded-lg flex items-center justify-center bg-[#F2F8FF] overflow-hidden">
               {logoPreview ? (
                 <Image src={logoPreview} alt="Logo" width={128} height={128} className="object-contain w-full h-full" />
@@ -391,13 +391,13 @@ export default function SettingsPage() {
                   <svg className="w-8 h-8 text-[#6B7480] mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-xs text-[#6B7480]">Aucun logo</span>
+                  <span className="text-xs text-[#6B7480]">No logo</span>
                 </div>
               )}
             </div>
             <div className="flex items-center gap-2 mt-2">
               <label className="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg cursor-pointer hover:bg-indigo-700 transition">
-                Changer
+                Change
                 <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
               </label>
               {logoPreview && (
@@ -409,7 +409,7 @@ export default function SettingsPage() {
                   }}
                   className="text-xs text-[#6B7480] hover:text-[#30373E]"
                 >
-                  Supprimer
+                  Delete
                 </button>
               )}
             </div>
@@ -418,12 +418,12 @@ export default function SettingsPage() {
 
           <div className="flex-1 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#30373E] mb-2">Nom de l&apos;entreprise</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">Company name</label>
               <input
                 type="text"
                 value={profile.company_name || ''}
                 onChange={handleChange('company_name')}
-                placeholder="Mon Entreprise SARL"
+                placeholder="My Company Ltd"
                 className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
@@ -441,26 +441,26 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#30373E] mb-2">Adresse de l&apos;entreprise</label>
+          <label className="block text-sm font-medium text-[#30373E] mb-2">Company address</label>
           <textarea
             value={profile.company_address || ''}
             onChange={handleChange('company_address')}
             rows={2}
-            placeholder="7 rue François Mitterrand&#10;18100 Vierzon, France"
+            placeholder="123 Main Street&#10;10001 New York, USA"
             className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#30373E] mb-2">Mention TVA</label>
+          <label className="block text-sm font-medium text-[#30373E] mb-2">VAT notice</label>
           <input
             type="text"
             value={profile.company_tva_text || ''}
             onChange={handleChange('company_tva_text')}
-            placeholder="TVA non applicable, art. 293 B du CGI"
+            placeholder="VAT not applicable, art. 293 B of the French CGI"
             className="w-full px-3 py-3 rounded-lg border border-[#DDE5EE] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
-          <p className="text-xs text-[#6B7480] mt-1">Laissez vide si vous êtes assujetti à la TVA</p>
+          <p className="text-xs text-[#6B7480] mt-1">Leave blank if you are subject to VAT</p>
         </div>
 
         <div className="flex justify-end">
@@ -469,15 +469,15 @@ export default function SettingsPage() {
             disabled={saving}
             className="px-5 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            {saving ? 'Enregistrement...' : 'Enregistrer les changements'}
+            {saving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </form>
 
       <div className="bg-white rounded-xl border border-[#DDE5EE] shadow-sm p-6 space-y-4 mt-6">
         <div>
-          <h2 className="text-xl font-semibold text-[#03182F]">Sécurité</h2>
-          <p className="text-sm text-[#6B7480]">Mettre à jour votre mot de passe</p>
+          <h2 className="text-xl font-semibold text-[#03182F]">Security</h2>
+          <p className="text-sm text-[#6B7480]">Update your password</p>
         </div>
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           {pwError && (
@@ -492,7 +492,7 @@ export default function SettingsPage() {
           )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#30373E] mb-2">Mot de passe actuel</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">Current password</label>
               <input
                 type="password"
                 value={pwCurrent}
@@ -502,7 +502,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#30373E] mb-2">Nouveau mot de passe</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">New password</label>
               <input
                 type="password"
                 value={pwNew}
@@ -512,7 +512,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#30373E] mb-2">Confirmer</label>
+              <label className="block text-sm font-medium text-[#30373E] mb-2">Confirm</label>
               <input
                 type="password"
                 value={pwConfirm}
@@ -528,7 +528,7 @@ export default function SettingsPage() {
               disabled={pwSaving}
               className="px-5 py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
             >
-              {pwSaving ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+              {pwSaving ? 'Updating...' : 'Update password'}
             </button>
           </div>
         </form>
@@ -543,10 +543,10 @@ export default function SettingsPage() {
             </svg>
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-[#03182F]">Fonctionnalités Beta</h2>
+            <h2 className="text-xl font-semibold text-[#03182F]">Beta features</h2>
             <p className="text-sm text-[#30373E] mt-1">
-              Accédez en avant-première aux nouvelles fonctionnalités en cours de développement.
-              Ces fonctionnalités peuvent être instables ou changer sans préavis.
+              Get early access to new features under development.
+              These features may be unstable or change without notice.
             </p>
           </div>
         </div>
@@ -555,9 +555,9 @@ export default function SettingsPage() {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
               <div>
-                <p className="font-medium text-[#03182F]">Activer les fonctionnalités beta</p>
+                <p className="font-medium text-[#03182F]">Enable beta features</p>
                 <p className="text-sm text-[#6B7480]">
-                  Inclut : Suivi des dépenses, et plus à venir...
+                  Includes: Expense tracking, and more to come...
                 </p>
               </div>
             </div>
@@ -574,7 +574,7 @@ export default function SettingsPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ...profile, beta_features_enabled: newValue }),
                   }).then(() => {
-                    setSuccess(newValue ? 'Fonctionnalités beta activées ! Rechargez la page pour voir les changements.' : 'Fonctionnalités beta désactivées.')
+                    setSuccess(newValue ? 'Beta features enabled! Reload the page to see the changes.' : 'Beta features disabled.')
                     setTimeout(() => setSuccess(null), 5000)
                   })
                 }}
@@ -590,7 +590,7 @@ export default function SettingsPage() {
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Vous avez accès aux fonctionnalités beta. Vos retours sont les bienvenus !</span>
+            <span>You have access to beta features. Feedback is welcome!</span>
           </div>
         )}
       </div>
@@ -604,9 +604,9 @@ export default function SettingsPage() {
             </svg>
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-[#03182F]">Gestion de Stock & Entrepôt</h2>
+            <h2 className="text-xl font-semibold text-[#03182F]">Stock & Warehouse Management</h2>
             <p className="text-sm text-[#30373E] mt-1">
-              Activez les fonctionnalités de gestion de stock et d&apos;entrepôt (WMS) pour votre activité commerciale.
+              Enable stock and warehouse management (WMS) features for your commercial activity.
             </p>
           </div>
         </div>
@@ -615,9 +615,9 @@ export default function SettingsPage() {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
               <div>
-                <p className="font-medium text-[#03182F]">Activer la gestion de stock</p>
+                <p className="font-medium text-[#03182F]">Enable stock management</p>
                 <p className="text-sm text-[#6B7480]">
-                  Inclut : Stock produits, Entrepôt (WMS), Zones, Emplacements, Listes de picking
+                  Includes: Product stock, Warehouse (WMS), Zones, Locations, Picking lists
                 </p>
               </div>
             </div>
@@ -634,7 +634,7 @@ export default function SettingsPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ...profile, has_inventory: newValue }),
                   }).then(() => {
-                    setSuccess(newValue ? 'Gestion de stock activée ! Rechargez la page pour voir les menus.' : 'Gestion de stock désactivée.')
+                    setSuccess(newValue ? 'Stock management enabled! Reload the page to see the menus.' : 'Stock management disabled.')
                     setTimeout(() => setSuccess(null), 5000)
                   })
                 }}
@@ -650,7 +650,7 @@ export default function SettingsPage() {
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Les menus Stock et Entrepôt sont maintenant visibles dans la barre latérale.</span>
+            <span>The Stock and Warehouse menus are now visible in the sidebar.</span>
           </div>
         )}
       </div>

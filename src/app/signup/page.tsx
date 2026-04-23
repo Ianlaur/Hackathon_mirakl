@@ -29,7 +29,7 @@ export default function SignUpPage() {
 
   const handleContinue = () => {
     if (!businessType) {
-      setError('Veuillez sélectionner un type d\'activité')
+      setError('Please select a business type')
       return
     }
     setError('')
@@ -47,12 +47,12 @@ export default function SignUpPage() {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
+      setError('Passwords do not match')
       return
     }
 
     if (!businessType) {
-      setError('Veuillez sélectionner un type d\'activité')
+      setError('Please select a business type')
       setStep(1)
       return
     }
@@ -66,7 +66,7 @@ export default function SignUpPage() {
     {
       id: 'retail' as const,
       name: 'Commerce / Retail',
-      description: 'Gestion de stock, ventes, facturation clients',
+      description: 'Stock management, sales, customer invoicing',
       icon: (
         <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -75,12 +75,12 @@ export default function SignUpPage() {
       color: 'from-emerald-500 to-teal-500',
       bgColor: 'bg-[#3FA46A]/10',
       borderColor: 'border-emerald-500',
-      features: ['Gestion des stocks', 'WMS / Entrepôt', 'Suivi des ventes', 'Facturation rapide'],
+      features: ['Stock management', 'WMS / Warehouse', 'Sales tracking', 'Quick invoicing'],
     },
     {
       id: 'freelance' as const,
       name: 'Freelance / Consultant',
-      description: 'Projets, suivi du temps, devis et factures',
+      description: 'Projects, time tracking, quotes and invoices',
       icon: (
         <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -89,7 +89,7 @@ export default function SignUpPage() {
       color: 'from-indigo-500 to-purple-500',
       bgColor: 'bg-indigo-50',
       borderColor: 'border-indigo-500',
-      features: ['Gestion de projets', 'Suivi du temps', 'Devis & factures', 'Calcul URSSAF'],
+      features: ['Project management', 'Time tracking', 'Quotes & invoices', 'URSSAF calculation'],
     },
   ]
 
@@ -103,7 +103,7 @@ export default function SignUpPage() {
               <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              <span className="font-medium">Retour à l&apos;accueil</span>
+              <span className="font-medium">Back to home</span>
             </Link>
           </div>
           
@@ -117,19 +117,19 @@ export default function SignUpPage() {
             <h1 className="text-5xl font-bold text-white mb-3 tracking-tight">
               lauria
             </h1>
-            <p className="text-white/90 text-lg font-medium">Créez votre compte</p>
+            <p className="text-white/90 text-lg font-medium">Create your account</p>
           </div>
 
           {/* Step Indicator */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${step === 1 ? 'bg-white/20 text-white' : 'bg-white/5 text-white/50'}`}>
               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${step === 1 ? 'bg-white text-indigo-600' : 'bg-white/20'}`}>1</span>
-              <span className="font-medium">Type d&apos;activité</span>
+              <span className="font-medium">Business type</span>
             </div>
             <div className="w-8 h-0.5 bg-white/20"></div>
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${step === 2 ? 'bg-white/20 text-white' : 'bg-white/5 text-white/50'}`}>
               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${step === 2 ? 'bg-white text-indigo-600' : 'bg-white/20'}`}>2</span>
-              <span className="font-medium">Informations</span>
+              <span className="font-medium">Information</span>
             </div>
           </div>
 
@@ -137,9 +137,9 @@ export default function SignUpPage() {
           {step === 1 && (
             <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl p-8 sm:p-10 border border-white/20 animate-slideUp">
               <h2 className="text-2xl font-bold text-[#03182F] mb-2">
-                Quel est votre type d&apos;activité ?
+                What is your business type?
               </h2>
-              <p className="text-[#6B7480] mb-8">Choisissez le profil qui correspond le mieux à votre activité</p>
+              <p className="text-[#6B7480] mb-8">Choose the profile that best matches your activity</p>
 
               {error && (
                 <div className="mb-6 p-4 bg-[#FFE7EC] border border-red-200 rounded-xl animate-shake">
@@ -204,14 +204,14 @@ export default function SignUpPage() {
                 disabled={!businessType}
                 className="w-full py-4 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                Continuer
+                Continue
               </button>
 
               <div className="mt-8 pt-6 border-t border-[#DDE5EE]">
                 <p className="text-center text-sm text-[#30373E]">
-                  Accès direct au profil{' '}
+                  Direct access to profile{' '}
                   <Link href="/settings" className="text-indigo-600 hover:text-indigo-700 font-bold inline-flex items-center gap-1 group">
-                    <span>Ouvrir</span>
+                    <span>Open</span>
                     <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
@@ -236,10 +236,10 @@ export default function SignUpPage() {
                 </button>
                 <div>
                   <h2 className="text-2xl font-bold text-[#03182F]">
-                    Créez votre compte
+                    Create your account
                   </h2>
                   <p className="text-[#6B7480] text-sm">
-                    Profil : <span className="font-medium text-[#30373E]">{businessType === 'retail' ? 'Commerce / Retail' : 'Freelance / Consultant'}</span>
+                    Profile: <span className="font-medium text-[#30373E]">{businessType === 'retail' ? 'Commerce / Retail' : 'Freelance / Consultant'}</span>
                   </p>
                 </div>
               </div>
@@ -256,7 +256,7 @@ export default function SignUpPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="inviteCode" className="block text-sm font-semibold text-[#30373E] mb-2">
-                    Code d&apos;invitation
+                    Invitation code
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -270,21 +270,21 @@ export default function SignUpPage() {
                       value={formData.inviteCode}
                       onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value })}
                       className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
-                      placeholder="Entrez votre code d&apos;invitation"
+                      placeholder="Enter your invitation code"
                       required
                     />
                   </div>
                   <p className="mt-2 text-xs text-[#6B7480]">
-                    Pas de code ?{' '}
+                    No code?{' '}
                     <a href="/#waitlist" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                      Rejoignez la liste d&apos;attente
+                      Join the waitlist
                     </a>
                   </p>
                 </div>
 
                 <div>
                   <label htmlFor="name" className="block text-sm font-semibold text-[#30373E] mb-2">
-                    Nom complet
+                    Full name
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -298,7 +298,7 @@ export default function SignUpPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
-                      placeholder="Jean Dupont"
+                      placeholder="John Doe"
                       required
                       minLength={2}
                     />
@@ -307,7 +307,7 @@ export default function SignUpPage() {
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-semibold text-[#30373E] mb-2">
-                    Adresse email
+                    Email address
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -321,7 +321,7 @@ export default function SignUpPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DDE5EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-[#03182F] placeholder-gray-400"
-                      placeholder="vous@exemple.com"
+                      placeholder="you@example.com"
                       required
                     />
                   </div>
@@ -329,7 +329,7 @@ export default function SignUpPage() {
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-semibold text-[#30373E] mb-2">
-                    Mot de passe
+                    Password
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -364,12 +364,12 @@ export default function SignUpPage() {
                       )}
                     </button>
                   </div>
-                  <p className="mt-2 text-xs text-[#6B7480]">Minimum 8 caractères</p>
+                  <p className="mt-2 text-xs text-[#6B7480]">Minimum 8 characters</p>
                 </div>
 
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-semibold text-[#30373E] mb-2">
-                    Confirmer le mot de passe
+                    Confirm password
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -417,19 +417,19 @@ export default function SignUpPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Création du compte...
+                      Creating account...
                     </span>
                   ) : (
-                    "Créer mon compte"
+                    "Create my account"
                   )}
                 </button>
               </form>
 
               <div className="mt-8 pt-6 border-t border-[#DDE5EE]">
                 <p className="text-center text-sm text-[#30373E]">
-                  Accès direct au profil{' '}
+                  Direct access to profile{' '}
                   <Link href="/settings" className="text-indigo-600 hover:text-indigo-700 font-bold inline-flex items-center gap-1 group">
-                    <span>Ouvrir</span>
+                    <span>Open</span>
                     <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
@@ -441,7 +441,7 @@ export default function SignUpPage() {
 
           {/* Footer */}
           <div className="mt-8 text-center text-white/80 text-sm">
-            <p>© 2025 lauria. Tous droits réservés.</p>
+            <p>© 2025 lauria. All rights reserved.</p>
           </div>
         </div>
       </div>

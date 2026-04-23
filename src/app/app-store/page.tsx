@@ -28,15 +28,15 @@ export default function AppStorePage() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight text-[#03182F]">App Store</h1>
           <span className="rounded-full border border-blue-200 bg-[#2764FF]/10 px-3 py-1 text-xs font-semibold text-[#004bd9]">
-            {activePlugins.length} actif(s)
+            {activePlugins.length} active
           </span>
         </div>
         <p className="mt-2 text-sm text-[#6B7480]">
-          Activez les plugins pour débloquer des onglets supplémentaires dans la sidebar.
+          Enable plugins to unlock extra tabs in the sidebar.
         </p>
 
         <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6B7480]">Mode dashboard</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6B7480]">Dashboard mode</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
@@ -58,7 +58,7 @@ export default function AppStorePage() {
                   : 'border-slate-200 bg-white text-[#30373E] hover:bg-slate-100'
               }`}
             >
-              COMPLEXE
+              COMPLEX
             </button>
           </div>
         </div>
@@ -91,14 +91,14 @@ export default function AppStorePage() {
                         : 'border border-slate-200 bg-slate-100 text-[#6B7480]'
                     }`}
                   >
-                    {active ? 'Actif' : 'Inactif'}
+                    {active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
 
                 <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
                   <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#6B7480]">
                     <Layers className="h-3.5 w-3.5" />
-                    Ajoute dans le menu
+                    Adds to the menu
                   </p>
                   <p className="mt-2 text-sm text-[#30373E]">{injectedTabs.join(' · ')}</p>
                 </div>
@@ -113,7 +113,7 @@ export default function AppStorePage() {
                   }`}
                 >
                   {active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                  {active ? 'Désactiver' : 'Activer'}
+                  {active ? 'Disable' : 'Enable'}
                 </button>
               </article>
             )

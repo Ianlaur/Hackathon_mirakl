@@ -16,11 +16,11 @@ export function RecommendationCard({
 
   const badge =
     recommendation.status === 'pending_approval'
-      ? { text: 'À valider', className: 'bg-[#E0A93A]/10 text-amber-700' }
+      ? { text: 'Pending', className: 'bg-[#E0A93A]/10 text-amber-700' }
       : recommendation.status === 'approved'
-        ? { text: 'Approuvée', className: 'bg-[#3FA46A]/10 text-emerald-700' }
+        ? { text: 'Approved', className: 'bg-[#3FA46A]/10 text-emerald-700' }
         : recommendation.status === 'rejected'
-          ? { text: 'Rejetée', className: 'bg-slate-200 text-[#30373E]' }
+          ? { text: 'Rejected', className: 'bg-slate-200 text-[#30373E]' }
           : { text: recommendation.status, className: 'bg-slate-200 text-[#30373E]' }
 
   return (
@@ -53,7 +53,7 @@ export function RecommendationCard({
         <div className="mt-3 flex flex-wrap gap-2 font-serif text-[11px] text-[#6B7480]">
           {typeof payload.items_count === 'number' && (
             <span className="rounded-full border border-[#DDE5EE] px-2 py-0.5">
-              {payload.items_count} commandes
+              {payload.items_count} orders
             </span>
           )}
           {typeof payload.total_estimated_cost_eur === 'number' && (

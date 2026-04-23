@@ -26,7 +26,7 @@ export async function DELETE(
 
     if (!category) {
       return NextResponse.json(
-        { error: 'Catégorie non trouvée' },
+        { error: 'Category not found' },
         { status: 404 }
       )
     }
@@ -34,7 +34,7 @@ export async function DELETE(
     // Check if category has products
     if (category._count.products > 0) {
       return NextResponse.json(
-        { error: `Cette catégorie contient ${category._count.products} produit(s). Supprimez d'abord les produits.` },
+        { error: `This category contains ${category._count.products} product(s). Delete the products first.` },
         { status: 400 }
       )
     }
@@ -48,7 +48,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting category:', error)
     return NextResponse.json(
-      { error: 'Erreur lors de la suppression' },
+      { error: 'Deletion failed' },
       { status: 500 }
     )
   }
@@ -86,15 +86,15 @@ export async function POST(
       return NextResponse.json({
         success: true,
         deleted: result.count,
-        message: `${result.count} catégorie(s) vide(s) supprimée(s)`
+        message: `${result.count} empty categor${result.count === 1 ? 'y' : 'ies'} deleted`
       })
     }
 
-    return NextResponse.json({ error: 'Action non reconnue' }, { status: 400 })
+    return NextResponse.json({ error: 'Unrecognized action' }, { status: 400 })
   } catch (error) {
     console.error('Error:', error)
     return NextResponse.json(
-      { error: 'Erreur lors de la suppression' },
+      { error: 'Deletion failed' },
       { status: 500 }
     )
   }

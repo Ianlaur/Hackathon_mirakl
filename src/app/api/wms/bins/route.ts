@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(bins)
   } catch (error) {
     console.error('Error fetching bins:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
@@ -89,6 +89,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(bin, { status: 201 })
   } catch (error) {
     console.error('Error creating bin:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
