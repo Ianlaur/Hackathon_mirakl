@@ -33,13 +33,22 @@ function readInitialPlugins(): string[] {
 }
 
 export function useActivePlugins() {
-  const [activePlugins, setActivePlugins] = useState<string[]>(readInitialPlugins)
+  const [activePlugins, setActivePlugins] = useState<string[]>([])
+  const [hydrated, setHydrated] = useState(false)
 
   const syncFromStorage = useCallback(() => {
     setActivePlugins(readStoredActivePlugins())
   }, [])
 
   useEffect(() => {
+    // Keep first client render identical to server render to avoid hydration mismatch.
+    setActivePlugins(readInitialPlugins())
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+
     const onStorage = (event: StorageEvent) => {
       if (event.key && event.key !== ACTIVE_PLUGINS_STORAGE_KEY) return
       syncFromStorage()
@@ -56,7 +65,7 @@ export function useActivePlugins() {
       window.removeEventListener('storage', onStorage)
       window.removeEventListener(ACTIVE_PLUGINS_CHANGED_EVENT, onCustomUpdate)
     }
-  }, [syncFromStorage])
+  }, [hydrated, syncFromStorage])
 
   const setPlugins = useCallback((plugins: string[]) => {
     const next = Array.from(new Set(plugins))
