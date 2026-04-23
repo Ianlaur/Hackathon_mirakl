@@ -66,13 +66,13 @@ export default function NavItem({ item, active, open = false, isSubitemActive, o
     return (
       <Link
         href={item.href}
-        className={`mx-2 my-0.5 flex items-center gap-3 rounded-md px-3 py-2 font-serif text-sm font-medium transition-all duration-200 ${
+        className={`mx-2 my-0.5 flex items-center gap-3 rounded-md px-3 py-2.5 font-serif text-sm font-medium transition-all duration-200 ${
           active
-            ? 'bg-slate-50 text-[#2764ff] border border-slate-200'
-            : 'text-[#6B7480] hover:bg-slate-50 hover:text-[#03182F]'
+            ? 'bg-[#2764FF]/5 text-[#2764FF] border-l-[3px] border-[#2764FF] font-bold shadow-[0_1px_4px_rgba(0,0,0,0.06)]'
+            : 'text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F]'
         }`}
       >
-        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764ff]' : 'text-[#6B7480]'}`} />
+        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764FF]' : 'text-[#6B7480]'}`} />
         <span>{item.label}</span>
       </Link>
     )
@@ -83,13 +83,13 @@ export default function NavItem({ item, active, open = false, isSubitemActive, o
       <button
         type="button"
         onClick={() => onToggleGroup?.(item.id)}
-        className={`mx-2 my-0.5 flex w-[calc(100%-16px)] items-center gap-3 rounded-md px-3 py-2 text-left font-serif text-sm font-medium transition-all duration-200 ${
+        className={`mx-2 my-0.5 flex w-[calc(100%-16px)] items-center gap-3 rounded-md px-3 py-2.5 text-left font-serif text-sm font-medium transition-all duration-200 ${
           active
-            ? 'text-[#2764ff]'
-            : 'text-[#6B7480] hover:bg-slate-50 hover:text-[#03182F]'
+            ? 'text-[#2764FF] font-bold'
+            : 'text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F]'
         }`}
       >
-        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764ff]' : 'text-[#6B7480]'}`} />
+        <Icon className={`h-[18px] w-[18px] ${active ? 'text-[#2764FF]' : 'text-[#6B7480]'}`} />
         <span>{item.label}</span>
         <ChevronDown
           className={`ml-auto h-3.5 w-3.5 text-[#6B7480] transition-transform duration-200 ${
@@ -99,7 +99,7 @@ export default function NavItem({ item, active, open = false, isSubitemActive, o
       </button>
 
       {open && (
-        <div className="ml-8 mr-2 border-l border-slate-100 pl-3">
+        <div className="ml-8 mr-2 border-l border-[#DDE5EE] pl-3">
           {item.subitems?.map((subitem) => (
             <NavSubItem key={subitem.id} item={subitem} active={isSubitemActive(subitem.href)} />
           ))}
