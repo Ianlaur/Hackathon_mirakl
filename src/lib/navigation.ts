@@ -10,8 +10,8 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       href: '/marketplaces/proposals',
       expandable: true,
       subitems: [
-        { id: 'integration-proposals', label: 'Integration Proposals', href: '/marketplaces/proposals' },
-        { id: 'active-connection', label: 'Active Connection', href: '/marketplaces/active-connection' },
+        { id: 'integration-proposals', label: 'Opportunities', href: '/marketplaces/proposals' },
+        { id: 'active-connection', label: 'Channels', href: '/marketplaces/active-connection' },
       ],
     },
     { id: 'calendar', label: 'Calendar', icon: 'Calendar', href: '/calendar' },
