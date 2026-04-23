@@ -6,11 +6,11 @@ import SuggestionChips from '@/components/copilot/SuggestionChips'
 import type { ChatMessage } from '@/types/copilot'
 
 const FALLBACK_QUESTIONS = [
-  'Quelles sont les urgences ce matin ?',
-  'Quel stock verifier en premier ?',
-  'Quelles commandes sont sensibles ?',
-  'Que faut-il faire avant midi ?',
-  'Quel risque surveiller aujourd hui ?',
+  'What are the urgent items this morning?',
+  'Which stock should I check first?',
+  'Which orders are at risk?',
+  'What needs to be done before noon?',
+  'What risk should I watch today?',
 ]
 
 function nowIso() {
@@ -127,9 +127,9 @@ export default function SmartChat() {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5">
       <header>
-        <h2 className="text-lg font-semibold text-[#03182F]">Copilot Mira</h2>
+        <h2 className="text-lg font-semibold text-[#03182F]">Leia</h2>
         <p className="mt-1 text-sm text-[#6B7480]">
-          Posez une question ou choisissez-en une ci-dessous.
+          Ask a question or pick one of the suggestions below.
         </p>
       </header>
 
@@ -146,7 +146,7 @@ export default function SmartChat() {
 
       <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-4">
         {messages.length === 0 ? (
-          <p className="text-sm text-[#6B7480]">Choisissez une question pour demarrer avec Copilot Mira.</p>
+          <p className="text-sm text-[#6B7480]">Pick a question to start a conversation with Leia.</p>
         ) : (
           messages.map((message) => (
             <div
@@ -175,14 +175,14 @@ export default function SmartChat() {
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Posez votre question a Copilot Mira..."
+            placeholder="Ask Leia a question..."
             className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-[#30373E] outline-none placeholder:text-[#6B7480] focus:border-slate-400"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Poser"
+            aria-label="Send"
           >
             <SendHorizontal className="h-4 w-4" />
           </button>

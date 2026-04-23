@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
           : null,
       },
       aiSettings?.encrypted_api_key,
-      aiSettings?.preferred_model ?? 'gpt-4.1-mini'
+      aiSettings?.preferred_model ?? 'gpt-4.1'
     )
 
     const startIso = event.start_at.toISOString().slice(0, 10)
