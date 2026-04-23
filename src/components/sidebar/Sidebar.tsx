@@ -20,12 +20,16 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
   const { basicItems, pluginItems, bottomItems, isActive, isItemActive, pathname } = useNavigation()
   const { deactivateProPlugin, setUserProfile, userProfile } = usePluginContext()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
+  const [pinned, setPinned] = useState(false)
+  const [hovered, setHovered] = useState(false)
   const [manualOpenGroupId, setManualOpenGroupId] = useState<string | null>(null)
 
+  const expanded = pinned || hovered || isMobileOpen
+  const collapsed = !expanded
+
   useEffect(() => {
-    onExpandedChange?.(!collapsed)
-  }, [collapsed, onExpandedChange])
+    onExpandedChange?.(expanded)
+  }, [expanded, onExpandedChange])
 
   useEffect(() => {
     setIsMobileOpen(false)
@@ -49,11 +53,6 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
   }
 
   const handleToggleGroup = (itemId: string) => {
-    if (collapsed) {
-      setCollapsed(false)
-      setManualOpenGroupId(itemId)
-      return
-    }
     setManualOpenGroupId((current) => {
       if (current === itemId) {
         return activeGroupId === itemId ? current : null
@@ -99,8 +98,10 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
       )}
 
       <aside
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         className={`fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-[#DDE5EE] bg-white transition-all duration-300 ease-out ${
-          collapsed ? 'w-[68px]' : 'w-60'
+          expanded ? 'w-60' : 'w-[68px]'
         } ${isMobileOpen ? 'translate-x-0 !w-60' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="lg:hidden">
@@ -118,17 +119,19 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
 
         {/* Header with collapse toggle */}
         <div className="flex items-center justify-between px-4 pb-4 pt-6">
-          <div className={`overflow-hidden transition-all duration-300 ${collapsed && !isMobileOpen ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+          <div className={`overflow-hidden transition-all duration-300 ${collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
             <div className="text-lg font-bold text-[#03182F] tracking-widest font-serif whitespace-nowrap">MIRAKL CONNECT</div>
             <div className="text-xs text-[#6B7480] uppercase mt-1 tracking-wider">Operations</div>
           </div>
           <button
             type="button"
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-[#DDE5EE] bg-white text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F] transition-colors"
-            aria-label={collapsed ? 'Ouvrir la sidebar' : 'Fermer la sidebar'}
+            onClick={() => setPinned(!pinned)}
+            className={`hidden lg:flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-[#DDE5EE] text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F] transition-all duration-300 ${
+              collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            } ${pinned ? 'bg-[#2764FF]/5 text-[#2764FF] border-[#2764FF]/30' : 'bg-white'}`}
+            aria-label={pinned ? 'Libérer la sidebar' : 'Épingler la sidebar'}
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {pinned ? <ChevronLeft className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
         <hr className="mx-3 h-px border-0 bg-[#DDE5EE]" />
@@ -141,7 +144,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
                 item={item}
                 active={isItemActive(item)}
                 open={isItemOpen(item)}
-                collapsed={collapsed && !isMobileOpen}
+                collapsed={collapsed}
                 isSubitemActive={isSubitemActive}
                 onToggleGroup={handleToggleGroup}
               />
@@ -153,7 +156,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
               isSubitemActive={isSubitemActive}
               isItemOpen={isItemOpen}
               onToggleGroup={handleToggleGroup}
-              collapsed={collapsed && !isMobileOpen}
+              collapsed={collapsed}
             />
           </nav>
 
@@ -165,7 +168,7 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
                 key={item.id}
                 item={item}
                 active={isItemActive(item)}
-                collapsed={collapsed && !isMobileOpen}
+                collapsed={collapsed}
                 isSubitemActive={isSubitemActive}
               />
             ))}
@@ -176,20 +179,20 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
           <button
             type="button"
             onClick={handleSignOut}
-            className={`flex w-full items-center rounded-lg border border-[#DDE5EE] bg-white px-3 py-2 text-sm font-medium text-[#30373E] transition-colors hover:bg-[#F2F8FF] hover:text-[#03182F] ${collapsed && !isMobileOpen ? 'justify-center' : 'gap-2'}`}
+            className={`flex w-full items-center rounded-lg border border-[#DDE5EE] bg-white px-3 py-2 text-sm font-medium text-[#30373E] transition-colors hover:bg-[#F2F8FF] hover:text-[#03182F] ${collapsed ? 'justify-center' : 'gap-2'}`}
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
-            <span className={`transition-all duration-300 ${collapsed && !isMobileOpen ? 'hidden' : ''}`}>Sign out</span>
+            <span className={`transition-all duration-300 ${collapsed ? 'hidden' : ''}`}>Sign out</span>
           </button>
         </div>
 
         {/* Profile - hide text when collapsed */}
         <div className="border-t border-[#DDE5EE] bg-[#F2F8FF] p-4">
-          <div className={`flex items-center ${collapsed && !isMobileOpen ? 'justify-center' : 'gap-3'}`}>
+          <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#1e3a5f] text-xs font-semibold text-white">
               {profileLabel.split(' ').filter(Boolean).slice(0, 2).map((c) => c[0]?.toUpperCase() ?? '').join('')}
             </div>
-            <div className={`min-w-0 transition-all duration-300 ${collapsed && !isMobileOpen ? 'hidden' : ''}`}>
+            <div className={`min-w-0 transition-all duration-300 ${collapsed ? 'hidden' : ''}`}>
               <p className="truncate text-sm font-semibold text-[#03182F]">{profileLabel}</p>
               <p className="truncate text-xs text-[#6B7480]">{profileSubtitle}</p>
             </div>
