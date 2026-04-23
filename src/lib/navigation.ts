@@ -35,38 +35,28 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
     {
       id: 'plugin_operations',
       label: 'Opérations',
-      description: 'Gestion des opérations logistiques : calendrier opérationnel et transport',
+      description: 'Ajoute un onglet Transport dédié dans la sidebar',
       position: 2,
       items: [
         {
-          id: 'operations',
-          label: 'Opérations',
-          icon: 'GitBranch',
-          href: '/operations',
-          expandable: true,
-          subitems: [
-            { id: 'calendrier', label: 'Calendrier', href: '/operations/calendrier' },
-            { id: 'transport', label: 'Transport', href: '/operations/transport' },
-          ],
+          id: 'transport',
+          label: 'Transport',
+          icon: 'Truck',
+          href: '/transport',
         },
       ],
     },
     {
       id: 'plugin_inventaire',
       label: 'Inventaire avancé',
-      description: 'Gestion fine des entrepôts et suivi des pertes',
+      description: 'Ajoute un onglet Entrepôt dédié dans la sidebar',
       position: 3,
       items: [
         {
-          id: 'inventaire',
-          label: 'Inventaire',
-          icon: 'Boxes',
-          href: '/inventaire',
-          expandable: true,
-          subitems: [
-            { id: 'entrepot', label: 'Entrepôt', href: '/inventaire/entrepot' },
-            { id: 'pertes', label: 'Pertes', href: '/inventaire/pertes' },
-          ],
+          id: 'entrepot',
+          label: 'Entrepôt',
+          icon: 'Warehouse',
+          href: '/entrepot',
         },
       ],
     },
