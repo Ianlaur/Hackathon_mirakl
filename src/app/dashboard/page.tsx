@@ -1,8 +1,8 @@
 'use client'
 
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AlertTriangle, ArrowUp, CheckCircle, Loader2, Mic, RotateCw, Send, Sparkles, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle, Loader2, Mic, RotateCw, Send, Sparkles } from 'lucide-react'
 import { useAudioRecorder } from '@/components/useAudioRecorder'
 import { usePluginContext } from '@/contexts/PluginContext'
 import SimulatedBadge from '@/components/SimulatedBadge'
@@ -173,6 +173,9 @@ export default function DashboardPage() {
   const [sending, setSending] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<DashboardChatMessage[]>([])
+  const [chatOpen, setChatOpen] = useState(false)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const recorder = useAudioRecorder()
   const { isProPluginActive } = usePluginContext()
   const recording = recorder.state === 'recording'
@@ -264,6 +267,38 @@ export default function DashboardPage() {
   const micBusy = starting || transcribing
   const sendDisabled = sending || !query.trim()
 
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [query])
+
+  useEffect(() => {
+    if (!scrollRef.current) return
+    scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
+  }, [chatMessages, sending])
+
+  useEffect(() => {
+    if (!chatOpen) return
+    const timer = setTimeout(() => inputRef.current?.focus(), 80)
+    return () => clearTimeout(timer)
+  }, [chatOpen])
+
+  useEffect(() => {
+    if (!chatOpen) return
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setChatOpen(false)
+    }
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onEscape)
+    }
+  }, [chatOpen])
+
   async function handleSend() {
     const message = query.trim()
     if (!message || sending) return
@@ -348,89 +383,130 @@ export default function DashboardPage() {
       {/* Morning briefing — auto-open on first visit of the day */}
       <MorningBriefingCard />
 
-      {/* AI Chat Bar */}
-      <div className="relative w-full max-w-3xl mx-auto">
-        <div className="bg-white rounded-full py-3 px-6 flex items-center gap-4 border border-[#DDE5EE] shadow-[0_4px_14px_rgba(3,24,47,0.08)] hover:shadow-[0_6px_20px_rgba(3,24,47,0.12)] transition-shadow">
-          <svg className="h-5 w-5 text-[#2764FF] flex-shrink-0" viewBox="1 6 22 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="13" r="5" />
-            <ellipse cx="5.5" cy="11" rx="2.5" ry="2" />
-            <ellipse cx="18.5" cy="11" rx="2.5" ry="2" />
-          </svg>
-          <input
-            className="bg-transparent border-none focus:ring-0 focus:outline-none text-[#03182F] font-serif text-sm flex-1 placeholder:text-[#6B7480]"
-            placeholder={
-              recording
-                ? 'Recording… click the mic again to stop'
-                : sending
-                  ? 'Leia is responding…'
-                  : 'Ask Leia for operational insights…'
-            }
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                void handleSend()
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleMicClick}
-            disabled={micBusy || !recorder.isSupported}
-            aria-label={recording ? 'Stop recording' : 'Start voice input'}
-            className={`rounded-full p-1.5 flex items-center justify-center transition-colors ${
-              recording
-                ? 'bg-[#F22E75] text-white animate-pulse shadow-[0_0_0_4px_rgba(242,46,117,0.18)]'
-                : micBusy
-                ? 'bg-[#DDE5EE] text-[#6B7480] cursor-wait'
-                : 'bg-[#F2F8FF] text-[#2764FF] hover:bg-[#DDE5EE]'
-            } disabled:opacity-60`}
-          >
-            {micBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
-          </button>
-          <button
-            type="button"
-            aria-label="Send"
-            onClick={() => void handleSend()}
-            disabled={sendDisabled}
-            className="bg-[#2764FF] text-white rounded-full p-1.5 flex items-center justify-center hover:bg-[#004bd9] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </button>
-        </div>
+      {/* Leia launcher — opens the chat drawer */}
+      <div className="relative mx-auto w-full max-w-3xl">
+        <button
+          type="button"
+          onClick={() => setChatOpen(true)}
+          className="iris-searchbar w-full text-left"
+          aria-label="Open Leia conversation"
+        >
+          <div className="iris-searchbar__glyph" aria-hidden>
+            <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+            <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+            <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+          </div>
+          <span className="iris-searchbar__input font-serif text-[#6B7480]">
+            {sending ? 'Leia is responding…' : 'Ask Leia for operational insights…'}
+          </span>
+          <span className="iris-searchbar__mic" aria-hidden>
+            <Mic className="h-4 w-4" />
+          </span>
+          <span className="iris-searchbar__submit" aria-hidden>
+            <ArrowUp className="h-4 w-4" />
+          </span>
+        </button>
       </div>
 
-      {(chatMessages.length > 0 || chatError) && (
-        <div className="mx-auto w-full max-w-3xl space-y-3">
-          {chatMessages.slice(-4).map((message) => (
-            <div
-              key={message.id}
-              className={`rounded-lg border p-4 shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
-                message.role === 'assistant'
-                  ? 'border-[#DDE5EE] bg-white'
-                  : 'border-[#DDE5EE] bg-[#F2F8FF]'
-              }`}
-            >
-              <p className="mb-2 font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
-                {message.role === 'assistant' ? 'Leia' : 'You'}
-              </p>
-              <p className="font-serif text-[14px] leading-6 text-[#03182F]">{message.content}</p>
-              {message.role === 'assistant' && message.reasoningSummary ? (
-                <p className="mt-3 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2 font-serif text-[12px] text-[#30373E]">
-                  {message.reasoningSummary}
-                </p>
-              ) : null}
+      <div
+        className={`iris-overlay ${chatOpen ? 'iris-overlay--open' : 'iris-overlay--closed'}`}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) setChatOpen(false)
+        }}
+        aria-hidden={!chatOpen}
+      >
+        <div className={`iris-panel ${chatOpen ? 'iris-panel--open' : 'iris-panel--closed'}`}>
+          <form
+            className="iris-searchbar"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void handleSend()
+            }}
+          >
+            <div className="iris-searchbar__glyph" aria-hidden>
+              <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+              <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+              <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
             </div>
-          ))}
-          {chatError ? (
-            <p className="rounded-lg border border-[#ba1a1a]/30 bg-[#FFE7EC] px-4 py-3 font-serif text-[13px] text-[#ba1a1a]">
-              {chatError}
-            </p>
-          ) : null}
+            <textarea
+              ref={inputRef}
+              className="iris-searchbar__input font-serif"
+              placeholder={
+                recording
+                  ? 'Recording… click mic again to stop'
+                  : sending
+                    ? 'Leia is responding…'
+                    : 'Ask Leia for operational insights…'
+              }
+              rows={1}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault()
+                  void handleSend()
+                }
+              }}
+              disabled={sending || transcribing || recording}
+            />
+            {recorder.isSupported ? (
+              <button
+                type="button"
+                onClick={() => void handleMicClick()}
+                disabled={micBusy || sending}
+                aria-label={recording ? 'Stop recording' : 'Start voice input'}
+                className={`iris-searchbar__mic ${
+                  recording ? 'iris-searchbar__mic--recording' : ''
+                } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
+              >
+                {micBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+              </button>
+            ) : null}
+            <button
+              type="submit"
+              aria-label="Send"
+              disabled={sendDisabled}
+              className="iris-searchbar__submit"
+            >
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setChatOpen(false)}
+              aria-label="Close Leia conversation"
+              className="iris-searchbar__clear"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </form>
+
+          {(chatMessages.length > 0 || chatError || sending) && (
+            <div ref={scrollRef} className="iris-conversation">
+              {chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`iris-msg ${message.role === 'assistant' ? 'iris-msg--assistant' : 'iris-msg--user'}`}
+                >
+                  <div className="iris-msg__bubble font-serif whitespace-pre-wrap">{message.content}</div>
+                  {message.role === 'assistant' && message.reasoningSummary ? (
+                    <p className="mt-1 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2 font-serif text-[12px] text-[#30373E]">
+                      {message.reasoningSummary}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+              {sending ? (
+                <div className="iris-conversation__thinking">
+                  <span className="iris-conversation__thinking-dot" />
+                  <span className="iris-conversation__thinking-dot" />
+                  <span className="iris-conversation__thinking-dot" />
+                </div>
+              ) : null}
+              {chatError ? <div className="iris-conversation__error">{chatError}</div> : null}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -498,56 +574,47 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Global Map Card with plugin logic */}
-      <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
-        <div className="p-6 border-b border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="font-serif text-lg font-bold text-[#03182F]">Global Shipment Map Pro</h2>
-            <p className="font-serif text-[13px] text-[#6B7480] mt-1">
-              Active en mode plugin complex. Masquée en mode basic.
-            </p>
+      {isProPluginActive && (
+        <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
+          <div className="p-6 border-b border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-serif text-lg font-bold text-[#03182F]">Global Shipment Map Pro</h2>
+              <p className="font-serif text-[13px] text-[#6B7480] mt-1">
+                Active en mode plugin complex.
+              </p>
+            </div>
+
+            <div className="inline-flex items-center rounded-full border border-[#DDE5EE] bg-[#F2F8FF] p-1">
+              <button
+                type="button"
+                onClick={() => setMapTheme('light')}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                  mapTheme === 'light'
+                    ? 'bg-white text-[#03182F] shadow-sm'
+                    : 'text-[#6B7480] hover:text-[#30373E]'
+                }`}
+              >
+                Clair
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapTheme('dark')}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                  mapTheme === 'dark'
+                    ? 'bg-[#03182F] text-white shadow-sm'
+                    : 'text-[#6B7480] hover:text-[#30373E]'
+                }`}
+              >
+                Sombre
+              </button>
+            </div>
           </div>
 
-          <div className="inline-flex items-center rounded-full border border-[#DDE5EE] bg-[#F2F8FF] p-1">
-            <button
-              type="button"
-              onClick={() => setMapTheme('light')}
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
-                mapTheme === 'light'
-                  ? 'bg-white text-[#03182F] shadow-sm'
-                  : 'text-[#6B7480] hover:text-[#30373E]'
-              }`}
-            >
-              Clair
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapTheme('dark')}
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
-                mapTheme === 'dark'
-                  ? 'bg-[#03182F] text-white shadow-sm'
-                  : 'text-[#6B7480] hover:text-[#30373E]'
-              }`}
-            >
-              Sombre
-            </button>
-          </div>
-        </div>
-
-        {isProPluginActive ? (
           <div className={`p-4 ${mapTheme === 'dark' ? 'bg-[#0B1020]' : 'bg-[#EEF3FB]'}`}>
             <GlobalShipmentTracker height={380} mapTheme={mapTheme} />
           </div>
-        ) : (
-          <div className="p-6">
-            <div className="rounded-lg border border-dashed border-[#DDE5EE] bg-[#F2F8FF] p-5">
-              <p className="font-serif text-[14px] text-[#30373E]">
-                La carte est désactivée en mode basic. Passe en plugin complex pour l’afficher.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Orders Table */}
       <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
