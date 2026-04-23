@@ -11,7 +11,7 @@ export default function SidebarHeader({
 }: SidebarHeaderProps) {
   return (
     <div className="px-6 pb-4 pt-6">
-      <div className="text-xl font-black text-slate-900 tracking-widest font-serif">{title}</div>
+      <div className="text-lg font-bold text-[#03182F] tracking-widest font-serif">{title}</div>
       <div className="text-xs text-slate-400 uppercase mt-1 tracking-wider">{subtitle}</div>
     </div>
   )

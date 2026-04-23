@@ -33,7 +33,7 @@
 
 @layer components {
   .dashboard-card {
-    @apply bg-white border border-[#DDE5EE];
+    @apply bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)];
   }
 
   .mascot-orb {

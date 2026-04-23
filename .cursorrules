@@ -3,7 +3,7 @@
 ## Brand Identity
 - Name: **MIRAKL CONNECT**
 - Sub-label: **Operations**
-- Font stack: **Noto Serif** (headings, body, labels, cards), **JetBrains Mono** (data, monospace values)
+- Font stack: **Roboto Serif** (headings, body, labels, cards), **JetBrains Mono** (data, monospace values)
 
 ## Color Palette
 
@@ -53,12 +53,12 @@
 - Exception: chat bar uses `rounded-full` (fully round)
 
 ## Typography Classes
-- `font-h1` / `font-h2`: Noto Serif, bold, tracking-tight
-- `font-body`: Noto Serif, regular
-- `font-label-caps`: Noto Serif, uppercase, small, tracking-wide — used for section labels
-- `font-card-title`: Noto Serif, medium weight
-- `font-caption`: Noto Serif, small, subtle color
-- `font-kpi-value`: Noto Serif, large/bold — KPI numbers
+- `font-h1` / `font-h2`: Roboto Serif, bold, tracking-tight
+- `font-body`: Roboto Serif, regular
+- `font-label-caps`: Roboto Serif, uppercase, small, tracking-wide — used for section labels
+- `font-card-title`: Roboto Serif, medium weight
+- `font-caption`: Roboto Serif, small, subtle color
+- `font-kpi-value`: Roboto Serif, large/bold — KPI numbers
 - `font-mono-data`: JetBrains Mono — order IDs, timestamps, data values
 
 ## Component Patterns
@@ -121,7 +121,7 @@
 - Button hover: darken or `hover:bg-slate-50`
 
 ## General Rules
-- Use Noto Serif everywhere except data/mono values
+- Use Roboto Serif everywhere except data/mono values
 - Keep the editorial, clean, serif-first aesthetic
 - Borders over shadows — flat design with subtle depth
 - Status colors are semantic: green=ok, blue=info, pink/red=urgent
