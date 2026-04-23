@@ -8,7 +8,7 @@ Premium enterprise reveal. Dark navy canvas — the Mirakl logo emerges from dep
 
 - `#0A1528` — Deep navy canvas (background, base of depth)
 - `#0F2A44` — Mirakl deep blue (mid-tones, gradient stops)
-- `#3A6590` — Mirakl brand blue (logo native, rules)
+- `#3A6590` — Mirakl brand blue (logo native, rules) 
 - `#6EA0C9` — Mirakl light blue (halo glow, particles)
 - `#D6E4F2` — Frost white (typography, hairlines)
 - `#FFFFFF` — Flash peak only

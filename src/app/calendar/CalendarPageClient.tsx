@@ -866,8 +866,8 @@ export default function CalendarPageClient() {
         </div>
       </section>
 
-      <section className="dashboard-card p-5 sm:p-6">
-        <div className="flex items-center justify-between mb-6">
+      <section className="dashboard-card p-5 sm:p-7">
+        <div className="flex items-center justify-between mb-8">
           <p className="font-serif text-base font-bold text-[#03182F]">Prochains événements</p>
           <div className="inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
             {[{ v: 30, l: '30 jours' }, { v: 90, l: '3 mois' }, { v: 180, l: '6 mois' }].map((o) => (
@@ -883,13 +883,15 @@ export default function CalendarPageClient() {
           const rek = toDateKey(re)
           const td = Math.max(1, tlRange)
           const tl = events.filter((e) => e.kind !== 'leave' && e.endDate >= todayKey && e.startDate <= rek).sort((a, b) => a.startDate.localeCompare(b.startDate))
-          const pc = (dk: string) => { const d = parseDateKey(dk); return Math.max(2, Math.min(98, (Math.round((d.getTime() - rs.getTime()) / 86400000) / td) * 100)) }
+          const pc = (dk: string) => { const d = parseDateKey(dk); return Math.max(2, Math.min(97, (Math.round((d.getTime() - rs.getTime()) / 86400000) / td) * 100)) }
           const sd = (dk: string) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(parseDateKey(dk))
-          const mx = tlRange <= 30 ? 6 : tlRange <= 90 ? 8 : 10
+          // Fewer events + wider breathing room on longer ranges (30j: 5 · 3mo: 6 · 6mo: 7)
+          const mx = tlRange <= 30 ? 5 : tlRange <= 90 ? 6 : 7
           const vis = tl.slice(0, mx)
-          const mg = Math.max(8, 100 / Math.max(vis.length, 1) * 0.8)
+          // Bumped minimum spacing (was 8) so labels never collide
+          const mg = Math.max(15, (100 / Math.max(vis.length, 1)))
           const pos: number[] = []
-          vis.forEach((e) => { let p = pc(e.startDate < todayKey ? todayKey : e.startDate); if (pos.length > 0 && p - pos[pos.length - 1] < mg) p = Math.min(96, pos[pos.length - 1] + mg); pos.push(p) })
+          vis.forEach((e) => { let p = pc(e.startDate < todayKey ? todayKey : e.startDate); if (pos.length > 0 && p - pos[pos.length - 1] < mg) p = Math.min(95, pos[pos.length - 1] + mg); pos.push(p) })
           if (vis.length === 0) return <p className="text-sm text-[#6B7480]">Aucun événement sur cette période.</p>
           return (
             <div className="relative px-4">
@@ -902,13 +904,13 @@ export default function CalendarPageClient() {
                 <div key={evt.id} className="absolute cursor-pointer group" style={{ left: `${pos[i]}%` }}
                   onClick={() => { setDetailEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
                   <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} /></div>
-                  <div className="mt-1 -translate-x-1/2 w-28">
-                    <p className="font-serif text-xs font-bold text-[#03182F] truncate">{evt.title}</p>
-                    <p className="font-serif text-[11px] text-[#6B7480] capitalize">{sd(evt.startDate)}</p>
+                  <div className="mt-2 -translate-x-1/2 w-24 text-center">
+                    <p className="font-serif text-[12px] font-bold text-[#03182F] truncate leading-tight">{evt.title}</p>
+                    <p className="font-serif text-[11px] text-[#6B7480] capitalize mt-0.5">{sd(evt.startDate)}</p>
                   </div>
                 </div>
               ) })}
-              <div className="h-16" />
+              <div className="h-20" />
             </div>
           )
         })()}

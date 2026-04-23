@@ -15,6 +15,7 @@ const CHUNK_RETRY_WINDOW_MS = 20000
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const shouldHideSidebar = pathname.startsWith('/onboarding')
+  const shouldHideOrb = shouldHideSidebar || pathname === '/dashboard' || pathname.startsWith('/dashboard/')
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const handleSidebarChange = useCallback((expanded: boolean) => setSidebarExpanded(expanded), [])
 
@@ -96,7 +97,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <main className={`min-h-screen transition-[margin] duration-300 ease-out ${shouldHideSidebar ? '' : sidebarExpanded ? 'lg:ml-60' : 'lg:ml-[68px]'}`}>
           <div className="p-6 max-w-[1440px] mx-auto w-full">{children}</div>
         </main>
-        {!shouldHideSidebar && <MascotOrb />}
+        {!shouldHideOrb && <MascotOrb />}
       </div>
     </PluginProvider>
   )

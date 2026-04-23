@@ -1,6 +1,8 @@
 'use client'
 
-import { Send } from 'lucide-react'
+import { useState } from 'react'
+import { Send, Mic, Loader2 } from 'lucide-react'
+import { useAudioRecorder } from '@/components/useAudioRecorder'
 
 const orders = [
   { id: 'MK-8829-X', marketplace: 'Amazon US', icon: '🛒', value: '$249.00', status: 'FULFILLED', statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10', time: '14:22:05' },
@@ -10,6 +12,39 @@ const orders = [
 ]
 
 export default function DashboardPage() {
+  const [query, setQuery] = useState('')
+  const [transcribing, setTranscribing] = useState(false)
+  const recorder = useAudioRecorder()
+  const recording = recorder.state === 'recording'
+  const starting = recorder.state === 'requesting'
+
+  async function handleMicClick() {
+    if (recording) {
+      const blob = await recorder.stop()
+      if (!blob) return
+      setTranscribing(true)
+      try {
+        const fd = new FormData()
+        fd.append('audio', blob, 'prompt.webm')
+        const res = await fetch('/api/mascot/transcribe', { method: 'POST', body: fd })
+        if (res.ok) {
+          const { text } = await res.json()
+          if (text) setQuery((prev) => (prev ? prev + ' ' + text : text))
+        }
+      } catch {
+        /* swallow — user can retry */
+      } finally {
+        setTranscribing(false)
+      }
+      return
+    }
+    if (recorder.state === 'idle') {
+      await recorder.start()
+    }
+  }
+
+  const micBusy = starting || transcribing
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -18,20 +53,41 @@ export default function DashboardPage() {
         <div className="font-serif text-[12px] text-[#6B7480]">Last sync: 2 minutes ago</div>
       </div>
 
-      {/* AI Chat Bar */}
+      {/* AI Chat Bar — light variant with voice mode */}
       <div className="relative w-full max-w-3xl mx-auto">
-        <div className="bg-[#03182F] rounded-full py-3 px-6 flex items-center gap-4 shadow-lg border border-white/10">
+        <div className="bg-white rounded-full py-3 px-6 flex items-center gap-4 border border-[#DDE5EE] shadow-[0_4px_14px_rgba(3,24,47,0.08)] hover:shadow-[0_6px_20px_rgba(3,24,47,0.12)] transition-shadow">
           <svg className="h-5 w-5 text-[#2764FF] flex-shrink-0" viewBox="1 6 22 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="13" r="5" />
             <ellipse cx="5.5" cy="11" rx="2.5" ry="2" />
             <ellipse cx="18.5" cy="11" rx="2.5" ry="2" />
           </svg>
           <input
-            className="bg-transparent border-none focus:ring-0 focus:outline-none text-white font-serif text-sm flex-1 placeholder:text-slate-500"
-            placeholder="Ask Leia for operational insights..."
+            className="bg-transparent border-none focus:ring-0 focus:outline-none text-[#03182F] font-serif text-sm flex-1 placeholder:text-[#6B7480]"
+            placeholder={recording ? 'Recording… click the mic again to stop' : 'Ask Leia for operational insights…'}
             type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
-          <button className="bg-[#2764FF] text-white rounded-full p-1.5 flex items-center justify-center hover:bg-[#004bd9] transition-colors">
+          <button
+            type="button"
+            onClick={handleMicClick}
+            disabled={micBusy || !recorder.isSupported}
+            aria-label={recording ? 'Stop recording' : 'Start voice input'}
+            className={`rounded-full p-1.5 flex items-center justify-center transition-colors ${
+              recording
+                ? 'bg-[#F22E75] text-white animate-pulse shadow-[0_0_0_4px_rgba(242,46,117,0.18)]'
+                : micBusy
+                ? 'bg-[#DDE5EE] text-[#6B7480] cursor-wait'
+                : 'bg-[#F2F8FF] text-[#2764FF] hover:bg-[#DDE5EE]'
+            } disabled:opacity-60`}
+          >
+            {micBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+          </button>
+          <button
+            type="button"
+            aria-label="Send"
+            className="bg-[#2764FF] text-white rounded-full p-1.5 flex items-center justify-center hover:bg-[#004bd9] transition-colors"
+          >
             <Send className="h-4 w-4" />
           </button>
         </div>
