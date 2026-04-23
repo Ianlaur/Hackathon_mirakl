@@ -27,8 +27,8 @@ function LeiaIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="13" r="5" />
-      <circle cx="6" cy="8" r="2.5" />
-      <circle cx="18" cy="8" r="2.5" />
+      <ellipse cx="5.5" cy="11" rx="2.5" ry="2" />
+      <ellipse cx="18.5" cy="11" rx="2.5" ry="2" />
     </svg>
   )
 }
