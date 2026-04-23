@@ -123,16 +123,6 @@ export default function Sidebar({ onExpandedChange }: SidebarProps) {
             <div className="text-lg font-bold text-[#03182F] tracking-widest font-serif whitespace-nowrap">MIRAKL CONNECT</div>
             <div className="text-xs text-[#6B7480] uppercase mt-1 tracking-wider">Operations</div>
           </div>
-          <button
-            type="button"
-            onClick={() => setPinned(!pinned)}
-            className={`hidden lg:flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-[#DDE5EE] text-[#6B7480] hover:bg-[#F2F8FF] hover:text-[#03182F] transition-all duration-300 ${
-              collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            } ${pinned ? 'bg-[#2764FF]/5 text-[#2764FF] border-[#2764FF]/30' : 'bg-white'}`}
-            aria-label={pinned ? 'Libérer la sidebar' : 'Épingler la sidebar'}
-          >
-            {pinned ? <ChevronLeft className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </button>
         </div>
         <hr className="mx-3 h-px border-0 bg-[#DDE5EE]" />
 
