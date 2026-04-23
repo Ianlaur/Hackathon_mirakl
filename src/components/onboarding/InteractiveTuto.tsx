@@ -449,9 +449,9 @@ export default function InteractiveTuto({ onFinish, onBack }: InteractiveTutoPro
                 >
                   <motion.span
                     initial={false}
-                    animate={{ x: pluginSimActive ? 23 : 2 }}
+                    animate={{ x: pluginSimActive ? 20 : 0 }}
                     transition={{ type: 'spring', stiffness: 280, damping: 24 }}
-                    className="absolute top-1 h-5 w-5 rounded-full bg-white shadow"
+                    className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow"
                   />
                 </span>
                 {pluginSimActive ? 'Actif' : 'Activer'}
