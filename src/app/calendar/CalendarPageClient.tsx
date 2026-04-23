@@ -27,45 +27,51 @@ type ParsedNaturalEvent = {
   confidence: 'high' | 'medium' | 'low'
   summary: string
 }
+type EventChatMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  reasoningSummary?: string
+}
 
 const eventKinds: Record<EventKind, { label: string; color: string; chip: string; border: string }> = {
   holiday: {
-    label: 'Férié',
+    label: 'Public holiday',
     color: 'bg-slate-500',
     chip: 'bg-slate-100 text-[#30373E]',
     border: 'border-slate-200',
   },
   celebration: {
-    label: 'Fête',
+    label: 'Celebration',
     color: 'bg-[#E0A93A]/100',
     chip: 'bg-[#E0A93A]/10 text-amber-800',
     border: 'border-amber-200',
   },
   peak: {
-    label: 'Temps forts',
+    label: 'Peak period',
     color: 'bg-fuchsia-600',
     chip: 'bg-fuchsia-50 text-fuchsia-800',
     border: 'border-fuchsia-200',
   },
   leave: {
-    label: 'Congés',
+    label: 'Time off',
     color: 'bg-sky-600',
     chip: 'bg-sky-50 text-sky-800',
     border: 'border-sky-200',
   },
 }
 
-const fallbackKind = { label: 'Autre', color: 'bg-slate-400', chip: 'bg-slate-100 text-[#6B7480]', border: 'border-slate-200' }
+const fallbackKind = { label: 'Other', color: 'bg-slate-400', chip: 'bg-slate-100 text-[#6B7480]', border: 'border-slate-200' }
 
 function getKindStyle(kind: string) {
   return eventKinds[kind as EventKind] || fallbackKind
 }
 
 const impactLabels: Record<EventImpact, { label: string; chip: string }> = {
-  low: { label: 'Faible', chip: 'bg-slate-100 text-[#6B7480]' },
-  medium: { label: 'Moyen', chip: 'bg-[#E0A93A]/10 text-amber-700' },
-  high: { label: 'Fort', chip: 'bg-orange-50 text-orange-700' },
-  critical: { label: 'Critique', chip: 'bg-[#FFE7EC] text-red-700 ring-1 ring-red-200' },
+  low: { label: 'Low', chip: 'bg-slate-100 text-[#6B7480]' },
+  medium: { label: 'Medium', chip: 'bg-[#E0A93A]/10 text-amber-700' },
+  high: { label: 'High', chip: 'bg-orange-50 text-orange-700' },
+  critical: { label: 'Critical', chip: 'bg-[#FFE7EC] text-red-700 ring-1 ring-red-200' },
 }
 
 const today = new Date()
@@ -108,17 +114,17 @@ const weekdayNames: Record<string, number> = {
 }
 
 const francePublicHolidays2026: CalendarEvent[] = [
-  ['jour-an', "Jour de l'An", '2026-01-01'],
-  ['lundi-paques', 'Lundi de Pâques', '2026-04-06'],
-  ['fete-travail', 'Fête du Travail', '2026-05-01'],
-  ['victoire-1945', 'Victoire 1945', '2026-05-08'],
-  ['ascension', 'Ascension', '2026-05-14'],
-  ['lundi-pentecote', 'Lundi de Pentecôte', '2026-05-25'],
-  ['fete-nationale', 'Fête nationale', '2026-07-14'],
-  ['assomption', 'Assomption', '2026-08-15'],
-  ['toussaint', 'Toussaint', '2026-11-01'],
-  ['armistice', 'Armistice 1918', '2026-11-11'],
-  ['noel', 'Noël', '2026-12-25'],
+  ['jour-an', "New Year's Day", '2026-01-01'],
+  ['lundi-paques', 'Easter Monday', '2026-04-06'],
+  ['fete-travail', 'Labour Day', '2026-05-01'],
+  ['victoire-1945', 'Victory in Europe Day', '2026-05-08'],
+  ['ascension', 'Ascension Day', '2026-05-14'],
+  ['lundi-pentecote', 'Whit Monday', '2026-05-25'],
+  ['fete-nationale', 'Bastille Day', '2026-07-14'],
+  ['assomption', 'Assumption Day', '2026-08-15'],
+  ['toussaint', "All Saints' Day", '2026-11-01'],
+  ['armistice', 'Armistice Day', '2026-11-11'],
+  ['noel', 'Christmas Day', '2026-12-25'],
 ].map(([slug, title, date]) => ({
   id: `holiday-fr-${slug}-2026`,
   title,
@@ -129,7 +135,7 @@ const francePublicHolidays2026: CalendarEvent[] = [
   kind: 'holiday',
   impact: 'medium',
   zone: 'France',
-  notes: 'Jour férié : anticiper les fermetures, retards transporteurs et pics avant/après.',
+  notes: 'Public holiday: expect closures, carrier delays and spikes before/after.',
   locked: true,
 }))
 
@@ -137,7 +143,7 @@ const initialEvents: CalendarEvent[] = [
   ...francePublicHolidays2026,
   {
     id: 'commerce-winter-sales-2026',
-    title: "Soldes d'hiver",
+    title: 'Winter sales',
     startDate: '2026-01-07',
     endDate: '2026-02-03',
     startTime: '',
@@ -145,7 +151,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'high',
     zone: 'France / e-commerce',
-    notes: 'Préparer promotions, stocks, pricing, SAV et capacité logistique sur 4 semaines.',
+    notes: 'Prepare promotions, stock, pricing, customer support and logistics capacity over 4 weeks.',
     locked: true,
   },
   {
@@ -158,12 +164,12 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'critical',
     zone: 'International',
-    notes: 'Pic de trafic, promotions agressives, tension stock et support client renforcé.',
+    notes: 'Traffic peak, aggressive promotions, stock tension and reinforced customer support.',
     locked: true,
   },
   {
     id: 'commerce-christmas-returns-2026',
-    title: 'Noël + retours post-Noël',
+    title: 'Christmas + post-holiday returns',
     startDate: '2026-12-01',
     endDate: '2027-01-10',
     startTime: '',
@@ -171,25 +177,25 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'critical',
     zone: 'France / Europe',
-    notes: 'Pic cadeaux, contraintes transport, puis hausse attendue des retours et échanges.',
+    notes: 'Gift peak, shipping constraints, then expected surge in returns and exchanges.',
     locked: true,
   },
   {
     id: 'commerce-chinese-new-year-2026',
-    title: 'Nouvel An chinois',
+    title: 'Chinese New Year',
     startDate: '2026-02-17',
     endDate: '2026-02-24',
     startTime: '',
     endTime: '',
     kind: 'celebration',
     impact: 'critical',
-    zone: 'Chine / sourcing international',
-    notes: 'Anticiper fermetures fournisseurs, délais de production, booking transport et ruptures import.',
+    zone: 'China / international sourcing',
+    notes: 'Plan ahead for supplier closures, production delays, transport booking and import stockouts.',
     locked: true,
   },
   {
     id: 'commerce-ramadan-eid-2026',
-    title: 'Ramadan + Aïd el-Fitr',
+    title: 'Ramadan + Eid al-Fitr',
     startDate: '2026-02-18',
     endDate: '2026-03-20',
     startTime: '',
@@ -197,7 +203,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'high',
     zone: 'International',
-    notes: 'Adapter assortiment, campagnes, horaires opérationnels et prévisions de demande selon marchés.',
+    notes: 'Adapt assortment, campaigns, operational hours and demand forecasts by market.',
     locked: true,
   },
   {
@@ -209,13 +215,13 @@ const initialEvents: CalendarEvent[] = [
     endTime: '',
     kind: 'peak',
     impact: 'high',
-    zone: 'Chine / marketplaces',
-    notes: 'Grand temps fort promotionnel e-commerce, utile pour veille marketplace et opérations cross-border.',
+    zone: 'China / marketplaces',
+    notes: 'Major e-commerce promotional peak — useful for marketplace monitoring and cross-border ops.',
     locked: true,
   },
   {
     id: 'commerce-back-to-school-2026',
-    title: 'Rentrée / Back to School',
+    title: 'Back to School',
     startDate: '2026-08-24',
     endDate: '2026-09-06',
     startTime: '',
@@ -223,12 +229,12 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'medium',
     zone: 'France / Europe',
-    notes: 'Préparer campagnes, stocks saisonniers et hausse de demande de fin août à début septembre.',
+    notes: 'Prepare campaigns, seasonal stock and demand surge from late August to early September.',
     locked: true,
   },
   {
     id: 'commerce-parents-days-2026',
-    title: 'Fête des Mères / Fête des Pères',
+    title: "Mother's Day / Father's Day",
     startDate: '2026-05-31',
     endDate: '2026-06-21',
     startTime: '',
@@ -236,12 +242,12 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'France',
-    notes: 'Période cadeaux à exploiter avec campagnes ciblées, bundles et délais de livraison garantis.',
+    notes: 'Gift window — leverage with targeted campaigns, bundles and guaranteed delivery SLAs.',
     locked: true,
   },
   {
     id: 'commerce-valentine-2026',
-    title: 'Saint-Valentin',
+    title: "Valentine's Day",
     startDate: '2026-02-14',
     endDate: '2026-02-14',
     startTime: '',
@@ -249,7 +255,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'International',
-    notes: 'Temps fort cadeaux, offres limitées et livraison avant date à surveiller.',
+    notes: 'Gift peak — time-boxed offers and strict on-time delivery expectations.',
     locked: true,
   },
 ]
@@ -266,12 +272,11 @@ function toDateKeyFromParts(day: number, month: number, year = today.getFullYear
 }
 
 function formatDateFr(dateKey: string) {
-  const [year, month, day] = dateKey.split('-')
-  return `${day}-${month}-${year}`
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(parseDateKey(dateKey))
 }
 
 function formatDateRangeFr(startDate: string, endDate: string) {
-  return startDate === endDate ? formatDateFr(startDate) : `${formatDateFr(startDate)} - ${formatDateFr(endDate)}`
+  return startDate === endDate ? formatDateFr(startDate) : `${formatDateFr(startDate)} — ${formatDateFr(endDate)}`
 }
 
 function parseDateKey(dateKey: string) {
@@ -356,7 +361,7 @@ function inferZone(text: string, kind: EventKind) {
   if (/(chine|chinois|sourcing|import)/.test(text)) return 'Chine / sourcing international'
   if (/(france|ferie|soldes)/.test(text)) return 'France'
   if (kind === 'leave') return 'Interne'
-  return 'Interne'
+  return 'Internal'
 }
 
 function removeCommandWords(value: string) {
@@ -369,7 +374,7 @@ function removeCommandWords(value: string) {
 }
 
 function inferTitle(original: string, text: string, kind: EventKind) {
-  if (kind === 'leave') return 'Congés'
+  if (kind === 'leave') return 'Time off'
 
   const cleaned = removeCommandWords(original)
   const beforeDate = cleaned
@@ -381,10 +386,10 @@ function inferTitle(original: string, text: string, kind: EventKind) {
     .trim()
 
   if (beforeDate.length >= 3) return titleCase(beforeDate)
-  if (kind === 'holiday') return text.includes('fermeture') ? 'Fermeture' : 'Jour férié'
-  if (kind === 'celebration') return 'Fête'
-  if (kind === 'peak') return 'Temps fort'
-  return 'Congés'
+  if (kind === 'holiday') return text.includes('fermeture') ? 'Closure' : 'Public holiday'
+  if (kind === 'celebration') return 'Celebration'
+  if (kind === 'peak') return 'Peak period'
+  return 'Time off'
 }
 
 function parseNaturalDates(text: string, fallbackDate: string) {
@@ -496,10 +501,10 @@ function parseNaturalEvent(input: string, fallbackDate: string): ParsedNaturalEv
       kind,
       impact,
       zone,
-      notes: `Créé depuis la saisie naturelle : "${original}"`,
+      notes: `Created from natural input: "${original}"`,
     },
     confidence,
-    summary: `${title} · ${formatDateRangeFr(dates.startDate, endDate)}${times.startTime ? ` · ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' · toute la journée'}`,
+    summary: `${title} · ${formatDateRangeFr(dates.startDate, endDate)}${times.startTime ? ` · ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' · all day'}`,
   }
 }
 
@@ -508,7 +513,7 @@ async function requestCalendarEvents(url: string, options?: RequestInit) {
   const data = await response.json().catch(() => null)
 
   if (!response.ok) {
-    throw new Error(data?.error || 'Erreur calendrier')
+    throw new Error(data?.error || 'Calendar error')
   }
 
   return data
@@ -546,7 +551,7 @@ async function deleteCalendarEvent(id: string) {
 }
 
 function monthLabel(date: Date) {
-  return new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(date)
+  return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(date)
 }
 
 function buildMonthDays(activeMonth: Date) {
@@ -596,6 +601,11 @@ export default function CalendarPageClient() {
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [naturalInput, setNaturalInput] = useState('')
   const [tlRange, setTlRange] = useState(90)
+  const [eventChatInput, setEventChatInput] = useState('')
+  const [eventChatMessages, setEventChatMessages] = useState<EventChatMessage[]>([])
+  const [eventChatError, setEventChatError] = useState<string | null>(null)
+  const [eventChatSessionId, setEventChatSessionId] = useState<string | null>(null)
+  const [eventChatSending, setEventChatSending] = useState(false)
 
   useEffect(() => {
     let ignore = false
@@ -621,7 +631,7 @@ export default function CalendarPageClient() {
         setSelectedDate(seeded.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
       } catch (error) {
         if (!ignore) {
-          setSyncError(error instanceof Error ? error.message : 'Synchronisation calendrier impossible')
+          setSyncError(error instanceof Error ? error.message : 'Unable to sync calendar')
         }
       } finally {
         if (!ignore) {
@@ -636,6 +646,14 @@ export default function CalendarPageClient() {
       ignore = true
     }
   }, [])
+
+  useEffect(() => {
+    setEventChatInput('')
+    setEventChatMessages([])
+    setEventChatError(null)
+    setEventChatSessionId(null)
+    setEventChatSending(false)
+  }, [detailEventId])
 
   const monthDays = useMemo(() => buildMonthDays(activeMonth), [activeMonth])
   const selectedEvent = useMemo(
@@ -682,14 +700,14 @@ export default function CalendarPageClient() {
       setNaturalInput('')
       setIsCreatingFromDate(false)
     } catch (error) {
-      setSyncError(error instanceof Error ? error.message : 'Création impossible')
+      setSyncError(error instanceof Error ? error.message : 'Unable to create event')
     }
   }
 
   const createEvent = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!parsedNaturalEvent) {
-      setSyncError('Décrivez un événement, par exemple : congés du 5 au 10 mai toute la journée')
+      setSyncError('Describe an event — e.g. "time off from May 5 to May 10, all day"')
       return
     }
     await saveDraftEvent(parsedNaturalEvent.event)
@@ -721,7 +739,7 @@ export default function CalendarPageClient() {
       })
       .catch((error) => {
         setEvents((current) => current.map((event) => (event.id === previousEvent.id ? previousEvent : event)))
-        setSyncError(error instanceof Error ? error.message : 'Mise à jour impossible')
+        setSyncError(error instanceof Error ? error.message : 'Unable to update event')
       })
       .finally(() => {
         if (patchedEvent) {
@@ -774,7 +792,7 @@ export default function CalendarPageClient() {
     setActiveMonth(new Date(d.getFullYear(), d.getMonth(), 1))
   }
 
-  const viewLabels: Record<CalendarView, string> = { month: 'Mois', week: 'Semaine', day: 'Jour' }
+  const viewLabels: Record<CalendarView, string> = { month: 'Month', week: 'Week', day: 'Day' }
 
   const chooseDate = (dateKey: string) => {
     setSelectedDate(dateKey)
@@ -813,7 +831,7 @@ export default function CalendarPageClient() {
       })
       .catch((error) => {
         setEvents((current) => current.map((event) => (event.id === movedEvent.id ? movedEvent : event)))
-        setSyncError(error instanceof Error ? error.message : 'Déplacement impossible')
+        setSyncError(error instanceof Error ? error.message : 'Unable to move event')
       })
       .finally(() => {
         setSavingIds((current) => current.filter((id) => id !== movedEvent.id))
@@ -832,29 +850,103 @@ export default function CalendarPageClient() {
     } catch (error) {
       setEvents((current) => [...current, eventToDelete])
       setSelectedEventId(eventToDelete.id)
-      setSyncError(error instanceof Error ? error.message : 'Suppression impossible')
+      setSyncError(error instanceof Error ? error.message : 'Unable to delete event')
     }
+  }
+
+  const sendEventChatMessage = async (rawMessage: string) => {
+    if (!detailEvent) return
+
+    const message = rawMessage.trim()
+    if (!message || eventChatSending) return
+
+    setEventChatSending(true)
+    setEventChatError(null)
+    setEventChatMessages((current) => [
+      ...current,
+      { id: `u-${Date.now()}`, role: 'user', content: message },
+    ])
+
+    const eventContext = [
+      'Calendar event context:',
+      `Title: ${detailEvent.title}`,
+      `Date range: ${formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}`,
+      `Impact: ${impactLabels[detailEvent.impact].label}`,
+      `Type: ${getKindStyle(detailEvent.kind).label}`,
+      `Zone: ${detailEvent.zone}`,
+      detailEvent.notes ? `Current recommendation: ${detailEvent.notes}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    try {
+      const response = await fetch('/api/copilot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: eventChatSessionId || undefined,
+          message: `${message}\n\n${eventContext}`,
+        }),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Leia is unavailable right now.')
+      }
+
+      if (typeof payload?.sessionId === 'string' && payload.sessionId) {
+        setEventChatSessionId(payload.sessionId)
+      }
+
+      const assistantContent =
+        typeof payload?.message?.content === 'string'
+          ? payload.message.content
+          : 'Leia could not generate a response for this event.'
+      const reasoningSummary =
+        typeof payload?.message?.reasoning_summary === 'string'
+          ? payload.message.reasoning_summary
+          : undefined
+
+      setEventChatMessages((current) => [
+        ...current,
+        {
+          id: `a-${Date.now()}`,
+          role: 'assistant',
+          content: assistantContent,
+          reasoningSummary,
+        },
+      ])
+      setEventChatInput('')
+    } catch (error) {
+      setEventChatError(error instanceof Error ? error.message : 'Leia is unavailable right now.')
+    } finally {
+      setEventChatSending(false)
+    }
+  }
+
+  const submitEventChat = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await sendEventChatMessage(eventChatInput)
   }
 
   return (
     <div className="space-y-6">
       <section className="dashboard-card p-5 sm:p-6">
         <div>
-          <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Planning opérationnel</p>
-          <h1 className="mt-2 font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Calendrier</h1>
+          <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Operational planning</p>
+          <h1 className="mt-2 font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Calendar</h1>
           <p className="mt-2 max-w-2xl text-sm text-[#6B7480]">
-            Suivez les congés, jours fériés et temps forts commerce qui peuvent impacter vos ventes, stocks et
-            livraisons.
+            Track time off, public holidays and commercial peak periods that may affect your sales, stock and deliveries.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {isLoading && (
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-[#6B7480]">
-                Chargement Supabase...
+                Loading from Supabase…
               </span>
             )}
             {savingIds.length > 0 && (
               <span className="rounded-full bg-[#2764FF]/10 px-3 py-1 text-xs font-semibold text-[#004bd9]">
-                Sauvegarde en cours
+                Saving…
               </span>
             )}
             {syncError && (
@@ -868,9 +960,9 @@ export default function CalendarPageClient() {
 
       <section className="dashboard-card p-5 sm:p-7">
         <div className="flex items-center justify-between mb-8">
-          <p className="font-serif text-base font-bold text-[#03182F]">Prochains événements</p>
+          <p className="font-serif text-base font-bold text-[#03182F]">Upcoming events</p>
           <div className="inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
-            {[{ v: 30, l: '30 jours' }, { v: 90, l: '3 mois' }, { v: 180, l: '6 mois' }].map((o) => (
+            {[{ v: 30, l: '30 days' }, { v: 90, l: '3 months' }, { v: 180, l: '6 months' }].map((o) => (
               <button key={o.v} type="button" onClick={() => setTlRange(o.v)}
                 className={`rounded-md px-3 py-1 font-serif text-[13px] font-medium transition ${tlRange === o.v ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
               >{o.l}</button>
@@ -884,7 +976,7 @@ export default function CalendarPageClient() {
           const td = Math.max(1, tlRange)
           const tl = events.filter((e) => e.kind !== 'leave' && e.endDate >= todayKey && e.startDate <= rek).sort((a, b) => a.startDate.localeCompare(b.startDate))
           const pc = (dk: string) => { const d = parseDateKey(dk); return Math.max(2, Math.min(97, (Math.round((d.getTime() - rs.getTime()) / 86400000) / td) * 100)) }
-          const sd = (dk: string) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(parseDateKey(dk))
+          const sd = (dk: string) => new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' }).format(parseDateKey(dk))
           // Fewer events + wider breathing room on longer ranges (30j: 5 · 3mo: 6 · 6mo: 7)
           const mx = tlRange <= 30 ? 5 : tlRange <= 90 ? 6 : 7
           const vis = tl.slice(0, mx)
@@ -892,13 +984,13 @@ export default function CalendarPageClient() {
           const mg = Math.max(15, (100 / Math.max(vis.length, 1)))
           const pos: number[] = []
           vis.forEach((e) => { let p = pc(e.startDate < todayKey ? todayKey : e.startDate); if (pos.length > 0 && p - pos[pos.length - 1] < mg) p = Math.min(95, pos[pos.length - 1] + mg); pos.push(p) })
-          if (vis.length === 0) return <p className="text-sm text-[#6B7480]">Aucun événement sur cette période.</p>
+          if (vis.length === 0) return <p className="text-sm text-[#6B7480]">No events in this period.</p>
           return (
             <div className="relative px-4">
               <div className="absolute left-4 right-4 top-3 h-px bg-slate-200" />
               <div className="absolute top-0 left-0">
                 <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
-                <p className="mt-1 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-[#6B7480] whitespace-nowrap">Auj.</p>
+                <p className="mt-1 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-[#6B7480] whitespace-nowrap">Today</p>
               </div>
               {vis.map((evt, i) => { const k = getKindStyle(evt.kind); return (
                 <div key={evt.id} className="absolute cursor-pointer group" style={{ left: `${pos[i]}%` }}
@@ -919,7 +1011,7 @@ export default function CalendarPageClient() {
       <div>
         <section className="dashboard-card overflow-hidden p-4 sm:p-5">
           <div className="mb-4 inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
-            {[{ value: 'day' as CalendarView, label: 'Jour' }, { value: 'week' as CalendarView, label: 'Semaine' }, { value: 'month' as CalendarView, label: 'Mois' }].map((o) => (
+            {[{ value: 'day' as CalendarView, label: 'Day' }, { value: 'week' as CalendarView, label: 'Week' }, { value: 'month' as CalendarView, label: 'Month' }].map((o) => (
               <button key={o.value} type="button" onClick={() => setCalendarView(o.value)}
                 className={`rounded-md px-4 py-2 font-serif text-[13px] font-medium transition ${calendarView === o.value ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
               >{o.label}</button>
@@ -940,8 +1032,8 @@ export default function CalendarPageClient() {
             <div className="flex items-center gap-3">
               <h2 className="font-serif text-lg font-bold capitalize text-[#03182F] sm:text-xl">
                 {calendarView === 'month' && monthLabel(activeMonth)}
-                {calendarView === 'week' && `Semaine du ${parseDateKey(activeWeekStart).getDate()} ${new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(parseDateKey(activeWeekStart))}`}
-                {calendarView === 'day' && new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(parseDateKey(selectedDate))}
+                {calendarView === 'week' && `Week of ${new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(parseDateKey(activeWeekStart))}`}
+                {calendarView === 'day' && new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(parseDateKey(selectedDate))}
               </h2>
               {isAwayFromToday && (
                 <button
@@ -949,7 +1041,7 @@ export default function CalendarPageClient() {
                   onClick={goToToday}
                   className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-[#6B7480] transition hover:bg-slate-50"
                 >
-                  Aujourd&apos;hui
+                  Today
                 </button>
               )}
             </div>
@@ -969,7 +1061,7 @@ export default function CalendarPageClient() {
           {calendarView === 'month' && (
             <>
               <div className="mt-4 grid grid-cols-7 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
-                {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                   <div key={day} className="border-r border-slate-200 px-2 py-3 last:border-r-0">
                     {day}
                   </div>
@@ -1063,7 +1155,7 @@ export default function CalendarPageClient() {
                   <div className="border-r border-slate-200 px-1 py-3" />
                   {weekDays.map((wd) => (
                     <div key={wd.key} className={`border-r border-slate-200 px-1 py-3 last:border-r-0 ${wd.isToday ? 'bg-[#2764FF]/10 text-[#004bd9]' : ''}`}>
-                      {new Intl.DateTimeFormat('fr-FR', { weekday: 'short' }).format(wd.date)} {wd.date.getDate()}
+                      {new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(wd.date)} {wd.date.getDate()}
                     </div>
                   ))}
                 </div>
@@ -1073,7 +1165,7 @@ export default function CalendarPageClient() {
                   <div className="relative border border-b-0 border-slate-200 bg-slate-50/60">
                     <div className="grid grid-cols-[56px_repeat(7,1fr)]">
                       <div className="flex items-start justify-end border-r border-slate-100 pr-2 pt-2">
-                        <span className="text-[10px] font-medium text-[#6B7480]">Journée</span>
+                        <span className="text-[10px] font-medium text-[#6B7480]">All day</span>
                       </div>
                       <div className="col-span-7 space-y-0.5 py-1">
                         {allDaySpans.map(({ event, startCol, span }) => {
@@ -1167,7 +1259,7 @@ export default function CalendarPageClient() {
               <div className="mt-4 space-y-0">
                 {allDayEvents.length > 0 && (
                   <div className="mb-2 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5">
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#6B7480]">Journée entière</p>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#6B7480]">All day</p>
                     <div className="space-y-1">
                       {allDayEvents.map((event) => {
                         const kind = getKindStyle(event.kind)
@@ -1260,7 +1352,7 @@ export default function CalendarPageClient() {
 
       {detailEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setDetailEventId(null)}>
-          <div className="w-full max-w-md rounded-xl bg-white border border-[#DDE5EE] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-2xl rounded-xl bg-white border border-[#DDE5EE] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className={`h-3.5 w-3.5 rounded-full ${getKindStyle(detailEvent.kind).color}`} />
@@ -1286,6 +1378,65 @@ export default function CalendarPageClient() {
               {detailEvent.notes && (
                 <p className="rounded-lg bg-[#F2F8FF] border border-[#DDE5EE] px-3 py-2.5 font-serif text-[13px] leading-6 text-[#30373E]">{detailEvent.notes}</p>
               )}
+            </div>
+
+            <div className="mt-5 border-t border-[#DDE5EE] pt-4">
+              <p className="font-serif text-[14px] font-bold text-[#03182F]">Chat with Leia</p>
+              <p className="mt-1 font-serif text-[12px] text-[#6B7480]">
+                Ask for operational actions specific to this event.
+              </p>
+
+              <div className="mt-3 max-h-56 space-y-2 overflow-y-auto rounded-lg border border-[#DDE5EE] bg-slate-50 p-3">
+                {eventChatMessages.length === 0 ? (
+                  <p className="font-serif text-[12px] text-[#6B7480]">
+                    Example: What should I secure 2 weeks before this event?
+                  </p>
+                ) : (
+                  eventChatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`rounded-lg border px-3 py-2 ${
+                        message.role === 'assistant'
+                          ? 'border-[#DDE5EE] bg-white'
+                          : 'border-[#BFCBDA] bg-[#F2F8FF]'
+                      }`}
+                    >
+                      <p className="font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#6B7480]">
+                        {message.role === 'assistant' ? 'Leia' : 'You'}
+                      </p>
+                      <p className="mt-1 font-serif text-[13px] leading-6 text-[#03182F]">{message.content}</p>
+                      {message.reasoningSummary && message.role === 'assistant' ? (
+                        <p className="mt-2 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-2.5 py-1.5 font-serif text-[12px] text-[#30373E]">
+                          {message.reasoningSummary}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {eventChatError && (
+                <p className="mt-2 rounded-lg border border-[#ba1a1a]/30 bg-[#FFE7EC] px-3 py-2 font-serif text-[12px] text-[#ba1a1a]">
+                  {eventChatError}
+                </p>
+              )}
+
+              <form className="mt-3 flex gap-2" onSubmit={submitEventChat}>
+                <input
+                  type="text"
+                  value={eventChatInput}
+                  onChange={(event) => setEventChatInput(event.target.value)}
+                  placeholder={`Ask Leia about "${detailEvent.title}"...`}
+                  className="h-10 flex-1 rounded-lg border border-[#DDE5EE] px-3 font-serif text-[13px] text-[#03182F] outline-none focus:border-[#2764FF] focus:ring-1 focus:ring-[#2764FF]"
+                />
+                <button
+                  type="submit"
+                  disabled={eventChatSending || !eventChatInput.trim()}
+                  className="h-10 rounded-lg bg-[#2764FF] px-4 font-serif text-[13px] font-bold text-white transition hover:bg-[#004bd9] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {eventChatSending ? 'Sending...' : 'Send'}
+                </button>
+              </form>
             </div>
           </div>
         </div>

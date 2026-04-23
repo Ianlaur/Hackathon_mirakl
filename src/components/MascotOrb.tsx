@@ -12,7 +12,7 @@ export default function MascotOrb() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? 'Fermer Mira' : 'Ouvrir Mira'}
+        aria-label={open ? 'Close Mira' : 'Open Mira'}
         className="fixed bottom-6 right-6 z-30 h-24 w-24 select-none border-0 bg-transparent p-0 lg:h-28 lg:w-28"
       >
         <div className={`mascot-orb relative h-full w-full cursor-pointer ${open ? 'is-open' : ''}`}>

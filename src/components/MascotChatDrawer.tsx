@@ -28,12 +28,12 @@ type ChatMessage = {
 }
 
 const PLACEHOLDER_PROMPTS = [
-  "Combien j'ai de stock au total ?",
-  'Je pars en vacances du 5 au 15 mai',
-  "Quelles actions m'attendent ?",
-  'Stock de la chaise Oslo ?',
-  'Cherche mes tables en rupture',
-  'Liste mes produits à commander',
+  "How much total stock do I have?",
+  "I'm on leave from May 5th to May 15th",
+  "What actions are pending?",
+  "Stock of the Oslo chair?",
+  "Find my out-of-stock tables",
+  "List products I need to reorder",
 ]
 
 const TYPE_SPEED_MS = 38
@@ -145,7 +145,7 @@ export default function MascotChatDrawer({
     }
   }, [messages, hydrated])
 
-  // Focus input à l'ouverture, efface l'input et l'erreur à la fermeture
+  // Focus input on open, clear input and error on close
   useEffect(() => {
     if (open) {
       const t = setTimeout(() => inputRef.current?.focus(), 60)
@@ -180,20 +180,20 @@ export default function MascotChatDrawer({
         const form = new FormData()
         const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
         form.append('file', blob, `iris-${Date.now()}.${ext}`)
-        form.append('language', 'fr')
+        form.append('language', 'en')
         const resp = await fetch('/api/mascot/transcribe', {
           method: 'POST',
           body: form,
         })
         const data = await resp.json()
-        if (!resp.ok) throw new Error(data?.error ?? 'Transcription échouée')
+        if (!resp.ok) throw new Error(data?.error ?? 'Transcription failed')
         const text = String(data?.text ?? '').trim()
         if (text) {
           setInput((prev) => (prev ? `${prev} ${text}` : text))
           setTimeout(() => inputRef.current?.focus(), 40)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur transcription')
+        setError(err instanceof Error ? err.message : 'Transcription error')
       } finally {
         setTranscribing(false)
       }
@@ -254,7 +254,7 @@ export default function MascotChatDrawer({
       })
       const data = await resp.json()
       if (!resp.ok) {
-        throw new Error(data?.error ?? 'Requête échouée')
+        throw new Error(data?.error ?? 'Request failed')
       }
       setMessages([
         ...next,
@@ -265,7 +265,7 @@ export default function MascotChatDrawer({
         },
       ])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setBusy(false)
     }
@@ -312,9 +312,9 @@ export default function MascotChatDrawer({
             onKeyDown={handleKeyDown}
             placeholder={
               isRecording
-                ? `Enregistrement… ${formatDuration(recorder.durationMs)}`
+                ? `Recording… ${formatDuration(recorder.durationMs)}`
                 : transcribing
-                  ? 'Transcription…'
+                  ? 'Transcribing…'
                   : placeholderActive
                     ? animatedPlaceholder || '\u00a0'
                     : 'Mira'
@@ -327,8 +327,8 @@ export default function MascotChatDrawer({
             <button
               type="button"
               onClick={clearHistory}
-              aria-label="Effacer l'historique"
-              title="Effacer l'historique"
+              aria-label="Clear history"
+              title="Clear history"
               className="iris-searchbar__clear"
             >
               <Trash2 className="h-4 w-4" />
@@ -339,8 +339,8 @@ export default function MascotChatDrawer({
               type="button"
               onClick={handleMicClick}
               disabled={transcribing || isStarting}
-              aria-label={isRecording ? "Arrêter l'enregistrement" : 'Parler à Mira'}
-              title={isRecording ? "Arrêter l'enregistrement" : 'Parler à Mira'}
+              aria-label={isRecording ? "Stop recording" : 'Talk to Mira'}
+              title={isRecording ? "Stop recording" : 'Talk to Mira'}
               className={`iris-searchbar__mic ${
                 isRecording ? 'iris-searchbar__mic--recording' : ''
               } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
@@ -357,7 +357,7 @@ export default function MascotChatDrawer({
           {input.trim() && (
             <button
               type="submit"
-              aria-label="Envoyer"
+              aria-label="Send"
               disabled={busy}
               className="iris-searchbar__submit"
             >
@@ -568,7 +568,7 @@ function EventRecapCard({
           className="iris-recap__btn iris-recap__btn--secondary"
         >
           <Calendar className="h-3.5 w-3.5" />
-          <span>Voir dans le calendrier</span>
+          <span>View in calendar</span>
           <ArrowRight className="h-3 w-3 opacity-60" />
         </button>
         {isLeave && event.advisor_triggered && (
@@ -578,7 +578,7 @@ function EventRecapCard({
             className="iris-recap__btn iris-recap__btn--primary"
           >
             <Inbox className="h-3.5 w-3.5" />
-            <span>Voir le plan restock</span>
+            <span>View restock plan</span>
             <ArrowRight className="h-3 w-3 opacity-80" />
           </button>
         )}
@@ -601,10 +601,10 @@ function RestockPlanCard({
         <div className="iris-recap__badge">📦</div>
         <div className="iris-recap__titles">
           <p className="iris-recap__title">
-            Plan restock — {plan.items_count} SKU{(plan.items_count ?? 0) > 1 ? 's' : ''}
+            Restock plan — {plan.items_count} SKU{(plan.items_count ?? 0) > 1 ? 's' : ''}
           </p>
           <p className="iris-recap__dates">
-            {(plan.total_estimated_cost_eur ?? 0).toFixed(0)} € · horizon {plan.horizon_days}j
+            {(plan.total_estimated_cost_eur ?? 0).toFixed(0)} € · {plan.horizon_days}-day horizon
           </p>
         </div>
       </div>
@@ -618,7 +618,7 @@ function RestockPlanCard({
           className="iris-recap__btn iris-recap__btn--primary"
         >
           <Inbox className="h-3.5 w-3.5" />
-          <span>Ouvrir dans l&apos;inbox</span>
+          <span>Open in inbox</span>
           <ArrowRight className="h-3 w-3 opacity-80" />
         </button>
       </div>
@@ -652,7 +652,7 @@ function EmailDraftCard({ draft }: { draft: EmailDraft }) {
         <div className="iris-email__meta">
           <p className="iris-email__supplier">{draft.supplier}</p>
           <p className="iris-email__stats">
-            {draft.items_count} SKU · {draft.total_units} unités · {draft.total_cost_eur.toFixed(0)} €
+            {draft.items_count} SKU · {draft.total_units} units · {draft.total_cost_eur.toFixed(0)} €
           </p>
         </div>
       </div>
@@ -665,7 +665,7 @@ function EmailDraftCard({ draft }: { draft: EmailDraft }) {
           className={`iris-email__btn ${copied ? 'iris-email__btn--success' : ''}`}
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          <span>{copied ? 'Copié' : 'Copier'}</span>
+          <span>{copied ? 'Copied' : 'Copy'}</span>
         </button>
         <a
           href={gmailUrl}
@@ -674,7 +674,7 @@ function EmailDraftCard({ draft }: { draft: EmailDraft }) {
           className="iris-email__btn iris-email__btn--primary"
         >
           <Mail className="h-3.5 w-3.5" />
-          <span>Ouvrir dans Gmail</span>
+          <span>Open in Gmail</span>
           <ArrowRight className="h-3 w-3 opacity-80" />
         </a>
       </div>

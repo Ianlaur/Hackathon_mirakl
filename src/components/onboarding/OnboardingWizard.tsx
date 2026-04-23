@@ -42,9 +42,9 @@ type ChoiceCardProps = {
 }
 
 const loadingMessages = [
-  'Analyse de votre supply chain...',
-  "Configuration de l'assistant Mira...",
-  'Préparation du Dashboard...',
+  'Analyzing your supply chain...',
+  "Configuring the Mira assistant...",
+  'Preparing the Dashboard...',
 ]
 
 const progressByStep: Record<WizardStep, number> = {
@@ -149,12 +149,12 @@ export default function OnboardingWizard() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Configuration initiale
+                Initial setup
               </p>
-              <CardTitle className="mt-2 text-3xl text-slate-950">Tour de Contrôle Mirakl</CardTitle>
+              <CardTitle className="mt-2 text-3xl text-slate-950">Mirakl Control Tower</CardTitle>
             </div>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              Étape {step}/4
+              Step {step}/4
             </span>
           </div>
           <Progress value={progressByStep[step]} />
@@ -170,23 +170,23 @@ export default function OnboardingWizard() {
                 <div>
                   <CardTitle className="text-2xl">Production & Sourcing</CardTitle>
                   <CardDescription className="mt-2 text-sm">
-                    Nous adaptons votre espace selon votre réalité opérationnelle.
+                    We adapt your workspace to your operational reality.
                   </CardDescription>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-sm font-semibold text-slate-700">Comment produisez-vous ?</p>
+                  <p className="text-sm font-semibold text-slate-700">How do you produce?</p>
                   <div className="grid gap-3 md:grid-cols-2">
                     <ChoiceCard
-                      title="Je produis moi-même"
-                      description="Atelier local, flux courts, pilotage simple."
+                      title="I produce in-house"
+                      description="Local workshop, short flows, simple operations."
                       selected={production === 'LOCAL_MAKER'}
                       onClick={() => setProduction('LOCAL_MAKER')}
                       icon={Factory}
                     />
                     <ChoiceCard
-                      title="Plusieurs fournisseurs internationaux"
-                      description="Sourcing multi-pays, coordination import."
+                      title="Multiple international suppliers"
+                      description="Multi-country sourcing, import coordination."
                       selected={production === 'INTERNATIONAL_SUPPLIERS'}
                       onClick={() => setProduction('INTERNATIONAL_SUPPLIERS')}
                       icon={Globe2}
@@ -195,18 +195,18 @@ export default function OnboardingWizard() {
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-sm font-semibold text-slate-700">Où stockez-vous ?</p>
+                  <p className="text-sm font-semibold text-slate-700">Where do you store?</p>
                   <div className="grid gap-3 md:grid-cols-2">
                     <ChoiceCard
-                      title="Dans mon atelier"
-                      description="Stock centralisé, faible complexité."
+                      title="In my workshop"
+                      description="Centralized stock, low complexity."
                       selected={storage === 'WORKSHOP'}
                       onClick={() => setStorage('WORKSHOP')}
                       icon={Home}
                     />
                     <ChoiceCard
-                      title="Dans plusieurs entrepôts"
-                      description="Réseau multi-sites et distribution étendue."
+                      title="Across multiple warehouses"
+                      description="Multi-site network and extended distribution."
                       selected={storage === 'MULTI_WAREHOUSE'}
                       onClick={() => setStorage('MULTI_WAREHOUSE')}
                       icon={Warehouse}
@@ -219,23 +219,23 @@ export default function OnboardingWizard() {
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <CardTitle className="text-2xl">Préférences IA</CardTitle>
+                  <CardTitle className="text-2xl">AI preferences</CardTitle>
                   <CardDescription className="mt-2 text-sm">
-                    Choisissez votre niveau d’autonomie pour l’assistance opérationnelle.
+                    Choose your autonomy level for operational assistance.
                   </CardDescription>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <ChoiceCard
-                    title="Suggestion uniquement"
-                    description="Vous validez toutes les décisions importantes."
+                    title="Suggestions only"
+                    description="You approve every important decision."
                     selected={autonomy === 'SUGGESTION_ONLY'}
                     onClick={() => setAutonomy('SUGGESTION_ONLY')}
                     icon={ShieldCheck}
                   />
                   <ChoiceCard
-                    title="Automatisation complète"
-                    description="L’outil exécute davantage d’actions automatiquement."
+                    title="Full automation"
+                    description="The tool executes more actions automatically."
                     selected={autonomy === 'FULL_AUTOMATION'}
                     onClick={() => setAutonomy('FULL_AUTOMATION')}
                     icon={Bot}
@@ -249,7 +249,7 @@ export default function OnboardingWizard() {
                 <div className="rounded-full bg-slate-100 p-4 text-slate-900">
                   <Loader2 className="h-7 w-7 animate-spin" />
                 </div>
-                <CardTitle className="text-2xl">Analyse en cours...</CardTitle>
+                <CardTitle className="text-2xl">Analysis in progress...</CardTitle>
                 <p className="text-sm text-slate-500">{loadingMessages[loadingMessageIndex]}</p>
               </div>
             )}
@@ -261,29 +261,29 @@ export default function OnboardingWizard() {
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl">Configuration terminée !</CardTitle>
+                    <CardTitle className="text-2xl">Setup complete!</CardTitle>
                     <CardDescription className="mt-2 text-sm">
-                      Votre environnement est prêt.
+                      Your environment is ready.
                     </CardDescription>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold text-slate-700">Dashboard prêt</p>
+                  <p className="text-sm font-semibold text-slate-700">Dashboard ready</p>
                   <p className="mt-1 text-lg font-semibold text-slate-950">
                     {computedProfile === 'INTERNATIONAL'
                       ? 'International'
-                      : 'Local / Atelier'}
+                      : 'Local / Workshop'}
                   </p>
                   <p className="mt-2 text-sm text-slate-600">
                     {computedProfile === 'INTERNATIONAL'
-                      ? 'Jean-Charles, votre dashboard est prêt et optimisé pour vos flux internationaux.'
-                      : 'Jean-Charles, votre dashboard est prêt et optimisé pour votre activité atelier.'}
+                      ? 'Jean-Charles, your dashboard is ready and optimized for your international flows.'
+                      : 'Jean-Charles, your dashboard is ready and optimized for your workshop activity.'}
                   </p>
                   <p className="mt-2 inline-flex items-center gap-2 text-xs font-medium text-slate-500">
                     <Sparkles className="h-3.5 w-3.5" />
-                    Autonomie sélectionnée :{' '}
-                    {autonomy === 'FULL_AUTOMATION' ? 'Automatisation complète' : 'Suggestion uniquement'}
+                    Selected autonomy:{' '}
+                    {autonomy === 'FULL_AUTOMATION' ? 'Full automation' : 'Suggestions only'}
                   </p>
                 </div>
               </div>
@@ -298,7 +298,7 @@ export default function OnboardingWizard() {
               disabled={!production || !storage}
               onClick={() => setStep(2)}
             >
-              Continuer
+              Continue
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           )}
@@ -306,14 +306,14 @@ export default function OnboardingWizard() {
           {step === 2 && (
             <>
               <Button variant="ghost" size="lg" onClick={() => setStep(1)}>
-                Retour
+                Back
               </Button>
               <Button
                 size="lg"
                 disabled={!autonomy}
                 onClick={() => setStep(3)}
               >
-                Lancer la configuration
+                Launch setup
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </>
@@ -322,10 +322,10 @@ export default function OnboardingWizard() {
           {step === 4 && (
             <>
               <Button variant="outline" size="lg" onClick={() => router.push('/dashboard')}>
-                Passer la visite
+                Skip tour
               </Button>
               <Button size="lg" className="px-8" onClick={() => setShowInteractiveTour(true)}>
-                Lancer la visite interactive
+                Launch interactive tour
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </>

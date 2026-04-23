@@ -23,7 +23,6 @@ import {
 } from 'recharts'
 
 const stats = [
-  { label: 'PENDING ACTION', value: '14', color: 'text-[#F22E75]', badge: '+2h', badgeBg: 'bg-[#F22E75]/10 text-[#F22E75]' },
   { label: 'IN TRANSIT', value: '128', color: 'text-[#2764FF]', badge: '89%', badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]' },
   { label: 'DELIVERED (24H)', value: '342', color: 'text-[#3FA46A]', badge: '↑4%', badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]' },
   { label: 'PROCESSING', value: '56', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-[#F2F8FF] text-[#6B7480]' },
@@ -178,7 +177,6 @@ const marketplaceRevenueData = [
 ]
 
 const amazonStats = [
-  { label: 'PENDING ACTION', value: '9', color: 'text-[#F22E75]', badge: '+1h', badgeBg: 'bg-[#F22E75]/10 text-[#F22E75]' },
   { label: 'IN TRANSIT', value: '64', color: 'text-[#2764FF]', badge: '92%', badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]' },
   { label: 'DELIVERED (24H)', value: '144', color: 'text-[#3FA46A]', badge: '↑7%', badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]' },
   { label: 'PROCESSING', value: '21', color: 'text-[#03182F]', badge: 'FAST', badgeBg: 'bg-[#F2F8FF] text-[#6B7480]' },
@@ -227,7 +225,6 @@ const amazonLogFeed = [
 ]
 
 const shopifyStats = [
-  { label: 'PENDING ACTION', value: '5', color: 'text-[#F22E75]', badge: '+45m', badgeBg: 'bg-[#F22E75]/10 text-[#F22E75]' },
   { label: 'IN TRANSIT', value: '41', color: 'text-[#2764FF]', badge: '94%', badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]' },
   { label: 'DELIVERED (24H)', value: '88', color: 'text-[#3FA46A]', badge: '↑11%', badgeBg: 'bg-[#3FA46A]/10 text-[#3FA46A]' },
   { label: 'PROCESSING', value: '12', color: 'text-[#03182F]', badge: 'AVG', badgeBg: 'bg-[#F2F8FF] text-[#6B7480]' },
@@ -572,7 +569,7 @@ export default function OrdersPage() {
                   <div key={kpi.title} className="rounded-xl border border-dashed border-[#DDE5EE] p-4">
                     <p className="font-serif text-[13px] text-[#30373E]">{kpi.title}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#3FA46A]">{formatAmount(kpi.value)}</span>
+                      <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{formatAmount(kpi.value)}</span>
                       {kpi.subRatio ? <span className="font-serif text-[16px] text-[#30373E]">({kpi.subRatio})</span> : null}
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[12px] font-bold ${

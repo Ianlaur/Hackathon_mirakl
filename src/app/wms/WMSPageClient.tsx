@@ -67,12 +67,12 @@ interface Stats {
 }
 
 const ZONE_TYPES: Record<string, { label: string; color: string }> = {
-  receiving: { label: 'Réception', color: 'bg-[#2764FF]/10 text-[#004bd9]' },
-  storage: { label: 'Stockage', color: 'bg-[#F2F8FF] text-[#30373E]' },
+  receiving: { label: 'Receiving', color: 'bg-[#2764FF]/10 text-[#004bd9]' },
+  storage: { label: 'Storage', color: 'bg-[#F2F8FF] text-[#30373E]' },
   picking: { label: 'Picking', color: 'bg-[#3FA46A]/10 text-green-700' },
-  shipping: { label: 'Expédition', color: 'bg-purple-100 text-purple-700' },
-  returns: { label: 'Retours', color: 'bg-orange-100 text-orange-700' },
-  quarantine: { label: 'Quarantaine', color: 'bg-[#FFE7EC] text-red-700' },
+  shipping: { label: 'Shipping', color: 'bg-purple-100 text-purple-700' },
+  returns: { label: 'Returns', color: 'bg-orange-100 text-orange-700' },
+  quarantine: { label: 'Quarantine', color: 'bg-[#FFE7EC] text-red-700' },
 }
 
 export default function WMSPageClient({
@@ -152,7 +152,7 @@ export default function WMSPageClient({
   }
 
   const handleDeleteZone = async (zoneId: string) => {
-    if (!confirm('Supprimer cette zone et tous ses emplacements ?')) return
+    if (!confirm('Delete this zone and all its locations?')) return
     try {
       const res = await fetch(`/api/wms/zones/${zoneId}`, { method: 'DELETE' })
       if (res.ok) router.refresh()
@@ -205,7 +205,7 @@ export default function WMSPageClient({
   }
 
   const handleDeleteBin = async (binId: string) => {
-    if (!confirm('Supprimer cet emplacement ?')) return
+    if (!confirm('Delete this location?')) return
     try {
       const res = await fetch(`/api/wms/bins/${binId}`, { method: 'DELETE' })
       if (res.ok) router.refresh()
@@ -244,10 +244,10 @@ export default function WMSPageClient({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[#03182F]">
-            Gestion d&apos;entrepôt
+            Warehouse management
             <span className="ml-3 text-sm font-normal px-2 py-1 bg-[#3FA46A]/10 text-emerald-700 rounded-full">WMS</span>
           </h1>
-          <p className="text-[#6B7480] mt-1">Zones, emplacements et préparation de commandes</p>
+          <p className="text-[#6B7480] mt-1">Zones, locations and order picking</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -257,7 +257,7 @@ export default function WMSPageClient({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Nouvelle zone
+            New zone
           </button>
           <button
             onClick={() => { setEditingBin(null); setBinForm({ zone_id: zones[0]?.id || '', name: '', code: '', barcode: '', capacity: '' }); setShowBinModal(true) }}
@@ -267,7 +267,7 @@ export default function WMSPageClient({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Nouvel emplacement
+            New location
           </button>
         </div>
       </div>
@@ -297,7 +297,7 @@ export default function WMSPageClient({
             </div>
             <div>
               <div className="text-2xl font-bold text-[#03182F]">{stats.totalBins}</div>
-              <div className="text-sm text-[#6B7480]">Emplacements</div>
+              <div className="text-sm text-[#6B7480]">Locations</div>
             </div>
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function WMSPageClient({
             </div>
             <div>
               <div className="text-2xl font-bold text-[#03182F]">{stats.pendingPicking}</div>
-              <div className="text-sm text-[#6B7480]">Picking en attente</div>
+              <div className="text-sm text-[#6B7480]">Pending picking</div>
             </div>
           </div>
         </div>
@@ -323,7 +323,7 @@ export default function WMSPageClient({
             </div>
             <div>
               <div className="text-2xl font-bold text-[#03182F]">{stats.activePicking}</div>
-              <div className="text-sm text-[#6B7480]">Picking en cours</div>
+              <div className="text-sm text-[#6B7480]">Active picking</div>
             </div>
           </div>
         </div>
@@ -341,10 +341,10 @@ export default function WMSPageClient({
                 : 'border-transparent text-[#6B7480] hover:text-[#30373E]'
             }`}
           >
-            {tab === 'overview' && 'Vue d\'ensemble'}
+            {tab === 'overview' && 'Overview'}
             {tab === 'zones' && 'Zones'}
-            {tab === 'bins' && 'Emplacements'}
-            {tab === 'products' && 'Produits → Emplacements'}
+            {tab === 'bins' && 'Locations'}
+            {tab === 'products' && 'Products → Locations'}
             {tab === 'picking' && 'Picking'}
           </button>
         ))}
@@ -355,15 +355,15 @@ export default function WMSPageClient({
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Zones Overview */}
           <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] p-6">
-            <h3 className="text-lg font-semibold text-[#03182F] mb-4">Zones d&apos;entrepôt</h3>
+            <h3 className="text-lg font-semibold text-[#03182F] mb-4">Warehouse zones</h3>
             {zones.length === 0 ? (
               <div className="text-center py-8 text-[#6B7480]">
-                <p>Aucune zone configurée</p>
+                <p>No zones configured</p>
                 <button
                   onClick={() => setShowZoneModal(true)}
                   className="mt-3 text-indigo-600 hover:underline"
                 >
-                  Créer votre première zone
+                  Create your first zone
                 </button>
               </div>
             ) : (
@@ -382,7 +382,7 @@ export default function WMSPageClient({
                       </div>
                       <div>
                         <div className="font-medium text-[#03182F]">{zone.name}</div>
-                        <div className="text-xs text-[#6B7480]">{zone.code} • {zone._count.bins} emplacements</div>
+                        <div className="text-xs text-[#6B7480]">{zone.code} • {zone._count.bins} locations</div>
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${ZONE_TYPES[zone.zone_type]?.color || 'bg-[#F2F8FF]'}`}>
@@ -396,10 +396,10 @@ export default function WMSPageClient({
 
           {/* Recent Picking Lists */}
           <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] p-6">
-            <h3 className="text-lg font-semibold text-[#03182F] mb-4">Préparations en cours</h3>
+            <h3 className="text-lg font-semibold text-[#03182F] mb-4">Active preparations</h3>
             {pickingLists.length === 0 ? (
               <div className="text-center py-8 text-[#6B7480]">
-                <p>Aucune préparation en attente</p>
+                <p>No pending preparations</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -411,8 +411,8 @@ export default function WMSPageClient({
                     <div>
                       <div className="font-medium text-[#03182F]">{pl.reference}</div>
                       <div className="text-xs text-[#6B7480]">
-                        {pl._count.picking_tasks} articles • 
-                        {pl.picking_tasks.filter(t => t.status === 'completed').length} préparés
+                        {pl._count.picking_tasks} items •
+                        {pl.picking_tasks.filter(t => t.status === 'completed').length} picked
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${
@@ -420,7 +420,7 @@ export default function WMSPageClient({
                         ? 'bg-[#2764FF]/10 text-[#004bd9]'
                         : 'bg-orange-100 text-orange-700'
                     }`}>
-                      {pl.status === 'in_progress' ? 'En cours' : 'En attente'}
+                      {pl.status === 'in_progress' ? 'In progress' : 'Pending'}
                     </span>
                   </div>
                 ))}
@@ -439,7 +439,7 @@ export default function WMSPageClient({
                 <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Zone</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Code</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Type</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Emplacements</th>
+                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Locations</th>
                 <th className="text-right py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Actions</th>
               </tr>
             </thead>
@@ -447,7 +447,7 @@ export default function WMSPageClient({
               {zones.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-[#6B7480]">
-                    Aucune zone configurée
+                    No zones configured
                   </td>
                 </tr>
               ) : (
@@ -474,7 +474,7 @@ export default function WMSPageClient({
                         <button
                           onClick={() => openEditZone(zone)}
                           className="p-2 text-[#6B7480] hover:text-indigo-600 transition"
-                          title="Modifier"
+                          title="Edit"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -483,7 +483,7 @@ export default function WMSPageClient({
                         <button
                           onClick={() => handleDeleteZone(zone.id)}
                           className="p-2 text-[#6B7480] hover:text-[#F22E75] transition"
-                          title="Supprimer"
+                          title="Delete"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -505,11 +505,11 @@ export default function WMSPageClient({
           <table className="w-full">
             <thead className="bg-[#F2F8FF] border-b border-[#DDE5EE]">
               <tr>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Emplacement</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Location</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Code</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Zone</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Produits</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Capacité</th>
+                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Products</th>
+                <th className="text-center py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Capacity</th>
                 <th className="text-right py-3 px-4 text-xs font-semibold text-[#30373E] uppercase">Actions</th>
               </tr>
             </thead>
@@ -517,7 +517,7 @@ export default function WMSPageClient({
               {bins.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-[#6B7480]">
-                    Aucun emplacement configuré
+                    No locations configured
                   </td>
                 </tr>
               ) : (
@@ -543,7 +543,7 @@ export default function WMSPageClient({
                         <button
                           onClick={() => openEditBin(bin)}
                           className="p-2 text-[#6B7480] hover:text-indigo-600 transition"
-                          title="Modifier"
+                          title="Edit"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -552,7 +552,7 @@ export default function WMSPageClient({
                         <button
                           onClick={() => handleDeleteBin(bin.id)}
                           className="p-2 text-[#6B7480] hover:text-[#F22E75] transition"
-                          title="Supprimer"
+                          title="Delete"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -577,9 +577,9 @@ export default function WMSPageClient({
       {activeTab === 'picking' && (
         <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] p-6">
           <div className="text-center py-8 text-[#6B7480]">
-            <h3 className="text-lg font-medium text-[#30373E] mb-2">Préparation de commandes</h3>
-            <p className="text-sm">La fonctionnalité de picking sera bientôt disponible.</p>
-            <p className="text-sm mt-1">Créez vos zones et emplacements pour commencer.</p>
+            <h3 className="text-lg font-medium text-[#30373E] mb-2">Order picking</h3>
+            <p className="text-sm">The picking feature will be available soon.</p>
+            <p className="text-sm mt-1">Create your zones and locations to get started.</p>
           </div>
         </div>
       )}
@@ -589,17 +589,17 @@ export default function WMSPageClient({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-[#03182F] mb-4">
-              {editingZone ? 'Modifier la zone' : 'Nouvelle zone'}
+              {editingZone ? 'Edit zone' : 'New zone'}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Nom</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Name</label>
                 <input
                   type="text"
                   value={zoneForm.name}
                   onChange={e => setZoneForm(f => ({ ...f, name: e.target.value }))}
                   className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Zone A - Stockage principal"
+                  placeholder="Zone A - Main storage"
                 />
               </div>
               <div>
@@ -626,7 +626,7 @@ export default function WMSPageClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Couleur</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Color</label>
                 <input
                   type="color"
                   value={zoneForm.color}
@@ -635,13 +635,13 @@ export default function WMSPageClient({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Description (optionnel)</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Description (optional)</label>
                 <textarea
                   value={zoneForm.description}
                   onChange={e => setZoneForm(f => ({ ...f, description: e.target.value }))}
                   className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   rows={2}
-                  placeholder="Description de la zone..."
+                  placeholder="Zone description..."
                 />
               </div>
             </div>
@@ -650,14 +650,14 @@ export default function WMSPageClient({
                 onClick={() => { setShowZoneModal(false); setEditingZone(null) }}
                 className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={editingZone ? handleUpdateZone : handleCreateZone}
                 disabled={saving || !zoneForm.name || !zoneForm.code}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
               >
-                {saving ? 'Enregistrement...' : (editingZone ? 'Modifier' : 'Créer')}
+                {saving ? 'Saving...' : (editingZone ? 'Update' : 'Create')}
               </button>
             </div>
           </div>
@@ -669,7 +669,7 @@ export default function WMSPageClient({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-[#03182F] mb-4">
-              {editingBin ? 'Modifier l\'emplacement' : 'Nouvel emplacement'}
+              {editingBin ? 'Edit location' : 'New location'}
             </h3>
             <div className="space-y-4">
               <div>
@@ -679,20 +679,20 @@ export default function WMSPageClient({
                   onChange={e => setBinForm(f => ({ ...f, zone_id: e.target.value }))}
                   className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="">Sélectionner une zone</option>
+                  <option value="">Select a zone</option>
                   {zones.map(zone => (
                     <option key={zone.id} value={zone.id}>{zone.name} ({zone.code})</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Nom</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Name</label>
                 <input
                   type="text"
                   value={binForm.name}
                   onChange={e => setBinForm(f => ({ ...f, name: e.target.value }))}
                   className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Étagère 1 - Niveau 2"
+                  placeholder="Shelf 1 - Level 2"
                 />
               </div>
               <div>
@@ -707,7 +707,7 @@ export default function WMSPageClient({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Code-barres (optionnel)</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Barcode (optional)</label>
                 <input
                   type="text"
                   value={binForm.barcode}
@@ -717,7 +717,7 @@ export default function WMSPageClient({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Capacité (optionnel)</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Capacity (optional)</label>
                 <input
                   type="number"
                   value={binForm.capacity}
@@ -733,14 +733,14 @@ export default function WMSPageClient({
                 onClick={() => { setShowBinModal(false); setEditingBin(null) }}
                 className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={editingBin ? handleUpdateBin : handleCreateBin}
                 disabled={saving || !binForm.name || !binForm.code || !binForm.zone_id}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
               >
-                {saving ? 'Enregistrement...' : (editingBin ? 'Modifier' : 'Créer')}
+                {saving ? 'Saving...' : (editingBin ? 'Update' : 'Create')}
               </button>
             </div>
           </div>
@@ -801,7 +801,7 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
   }
 
   const handleRemove = async (binId: string, productId: string) => {
-    if (!confirm('Retirer ce produit de cet emplacement ?')) return
+    if (!confirm('Remove this product from this location?')) return
     try {
       const res = await fetch(`/api/wms/bin-contents?binId=${binId}&productId=${productId}`, {
         method: 'DELETE'
@@ -828,9 +828,9 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
       <div className="bg-[#2764FF]/10 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
         <div className="text-2xl">💡</div>
         <div>
-          <h4 className="font-semibold text-blue-900">Lier vos produits aux emplacements</h4>
+          <h4 className="font-semibold text-blue-900">Link your products to locations</h4>
           <p className="text-sm text-[#004bd9] mt-1">
-            Assignez vos produits du stock à des emplacements spécifiques dans votre entrepôt pour un meilleur suivi.
+            Assign your stock products to specific locations in your warehouse for better tracking.
           </p>
         </div>
       </div>
@@ -838,14 +838,14 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
       {/* Products list with locations */}
       <div className="bg-white rounded-xl shadow-sm border border-[#DDE5EE] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#DDE5EE] flex items-center justify-between">
-          <h3 className="font-semibold text-[#03182F]">Produits et leurs emplacements</h3>
-          <span className="text-sm text-[#6B7480]">{products.length} produits</span>
+          <h3 className="font-semibold text-[#03182F]">Products and their locations</h3>
+          <span className="text-sm text-[#6B7480]">{products.length} products</span>
         </div>
-        
+
         {products.length === 0 ? (
           <div className="text-center py-12 text-[#6B7480]">
-            <p>Aucun produit dans le stock.</p>
-            <p className="text-sm mt-1">Ajoutez des produits dans la page Stock pour commencer.</p>
+            <p>No products in stock.</p>
+            <p className="text-sm mt-1">Add products in the Stock page to get started.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
@@ -862,15 +862,15 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
                       )}
                     </div>
                     <div className="text-sm text-[#6B7480] mt-1">
-                      Stock total: <span className="font-medium text-[#30373E]">{product.quantity}</span>
+                      Total stock: <span className="font-medium text-[#30373E]">{product.quantity}</span>
                       {product.totalInBins > 0 && (
                         <span className="ml-3 text-[#3FA46A]">
-                          • {product.totalInBins} en entrepôt
+                          • {product.totalInBins} in warehouse
                         </span>
                       )}
                       {product.quantity > product.totalInBins && (
                         <span className="ml-3 text-[#E0A93A]">
-                          • {product.quantity - product.totalInBins} non assigné
+                          • {product.quantity - product.totalInBins} unassigned
                         </span>
                       )}
                     </div>
@@ -906,7 +906,7 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
                     }}
                     className="ml-4 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-1"
                   >
-                    <span>+</span> Assigner
+                    <span>+</span> Assign
                   </button>
                 </div>
               </div>
@@ -920,25 +920,25 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-[#03182F] mb-4">
-              Assigner à un emplacement
+              Assign to a location
             </h3>
             <div className="bg-[#F2F8FF] rounded-lg p-3 mb-4">
               <div className="font-medium text-[#03182F]">{selectedProduct.name}</div>
               {selectedProduct.sku && (
                 <div className="text-sm text-[#6B7480]">SKU: {selectedProduct.sku}</div>
               )}
-              <div className="text-sm text-[#6B7480]">Stock disponible: {selectedProduct.quantity}</div>
+              <div className="text-sm text-[#6B7480]">Available stock: {selectedProduct.quantity}</div>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Emplacement</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Location</label>
                 <select
                   value={selectedBin}
                   onChange={(e) => setSelectedBin(e.target.value)}
                   className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="">Sélectionner un emplacement...</option>
+                  <option value="">Select a location...</option>
                   {bins.map(bin => (
                     <option key={bin.id} value={bin.id}>
                       {bin.zone?.name} / {bin.code} - {bin.name}
@@ -948,14 +948,14 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-[#30373E] mb-1">Quantité</label>
+                <label className="block text-sm font-medium text-[#30373E] mb-1">Quantity</label>
                 <input
                   type="number"
                   min="1"
                   max={selectedProduct.quantity}
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  placeholder="Quantité à placer"
+                  placeholder="Quantity to place"
                   className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
@@ -971,14 +971,14 @@ function ProductLocationsTab({ products, bins }: { products: Product[]; bins: Bi
                 }}
                 className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={handleAssign}
                 disabled={saving || !selectedBin || !quantity}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
               >
-                {saving ? 'Enregistrement...' : 'Assigner'}
+                {saving ? 'Saving...' : 'Assign'}
               </button>
             </div>
           </div>

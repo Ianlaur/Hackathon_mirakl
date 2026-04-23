@@ -81,7 +81,7 @@ const CARRIERS = [
   { value: 'yanwen', label: '燕文 Yanwen' },
   { value: '4px', label: '4PX' },
   { value: 'best_express', label: '百世 Best Express' },
-  { value: 'other', label: 'Autre' },
+  { value: 'other', label: 'Other' },
 ]
 
 // Carrier detection patterns - regex patterns for auto-detection
@@ -141,27 +141,27 @@ function detectCarrierFromTracking(trackingNumber: string): { carrier: string | 
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending: { label: 'En attente', color: 'bg-[#F2F8FF] text-[#30373E]' },
-  in_transit: { label: 'En transit', color: 'bg-[#2764FF]/10 text-[#004bd9]' },
-  out_for_delivery: { label: 'En livraison', color: 'bg-orange-100 text-orange-700' },
-  delivered: { label: 'Livré', color: 'bg-[#3FA46A]/10 text-green-700' },
-  returned: { label: 'Retourné', color: 'bg-[#FFE7EC] text-red-700' },
-  cancelled: { label: 'Annulé', color: 'bg-[#F2F8FF] text-[#6B7480]' },
+  pending: { label: 'Pending', color: 'bg-[#F2F8FF] text-[#30373E]' },
+  in_transit: { label: 'In transit', color: 'bg-[#2764FF]/10 text-[#004bd9]' },
+  out_for_delivery: { label: 'Out for delivery', color: 'bg-orange-100 text-orange-700' },
+  delivered: { label: 'Delivered', color: 'bg-[#3FA46A]/10 text-green-700' },
+  returned: { label: 'Returned', color: 'bg-[#FFE7EC] text-red-700' },
+  cancelled: { label: 'Cancelled', color: 'bg-[#F2F8FF] text-[#6B7480]' },
 }
 
 const TYPE_CONFIG = {
-  incoming: { label: 'Réception', color: 'bg-[#3FA46A]/10 text-emerald-700' },
-  outgoing: { label: 'Expédition', color: 'bg-purple-100 text-purple-700' },
+  incoming: { label: 'Inbound', color: 'bg-[#3FA46A]/10 text-emerald-700' },
+  outgoing: { label: 'Outbound', color: 'bg-purple-100 text-purple-700' },
 }
 
 // Progression stages for tracking
 const TRACKING_STAGES = [
-  { key: 'pending', label: 'Préparé', labelIn: 'Commandé' },
-  { key: 'picked_up', label: 'Collecté', labelIn: 'Expédié' },
-  { key: 'in_transit', label: 'En transit', labelIn: 'En transit' },
-  { key: 'customs', label: 'Douane', labelIn: 'Douane' },
-  { key: 'out_for_delivery', label: 'En livraison', labelIn: 'En livraison' },
-  { key: 'delivered', label: 'Livré', labelIn: 'Reçu' },
+  { key: 'pending', label: 'Prepared', labelIn: 'Ordered' },
+  { key: 'picked_up', label: 'Picked up', labelIn: 'Shipped' },
+  { key: 'in_transit', label: 'In transit', labelIn: 'In transit' },
+  { key: 'customs', label: 'Customs', labelIn: 'Customs' },
+  { key: 'out_for_delivery', label: 'Out for delivery', labelIn: 'Out for delivery' },
+  { key: 'delivered', label: 'Delivered', labelIn: 'Received' },
 ]
 
 // Map parcel status to progression step
@@ -231,16 +231,16 @@ function ProgressionTracker({ status, type }: { status: string; type: 'incoming'
     return (
       <div className="flex items-center gap-1 text-[#F22E75]">
         {StageIcons.returned()}
-        <span className="text-xs font-medium">Retourné</span>
+        <span className="text-xs font-medium">Returned</span>
       </div>
     )
   }
-  
+
   if (status === 'cancelled') {
     return (
       <div className="flex items-center gap-1 text-[#6B7480]">
         {StageIcons.cancelled()}
-        <span className="text-xs font-medium">Annulé</span>
+        <span className="text-xs font-medium">Cancelled</span>
       </div>
     )
   }
@@ -366,13 +366,13 @@ function LiveTrackingTracker({
           setError(null)
           setTrackingData(null)
         } else {
-          setError('Impossible de récupérer le suivi')
+          setError('Unable to retrieve tracking')
         }
       } else {
-        setError('Impossible de récupérer le suivi')
+        setError('Unable to retrieve tracking')
       }
     } catch (err) {
-      setError('Erreur de connexion')
+      setError('Connection error')
     } finally {
       setLoading(false)
     }
@@ -392,7 +392,7 @@ function LiveTrackingTracker({
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span>Pas de n° suivi</span>
+        <span>No tracking #</span>
       </div>
     )
   }
@@ -402,7 +402,7 @@ function LiveTrackingTracker({
     return (
       <div className="flex items-center gap-2">
         <div className="animate-spin w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full" />
-        <span className="text-sm text-[#6B7480]">Chargement...</span>
+        <span className="text-sm text-[#6B7480]">Loading...</span>
       </div>
     )
   }
@@ -417,7 +417,7 @@ function LiveTrackingTracker({
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <span>{error} - Réessayer</span>
+        <span>{error} - Retry</span>
       </button>
     )
   }
@@ -475,7 +475,7 @@ function LiveTrackingTracker({
         <button
           onClick={() => setExpanded(!expanded)}
           className="ml-2 p-1 text-[#6B7480] hover:text-indigo-600 transition"
-          title="Voir détails"
+          title="View details"
         >
           <svg className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -491,7 +491,7 @@ function LiveTrackingTracker({
       {trackingData.estimatedDelivery && trackingData.currentStage !== 'delivered' && (
         <div className="text-xs text-[#6B7480]">
           ETA: <span className="font-medium text-[#30373E]">
-            {format(new Date(trackingData.estimatedDelivery), 'dd MMM yyyy', { locale: fr })}
+            {format(new Date(trackingData.estimatedDelivery), 'dd MMM yyyy')}
           </span>
         </div>
       )}
@@ -500,7 +500,7 @@ function LiveTrackingTracker({
       {expanded && (
         <div className="mt-3 bg-[#F2F8FF] rounded-lg p-3 text-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-medium text-[#30373E]">Historique du suivi</span>
+            <span className="font-medium text-[#30373E]">Tracking history</span>
             <button
               onClick={(e) => { e.stopPropagation(); fetchTracking() }}
               className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
@@ -508,12 +508,12 @@ function LiveTrackingTracker({
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Actualiser
+              Refresh
             </button>
           </div>
-          
+
           {trackingData.events.length === 0 ? (
-            <p className="text-[#6B7480] text-center py-2">Aucun événement</p>
+            <p className="text-[#6B7480] text-center py-2">No events</p>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {trackingData.events.slice(0, 10).map((event, idx) => (
@@ -708,22 +708,22 @@ export default function ParcelsPageClient() {
   const handleTrackingCodeChange = (trackingCode: string) => {
     const previousCarrier = form.carrier
     const previousCarrierLabel = CARRIERS.find(c => c.value === previousCarrier)?.label
-    
+
     const { carrier: detectedCarrier, carrierLabel } = detectCarrierFromTracking(trackingCode)
-    
+
     // Update form with new tracking code
     if (detectedCarrier) {
       // Carrier was detected
       if (previousCarrier && previousCarrier !== detectedCarrier) {
         // Carrier changed - show warning toast
         setToast({
-          message: `Transporteur changé : ${previousCarrierLabel} → ${carrierLabel}`,
+          message: `Carrier changed: ${previousCarrierLabel} → ${carrierLabel}`,
           type: 'changed'
         })
       } else if (!previousCarrier) {
         // New carrier detected
         setToast({
-          message: `Transporteur détecté : ${carrierLabel}`,
+          message: `Carrier detected: ${carrierLabel}`,
           type: 'detected'
         })
       }
@@ -856,15 +856,15 @@ export default function ParcelsPageClient() {
         resetForm()
         setEditingParcel(null)
         loadParcels()
-        setToast({ message: 'Colis enregistré avec succès !', type: 'detected' })
+        setToast({ message: 'Parcel saved successfully!', type: 'detected' })
       } else {
         const errorData = await res.json()
         console.error('Error response:', errorData)
-        setToast({ message: errorData.error || 'Erreur lors de l\'enregistrement', type: 'changed' })
+        setToast({ message: errorData.error || 'Error saving', type: 'changed' })
       }
     } catch (error) {
       console.error('Error saving parcel:', error)
-      setToast({ message: 'Erreur de connexion', type: 'changed' })
+      setToast({ message: 'Connection error', type: 'changed' })
     } finally {
       setSaving(false)
     }
@@ -887,7 +887,7 @@ export default function ParcelsPageClient() {
             quantity: item.quantity,
             min_quantity: 0,
             selling_price: 0,
-            unit: 'pièce',
+            unit: 'piece',
             location: location || null,
           }),
         })
@@ -911,7 +911,7 @@ export default function ParcelsPageClient() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Supprimer ce colis ?')) return
+    if (!confirm('Delete this parcel?')) return
 
     try {
       const res = await fetch(`/api/parcels?id=${id}`, { method: 'DELETE' })
@@ -987,8 +987,8 @@ export default function ParcelsPageClient() {
       {/* Header */}
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#03182F]">Gestion Transport</h1>
-          <p className="text-[#6B7480] mt-1">Gérez vos réceptions fournisseurs et expéditions clients</p>
+          <h1 className="text-2xl font-bold text-[#03182F]">Shipping management</h1>
+          <p className="text-[#6B7480] mt-1">Manage your supplier inbounds and customer outbounds</p>
         </div>
         <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
@@ -1004,7 +1004,7 @@ export default function ParcelsPageClient() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
-              Liste
+              List
             </button>
             <button
               onClick={() => setViewMode('globe')}
@@ -1025,7 +1025,7 @@ export default function ParcelsPageClient() {
             onClick={handleOpenCreate}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
           >
-            <span>+</span> Nouvelle Expédition
+            <span>+</span> New shipment
           </button>
         </div>
       </div>
@@ -1047,19 +1047,19 @@ export default function ParcelsPageClient() {
           {/* Quick stats below globe */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl p-4 shadow-sm border border-[#DDE5EE]">
-              <p className="text-[#6B7480] text-sm">Total Colis</p>
+              <p className="text-[#6B7480] text-sm">Total parcels</p>
               <p className="text-2xl font-bold text-[#03182F]">{parcels.length}</p>
             </div>
             <div className="bg-[#3FA46A]/10 rounded-xl p-4 border border-emerald-200">
-              <p className="text-[#3FA46A] text-sm">Réceptions</p>
+              <p className="text-[#3FA46A] text-sm">Inbound</p>
               <p className="text-2xl font-bold text-emerald-700">{parcels.filter(p => p.type === 'incoming').length}</p>
             </div>
             <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-              <p className="text-purple-600 text-sm">Expéditions</p>
+              <p className="text-purple-600 text-sm">Outbound</p>
               <p className="text-2xl font-bold text-purple-700">{parcels.filter(p => p.type === 'outgoing').length}</p>
             </div>
             <div className="bg-[#2764FF]/10 rounded-xl p-4 border border-blue-200">
-              <p className="text-[#2764FF] text-sm">En Transit</p>
+              <p className="text-[#2764FF] text-sm">In transit</p>
               <p className="text-2xl font-bold text-[#004bd9]">{parcels.filter(p => p.status === 'in_transit').length}</p>
             </div>
           </div>
@@ -1082,15 +1082,15 @@ export default function ParcelsPageClient() {
         >
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold text-[#03182F]">Réceptions</h2>
-              <p className="text-sm text-[#6B7480]">Commandes fournisseurs</p>
+              <h2 className="text-lg font-bold text-[#03182F]">Inbound</h2>
+              <p className="text-sm text-[#6B7480]">Supplier orders</p>
             </div>
             <div className="text-3xl font-bold text-[#3FA46A]">{incomingStats.total}</div>
           </div>
           <div className="flex gap-4 text-sm">
-            <span className="text-[#E0A93A]">{incomingStats.pending} en attente</span>
-            <span className="text-[#2764FF]">{incomingStats.inTransit} en transit</span>
-            <span className="text-[#3FA46A]">{incomingStats.delivered} reçus</span>
+            <span className="text-[#E0A93A]">{incomingStats.pending} pending</span>
+            <span className="text-[#2764FF]">{incomingStats.inTransit} in transit</span>
+            <span className="text-[#3FA46A]">{incomingStats.delivered} received</span>
           </div>
         </button>
 
@@ -1105,15 +1105,15 @@ export default function ParcelsPageClient() {
         >
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold text-[#03182F]">Expéditions</h2>
-              <p className="text-sm text-[#6B7480]">Envois aux clients</p>
+              <h2 className="text-lg font-bold text-[#03182F]">Outbound</h2>
+              <p className="text-sm text-[#6B7480]">Customer shipments</p>
             </div>
             <div className="text-3xl font-bold text-purple-600">{outgoingStats.total}</div>
           </div>
           <div className="flex gap-4 text-sm">
-            <span className="text-[#E0A93A]">{outgoingStats.pending} à expédier</span>
-            <span className="text-[#2764FF]">{outgoingStats.inTransit} en transit</span>
-            <span className="text-[#3FA46A]">{outgoingStats.delivered} livrés</span>
+            <span className="text-[#E0A93A]">{outgoingStats.pending} to ship</span>
+            <span className="text-[#2764FF]">{outgoingStats.inTransit} in transit</span>
+            <span className="text-[#3FA46A]">{outgoingStats.delivered} delivered</span>
           </div>
         </button>
       </div>
@@ -1121,12 +1121,12 @@ export default function ParcelsPageClient() {
       {/* Section Header */}
       <div className={`rounded-xl p-4 ${activeTab === 'incoming' ? 'bg-[#3FA46A]/10' : 'bg-purple-100'}`}>
         <h3 className="font-semibold text-[#03182F]">
-          {activeTab === 'incoming' ? 'Réceptions - Commandes fournisseurs' : 'Expéditions - Envois aux clients'}
+          {activeTab === 'incoming' ? 'Inbound - Supplier orders' : 'Outbound - Customer shipments'}
         </h3>
         <p className="text-sm text-[#30373E]">
-          {activeTab === 'incoming' 
-            ? 'Suivez les colis que vous attendez de vos fournisseurs' 
-            : 'Suivez les colis que vous envoyez à vos clients'}
+          {activeTab === 'incoming'
+            ? 'Track parcels you are expecting from your suppliers'
+            : 'Track parcels you are sending to your customers'}
         </p>
       </div>
 
@@ -1134,7 +1134,7 @@ export default function ParcelsPageClient() {
       <div className="flex flex-wrap gap-4 items-center bg-white rounded-xl p-4 shadow-sm border border-[#DDE5EE]">
         <input
           type="text"
-          placeholder="Rechercher (n° suivi, référence, transporteur...)"
+          placeholder="Search (tracking #, reference, carrier...)"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 min-w-[200px] px-4 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -1144,13 +1144,13 @@ export default function ParcelsPageClient() {
           onChange={(e) => setFilterStatus(e.target.value)}
           className="px-4 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         >
-          <option value="all">Tous statuts</option>
-          <option value="pending">En attente</option>
-          <option value="in_transit">En transit</option>
-          <option value="out_for_delivery">En livraison</option>
-          <option value="delivered">{activeTab === 'incoming' ? 'Reçu' : 'Livré'}</option>
-          <option value="returned">Retourné</option>
-          <option value="cancelled">Annulé</option>
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in_transit">In transit</option>
+          <option value="out_for_delivery">Out for delivery</option>
+          <option value="delivered">{activeTab === 'incoming' ? 'Received' : 'Delivered'}</option>
+          <option value="returned">Returned</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
 
@@ -1159,17 +1159,17 @@ export default function ParcelsPageClient() {
         {filteredParcels.length === 0 ? (
           <div className="text-center py-12 text-[#6B7480]">
             <p className="text-lg">
-              {activeTab === 'incoming' 
-                ? 'Aucune réception trouvée' 
-                : 'Aucune expédition trouvée'}
+              {activeTab === 'incoming'
+                ? 'No inbound parcels found'
+                : 'No outbound parcels found'}
             </p>
             <button
               onClick={handleOpenCreate}
               className="mt-4 text-indigo-600 hover:underline"
             >
-              {activeTab === 'incoming' 
-                ? 'Ajouter une réception fournisseur' 
-                : 'Ajouter une expédition client'}
+              {activeTab === 'incoming'
+                ? 'Add a supplier inbound'
+                : 'Add a customer outbound'}
             </button>
           </div>
         ) : (
@@ -1200,7 +1200,7 @@ export default function ParcelsPageClient() {
                             <span className="font-mono text-sm font-medium text-[#03182F]">{parcel.tracking_code}</span>
                           )
                         ) : (
-                          <span className="text-[#6B7480] text-sm italic">Pas de n° suivi</span>
+                          <span className="text-[#6B7480] text-sm italic">No tracking #</span>
                         )}
                         {parcel.type === 'incoming' ? (
                           <span className={`text-xs px-2 py-0.5 rounded-full ${TYPE_CONFIG.incoming.color}`}>{TYPE_CONFIG.incoming.label}</span>
@@ -1251,19 +1251,19 @@ export default function ParcelsPageClient() {
                         value={parcel.status}
                         onChange={(e) => handleStatusChange(parcel, e.target.value)}
                         className={`text-xs px-2 py-1 rounded-lg border cursor-pointer ${STATUS_CONFIG[parcel.status]?.color || 'bg-[#F2F8FF] text-[#30373E]'}`}
-                        title="Changer le statut"
+                        title="Change status"
                       >
-                        <option value="pending">En attente</option>
-                        <option value="in_transit">En transit</option>
-                        <option value="out_for_delivery">En livraison</option>
-                        <option value="delivered">{parcel.type === 'incoming' ? 'Reçu' : 'Livré'}</option>
-                        <option value="returned">Retourné</option>
-                        <option value="cancelled">Annulé</option>
+                        <option value="pending">Pending</option>
+                        <option value="in_transit">In transit</option>
+                        <option value="out_for_delivery">Out for delivery</option>
+                        <option value="delivered">{parcel.type === 'incoming' ? 'Received' : 'Delivered'}</option>
+                        <option value="returned">Returned</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
                       <button
                         onClick={() => handleOpenEdit(parcel)}
                         className="p-1.5 text-[#6B7480] hover:text-indigo-600 hover:bg-indigo-50 rounded transition"
-                        title="Modifier"
+                        title="Edit"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -1275,7 +1275,7 @@ export default function ParcelsPageClient() {
                           setShowDetailedView(true)
                         }}
                         className="p-1.5 text-[#6B7480] hover:text-[#2764FF] hover:bg-[#2764FF]/10 rounded transition"
-                        title="Voir sur le globe"
+                        title="View on globe"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1284,7 +1284,7 @@ export default function ParcelsPageClient() {
                       <button
                         onClick={() => handleDelete(parcel.id)}
                         className="p-1.5 text-[#6B7480] hover:text-[#F22E75] hover:bg-[#FFE7EC] rounded transition"
-                        title="Supprimer"
+                        title="Delete"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1348,7 +1348,7 @@ export default function ParcelsPageClient() {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-[#DDE5EE]">
               <h2 className="text-xl font-semibold text-[#03182F]">
-                {editingParcel ? 'Modifier' : 'Ajouter'} {form.type === 'incoming' ? 'une réception' : 'une expédition'}
+                {editingParcel ? 'Edit' : 'Add'} {form.type === 'incoming' ? 'an inbound parcel' : 'an outbound parcel'}
               </h2>
             </div>
 
@@ -1366,8 +1366,8 @@ export default function ParcelsPageClient() {
                         : 'border-[#DDE5EE] hover:border-emerald-300'
                     }`}
                   >
-                    <div className="font-semibold mb-1">Réception</div>
-                    <p className="text-xs text-[#6B7480]">Commande fournisseur</p>
+                    <div className="font-semibold mb-1">Inbound</div>
+                    <p className="text-xs text-[#6B7480]">Supplier order</p>
                   </button>
                   <button
                     type="button"
@@ -1378,8 +1378,8 @@ export default function ParcelsPageClient() {
                         : 'border-[#DDE5EE] hover:border-purple-300'
                     }`}
                   >
-                    <div className="font-semibold mb-1">Expédition</div>
-                    <p className="text-xs text-[#6B7480]">Envoi au client</p>
+                    <div className="font-semibold mb-1">Outbound</div>
+                    <p className="text-xs text-[#6B7480]">Customer shipment</p>
                   </button>
                 </div>
               </div>
@@ -1387,14 +1387,14 @@ export default function ParcelsPageClient() {
               {/* Tracking & Carrier */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#30373E] mb-1">N° de suivi</label>
-                  <p className="text-xs text-[#6B7480] mb-2">Le transporteur sera détecté automatiquement</p>
+                  <label className="block text-sm font-medium text-[#30373E] mb-1">Tracking number</label>
+                  <p className="text-xs text-[#6B7480] mb-2">The carrier will be detected automatically</p>
                   <div className="relative">
                     <input
                       type="text"
                       value={form.tracking_code}
                       onChange={(e) => handleTrackingCodeChange(e.target.value)}
-                      placeholder="Ex: 1Z999AA10123456784"
+                      placeholder="e.g. 1Z999AA10123456784"
                       className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono pr-10"
                     />
                     {form.tracking_code && form.carrier && (
@@ -1410,13 +1410,13 @@ export default function ParcelsPageClient() {
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
-                      Transporteur détecté : {CARRIERS.find(c => c.value === form.carrier)?.label}
+                      Carrier detected: {CARRIERS.find(c => c.value === form.carrier)?.label}
                     </p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#30373E] mb-1">Transporteur</label>
-                  <p className="text-xs text-[#6B7480] mb-2">Auto-détecté ou sélectionner manuellement</p>
+                  <label className="block text-sm font-medium text-[#30373E] mb-1">Carrier</label>
+                  <p className="text-xs text-[#6B7480] mb-2">Auto-detected or select manually</p>
                   <select
                     value={form.carrier}
                     onChange={(e) => setForm({ ...form, carrier: e.target.value })}
@@ -1424,7 +1424,7 @@ export default function ParcelsPageClient() {
                       form.carrier ? 'border-green-300 bg-[#3FA46A]/10' : 'border-[#BFCBDA]'
                     }`}
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">Select...</option>
                     {CARRIERS.map(carrier => (
                       <option key={carrier.value} value={carrier.value}>{carrier.label}</option>
                     ))}
@@ -1435,23 +1435,23 @@ export default function ParcelsPageClient() {
               {/* Reference & Description */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#30373E] mb-1">Référence interne</label>
+                  <label className="block text-sm font-medium text-[#30373E] mb-1">Internal reference</label>
                   <input
                     type="text"
                     value={form.reference}
                     onChange={(e) => setForm({ ...form, reference: e.target.value })}
-                    placeholder="Ex: CMD-2024-001"
+                    placeholder="e.g. ORD-2024-001"
                     className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#30373E] mb-1">Poids (kg)</label>
+                  <label className="block text-sm font-medium text-[#30373E] mb-1">Weight (kg)</label>
                   <input
                     type="number"
                     step="0.01"
                     value={form.weight}
                     onChange={(e) => setForm({ ...form, weight: e.target.value })}
-                    placeholder="Ex: 2.5"
+                    placeholder="e.g. 2.5"
                     className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
@@ -1459,7 +1459,7 @@ export default function ParcelsPageClient() {
 
               {/* Product Content Selection */}
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-[#30373E]">Contenu du colis</label>
+                <label className="block text-sm font-medium text-[#30373E]">Parcel contents</label>
                 
                 {/* Product Search/Add */}
                 <div className="relative">
@@ -1475,7 +1475,7 @@ export default function ParcelsPageClient() {
                       // Delay to allow click events on dropdown items
                       setTimeout(() => setShowProductDropdown(false), 200)
                     }}
-                    placeholder="Rechercher un produit ou ajouter un nouveau..."
+                    placeholder="Search a product or add a new one..."
                     className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                   
@@ -1484,7 +1484,7 @@ export default function ParcelsPageClient() {
                     <div className="absolute z-10 w-full mt-1 bg-white border border-[#DDE5EE] rounded-lg shadow-lg max-h-60 overflow-auto">
                       {filteredProducts.length > 0 && (
                         <div className="p-2 border-b border-[#DDE5EE]">
-                          <p className="text-xs text-[#6B7480] font-medium px-2 py-1">Produits existants</p>
+                          <p className="text-xs text-[#6B7480] font-medium px-2 py-1">Existing products</p>
                           {filteredProducts.slice(0, 5).map(product => (
                             <button
                               key={product.id}
@@ -1512,7 +1512,7 @@ export default function ParcelsPageClient() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
-                          <span>Ajouter &quot;{productSearchQuery}&quot; comme nouveau produit</span>
+                          <span>Add &quot;{productSearchQuery}&quot; as a new product</span>
                         </button>
                       </div>
                     </div>
@@ -1525,9 +1525,9 @@ export default function ParcelsPageClient() {
                     <table className="w-full text-sm">
                       <thead className="bg-[#F2F8FF]">
                         <tr>
-                          <th className="px-3 py-2 text-left font-medium text-[#30373E]">Produit</th>
+                          <th className="px-3 py-2 text-left font-medium text-[#30373E]">Product</th>
                           <th className="px-3 py-2 text-left font-medium text-[#30373E] w-24">SKU</th>
-                          <th className="px-3 py-2 text-center font-medium text-[#30373E] w-24">Qté</th>
+                          <th className="px-3 py-2 text-center font-medium text-[#30373E] w-24">Qty</th>
                           <th className="px-3 py-2 w-10"></th>
                         </tr>
                       </thead>
@@ -1537,7 +1537,7 @@ export default function ParcelsPageClient() {
                             <td className="px-3 py-2">
                               <div className="flex items-center gap-2">
                                 {item.isNew && (
-                                  <span className="px-1.5 py-0.5 text-xs bg-[#E0A93A]/10 text-amber-700 rounded">Nouveau</span>
+                                  <span className="px-1.5 py-0.5 text-xs bg-[#E0A93A]/10 text-amber-700 rounded">New</span>
                                 )}
                                 <span>{item.productName}</span>
                               </div>
@@ -1599,17 +1599,17 @@ export default function ParcelsPageClient() {
                 )}
 
                 {parcelItems.length === 0 && (
-                  <p className="text-sm text-[#6B7480] italic">Aucun produit ajouté. Recherchez ou créez des produits ci-dessus.</p>
+                  <p className="text-sm text-[#6B7480] italic">No products added. Search or create products above.</p>
                 )}
               </div>
 
               {/* Sender/Recipient based on type */}
               {form.type === 'incoming' ? (
                 <div className="space-y-4 p-4 bg-[#3FA46A]/10 rounded-lg">
-                  <h3 className="font-medium text-emerald-800">Fournisseur (expéditeur)</h3>
+                  <h3 className="font-medium text-emerald-800">Supplier (sender)</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-[#30373E] mb-1">Nom du fournisseur</label>
+                      <label className="block text-sm font-medium text-[#30373E] mb-1">Supplier name</label>
                       <input
                         type="text"
                         value={form.sender_name}
@@ -1619,12 +1619,12 @@ export default function ParcelsPageClient() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#30373E] mb-1">Adresse</label>
+                      <label className="block text-sm font-medium text-[#30373E] mb-1">Address</label>
                       <input
                         type="text"
                         value={form.sender_address}
                         onChange={(e) => setForm({ ...form, sender_address: e.target.value })}
-                        placeholder="Adresse du fournisseur"
+                        placeholder="Supplier address"
                         className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       />
                     </div>
@@ -1632,25 +1632,25 @@ export default function ParcelsPageClient() {
                 </div>
               ) : (
                 <div className="space-y-4 p-4 bg-purple-50 rounded-lg">
-                  <h3 className="font-medium text-purple-800">Client (destinataire)</h3>
+                  <h3 className="font-medium text-purple-800">Customer (recipient)</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-[#30373E] mb-1">Nom du client</label>
+                      <label className="block text-sm font-medium text-[#30373E] mb-1">Customer name</label>
                       <input
                         type="text"
                         value={form.recipient_name}
                         onChange={(e) => setForm({ ...form, recipient_name: e.target.value })}
-                        placeholder="Nom du client"
+                        placeholder="Customer name"
                         className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#30373E] mb-1">Adresse</label>
+                      <label className="block text-sm font-medium text-[#30373E] mb-1">Address</label>
                       <input
                         type="text"
                         value={form.recipient_address}
                         onChange={(e) => setForm({ ...form, recipient_address: e.target.value })}
-                        placeholder="Adresse de livraison"
+                        placeholder="Delivery address"
                         className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       />
                     </div>
@@ -1661,7 +1661,7 @@ export default function ParcelsPageClient() {
               {/* Dates */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#30373E] mb-1">Date prévue</label>
+                  <label className="block text-sm font-medium text-[#30373E] mb-1">Estimated date</label>
                   <input
                     type="date"
                     value={form.estimated_date}
@@ -1670,7 +1670,7 @@ export default function ParcelsPageClient() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#30373E] mb-1">Expédié le</label>
+                  <label className="block text-sm font-medium text-[#30373E] mb-1">Shipped on</label>
                   <input
                     type="date"
                     value={form.shipped_at}
@@ -1679,7 +1679,7 @@ export default function ParcelsPageClient() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#30373E] mb-1">Livré le</label>
+                  <label className="block text-sm font-medium text-[#30373E] mb-1">Delivered on</label>
                   <input
                     type="date"
                     value={form.delivered_at}
@@ -1695,7 +1695,7 @@ export default function ParcelsPageClient() {
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  placeholder="Notes supplémentaires..."
+                  placeholder="Additional notes..."
                   rows={3}
                   className="w-full px-3 py-2 border border-[#BFCBDA] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                 />
@@ -1712,7 +1712,7 @@ export default function ParcelsPageClient() {
                 }}
                 className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 type="button"
@@ -1729,14 +1729,14 @@ export default function ParcelsPageClient() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Enregistrement...
+                    Saving...
                   </>
                 ) : (
                   <>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    {editingParcel ? 'Mettre à jour' : 'Créer le colis'}
+                    {editingParcel ? 'Update' : 'Create parcel'}
                   </>
                 )}
               </button>
@@ -1757,15 +1757,15 @@ export default function ParcelsPageClient() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-[#03182F]">Ajouter au stock ?</h2>
-                  <p className="text-sm text-[#6B7480]">Nouveaux produits détectés dans ce colis</p>
+                  <h2 className="text-xl font-semibold text-[#03182F]">Add to stock?</h2>
+                  <p className="text-sm text-[#6B7480]">New products detected in this parcel</p>
                 </div>
               </div>
             </div>
 
             <div className="p-6 space-y-4">
               <p className="text-sm text-[#30373E]">
-                Les produits suivants ne sont pas encore dans votre stock. Voulez-vous les ajouter ?
+                The following products are not yet in your stock. Would you like to add them?
               </p>
 
               <div className="space-y-3">
@@ -1776,17 +1776,17 @@ export default function ParcelsPageClient() {
                         <span className="font-medium text-[#03182F]">{item.productName}</span>
                         {item.sku && <span className="ml-2 text-xs text-[#6B7480]">SKU: {item.sku}</span>}
                       </div>
-                      <span className="text-sm text-[#30373E]">Qté: {item.quantity}</span>
+                      <span className="text-sm text-[#30373E]">Qty: {item.quantity}</span>
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-[#30373E] mb-1">Emplacement de stockage</label>
+                      <label className="block text-xs font-medium text-[#30373E] mb-1">Storage location</label>
                       <select
                         value={productLocations[index] || ''}
                         onChange={(e) => setProductLocations({ ...productLocations, [index]: e.target.value })}
                         className="w-full px-3 py-2 text-sm border border-[#DDE5EE] rounded-lg focus:ring-2 focus:ring-indigo-500"
                       >
-                        <option value="">Sélectionner un emplacement...</option>
+                        <option value="">Select a location...</option>
                         {wmsZones.map(zone => (
                           <optgroup key={zone.id} label={zone.name}>
                             {zone.bins.length > 0 ? (
@@ -1796,11 +1796,11 @@ export default function ParcelsPageClient() {
                                 </option>
                               ))
                             ) : (
-                              <option value={zone.code}>{zone.code} (zone entière)</option>
+                              <option value={zone.code}>{zone.code} (entire zone)</option>
                             )}
                           </optgroup>
                         ))}
-                        <option value="non_assigné">Non assigné</option>
+                        <option value="unassigned">Unassigned</option>
                       </select>
                     </div>
                   </div>
@@ -1817,7 +1817,7 @@ export default function ParcelsPageClient() {
                 }}
                 className="px-4 py-2 text-[#30373E] hover:text-[#03182F] transition"
               >
-                Ignorer
+                Skip
               </button>
               <button
                 onClick={handleAddProductsToStock}
@@ -1830,14 +1830,14 @@ export default function ParcelsPageClient() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Ajout en cours...</span>
+                    <span>Adding...</span>
                   </>
                 ) : (
                   <>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Ajouter au stock</span>
+                    <span>Add to stock</span>
                   </>
                 )}
               </button>
