@@ -7,7 +7,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       id: 'marketplaces',
       label: 'Marketplaces',
       icon: 'Store',
-      href: '/marketplaces/proposals',
+      href: '/marketplaces',
       expandable: true,
       subitems: [
         { id: 'integration-proposals', label: 'Opportunities', href: '/marketplaces/proposals' },
