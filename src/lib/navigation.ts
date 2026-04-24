@@ -15,10 +15,12 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       ],
     },
     { id: 'calendar', label: 'Calendar', icon: 'Calendar', href: '/calendar' },
+    { id: 'catalog', label: 'Catalog', icon: 'FileSpreadsheet', href: '/catalog' },
     { id: 'leia', label: 'Leia', icon: 'Bot', href: '/actions' },
+    { id: 'governance', label: 'Governance', icon: 'ShieldCheck', href: '/governance' },
     { id: 'orders', label: 'Orders', icon: 'ShoppingCart', href: '/orders' },
     { id: 'stock', label: 'Stock', icon: 'Package', href: '/stock' },
-    { id: 'lost', label: 'Losses', icon: 'AlertTriangle', href: '/losses' },
+    { id: 'lost', label: 'Losses Radar', icon: 'AlertTriangle', href: '/radar' },
   ],
   bottomItems: [
     { id: 'appstore', label: 'App Store', icon: 'Grid', href: '/app-store' },

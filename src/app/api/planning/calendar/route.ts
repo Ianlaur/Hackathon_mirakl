@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 import { serializeJson } from '@/lib/serialize'
+import { syncFounderStateFromCalendarForUser } from '@/lib/mira/calendar-sync'
 
 const eventSchema = z.object({
   title: z.string().min(2).max(120),
@@ -50,6 +51,8 @@ export async function POST(request: NextRequest) {
 
     let recommendation = null
     if (['vacation', 'absence', 'blackout'].includes(payload.eventType)) {
+      await syncFounderStateFromCalendarForUser(userId)
+
       recommendation = await prisma.agentRecommendation.create({
         data: {
           user_id: userId,

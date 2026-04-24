@@ -58,6 +58,8 @@ describe('buildLeiaSystemPrompt', () => {
     expect(prompt).toContain('You are Leia')
     expect(prompt).toContain('Respond in English')
     expect(prompt).toContain('confirmed=true')
+    expect(prompt).toContain('get_seasonal_patterns(event=')
+    expect(prompt).toContain('predict_stockout with the seasonal_context')
   })
 
   it('builds an Italian prompt when the conversation is Italian', () => {

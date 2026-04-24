@@ -8,12 +8,14 @@ function listInjectedTabs(pluginId: string) {
   const plugin = NAVIGATION_CONFIG.plugins.find((entry) => entry.id === pluginId)
   if (!plugin) return []
 
-  return plugin.items.flatMap((item) => {
+  const items = plugin.items.flatMap((item) => {
     if (item.subitems?.length) {
       return [item.label, ...item.subitems.map((subitem) => subitem.label)]
     }
     return [item.label]
   })
+
+  return plugin.surfaceLabel ? [plugin.surfaceLabel, ...items] : items
 }
 
 export default function AppStorePage() {
@@ -32,7 +34,7 @@ export default function AppStorePage() {
           </span>
         </div>
         <p className="mt-2 text-sm text-[#6B7480]">
-          Enable plugins to unlock extra tabs in the sidebar.
+          Enable plugins to unlock sidebar tabs and dashboard widgets.
         </p>
 
         <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -98,7 +100,7 @@ export default function AppStorePage() {
                 <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
                   <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#6B7480]">
                     <Layers className="h-3.5 w-3.5" />
-                    Adds to the menu
+                    Adds to the workspace
                   </p>
                   <p className="mt-2 text-sm text-[#30373E]">{injectedTabs.join(' · ')}</p>
                 </div>

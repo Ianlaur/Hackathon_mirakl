@@ -8,18 +8,24 @@ import {
   updateDecisionLedgerStatus,
 } from '@/lib/mira/ledger'
 import {
+  applyGrowthFactor,
   calculateChannelShares,
+  calculateDailyAverage,
   calculateGrowthFactor,
   calculateMargin,
   calculateReorderQty,
   calculateStockoutDays,
   calculateVelocity,
+  projectDemand,
 } from '@/lib/mira/tools-math'
 import {
   evaluateFounderPolicy,
   normalizeAutonomyMode,
   normalizeFounderState,
 } from '@/lib/mira/policy'
+import { evaluateReputationShieldForUser } from '@/lib/mira/reputation-shield'
+import { syncFounderStateFromCalendarForUser } from '@/lib/mira/calendar-sync'
+import { declareSupplierLoss, SUPPLIER_LOSS_TYPES } from '@/lib/mira/supplier-losses'
 import { z } from 'zod'
 
 export type ToolDefinition = {
@@ -143,6 +149,16 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
         type: 'object',
         properties: {
           sku: { type: 'string', description: 'Required SKU' },
+          seasonal_context: {
+            type: 'object',
+            description:
+              'Optional seasonal context returned by get_seasonal_patterns. Use this for event demand projections.',
+            properties: {
+              event_name: { type: 'string', description: 'Seasonal event name, ex: Ferragosto' },
+              growth_factor: { type: 'number', description: 'Growth factor returned by Leia math tools' },
+            },
+            required: ['event_name', 'growth_factor'],
+          },
         },
         required: ['sku'],
       },
@@ -175,6 +191,7 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
         properties: {
           sku: { type: 'string', description: 'Optional SKU context' },
           event: { type: 'string', description: 'Optional event name filter' },
+          category: { type: 'string', description: 'Optional category filter, ex: lamps, desks, chairs' },
         },
         required: [],
       },
@@ -212,6 +229,30 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
           reversible: { type: 'boolean', description: 'Whether the action can be undone' },
         },
         required: ['action_type', 'target'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'declare_supplier_loss',
+      description:
+        'Declares a supplier-side loss when a supplier short-delivers, sends defective batches, ships late, sends wrong items, or damages items in transit. Ask for supplier name, SKU, and quantity first if missing.',
+      parameters: {
+        type: 'object',
+        properties: {
+          supplier_name: { type: 'string', description: 'Supplier name, ex: Bois & Design' },
+          sku: { type: 'string', description: 'Impacted SKU, ex: NRD-CHAIR-012' },
+          loss_type: {
+            type: 'string',
+            enum: SUPPLIER_LOSS_TYPES,
+            description:
+              'delivery_short, defective_batch, late_delivery, wrong_item, or damaged_in_transit',
+          },
+          quantity: { type: 'number', description: 'Impacted units, not the total shipment size' },
+          notes: { type: 'string', description: 'Optional shipment or claim context' },
+        },
+        required: ['supplier_name', 'sku', 'loss_type', 'quantity'],
       },
     },
   },
@@ -448,6 +489,12 @@ const TOOL_ARG_SCHEMAS: Record<string, z.ZodType<Record<string, unknown>>> = {
   }),
   predict_stockout: z.object({
     sku: z.string().trim().min(1),
+    seasonal_context: z
+      .object({
+        event_name: z.string().trim().min(1),
+        growth_factor: z.number().positive(),
+      })
+      .optional(),
   }),
   compare_channels: z.object({
     sku: z.string().trim().min(1).optional(),
@@ -456,6 +503,7 @@ const TOOL_ARG_SCHEMAS: Record<string, z.ZodType<Record<string, unknown>>> = {
   get_seasonal_patterns: z.object({
     sku: z.string().trim().min(1).optional(),
     event: z.string().trim().min(1).optional(),
+    category: z.string().trim().min(1).optional(),
   }),
   get_top_products: z.object({
     channel: z.string().trim().min(1).optional(),
@@ -467,6 +515,13 @@ const TOOL_ARG_SCHEMAS: Record<string, z.ZodType<Record<string, unknown>>> = {
     target: z.string().trim().min(1),
     params: z.record(z.unknown()).optional().default({}),
     reversible: z.boolean().optional().default(true),
+  }),
+  declare_supplier_loss: z.object({
+    supplier_name: z.string().trim().min(1),
+    sku: z.string().trim().min(1),
+    loss_type: z.enum(SUPPLIER_LOSS_TYPES),
+    quantity: boundedNumber(1, 1, 100000),
+    notes: z.string().trim().min(1).optional(),
   }),
   set_founder_state: z.object({
     state: z.string().trim().min(1),
@@ -576,6 +631,138 @@ function seasonalMagnitudeFactor(value: string | null | undefined) {
       return 1.1
     default:
       return 1.1
+  }
+}
+
+function addDays(date: Date, days: number) {
+  return new Date(date.getTime() + days * 24 * 3600 * 1000)
+}
+
+function regionChannels(region: string) {
+  const normalized = region.trim().toLowerCase()
+  if (normalized === 'fr') return ['amazon_fr', 'google_fr']
+  if (normalized === 'it') return ['amazon_it', 'google_it']
+  if (normalized === 'de') return ['amazon_de', 'google_de']
+  return [
+    'amazon_fr',
+    'google_fr',
+    'amazon_it',
+    'google_it',
+    'amazon_de',
+    'google_de',
+  ]
+}
+
+function channelsForSeasonalEvent(eventName: string, region: string) {
+  const normalized = normalizeSearch(eventName)
+  if (/(black friday|cyber monday|christmas|noel)/.test(normalized)) {
+    return regionChannels('')
+  }
+
+  return regionChannels(region)
+}
+
+function normalizeSearch(value: unknown) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+function categoryAliases(value: string) {
+  const normalized = normalizeSearch(value)
+  if (!normalized) return []
+  const aliases = new Set([normalized, normalized.replace(/s$/, '')])
+  if (normalized.includes('lamp')) aliases.add('lamps')
+  if (normalized.includes('rug')) aliases.add('rugs')
+  if (normalized.includes('chair')) aliases.add('chairs')
+  if (normalized.includes('table')) aliases.add('tables')
+  if (normalized.includes('desk')) aliases.add('desks')
+  if (normalized.includes('shelf')) aliases.add('shelves')
+  return Array.from(aliases)
+}
+
+function inferCategoryFromText(value: unknown) {
+  const normalized = normalizeSearch(value)
+  if (/(lamp|lampe|applique|suspension)/.test(normalized)) return 'lamps'
+  if (/(rug|tapis)/.test(normalized)) return 'rugs'
+  if (/(mirror|miroir)/.test(normalized)) return 'mirrors'
+  if (/(chair|chaise|fauteuil)/.test(normalized)) return 'chairs'
+  if (/(table|bureau)/.test(normalized)) return normalized.includes('bureau') ? 'desks' : 'tables'
+  if (/(desk|bureau)/.test(normalized)) return 'desks'
+  if (/(shelf|etagere|bibliotheque)/.test(normalized)) return 'shelves'
+  if (/(decor|deco|vase|objet)/.test(normalized)) return 'decor'
+  return 'other'
+}
+
+function orderCategory(row: { raw_payload: unknown; sku?: string | null }) {
+  const payload = asRecord(row.raw_payload)
+  return String(payload.category || payload.product_category || inferCategoryFromText(payload.product_name || row.sku))
+}
+
+function categoryMatches(row: { raw_payload: unknown; sku?: string | null }, category: string) {
+  if (!category) return true
+  const aliases = categoryAliases(category)
+  const rowCategory = normalizeSearch(orderCategory(row))
+  return aliases.some((alias) => rowCategory === alias || rowCategory.includes(alias))
+}
+
+function seasonalEventAlias(value: string) {
+  const normalized = normalizeSearch(value)
+  if (normalized.includes('christmas') || normalized.includes('noel')) return 'noel'
+  if (normalized.includes('soldes')) return 'soldes'
+  if (normalized.includes('back') || normalized.includes('rentree')) return 'rentree'
+  return normalized
+}
+
+function eventMatchesName(eventName: string, filter: string) {
+  const event = seasonalEventAlias(eventName)
+  const target = seasonalEventAlias(filter)
+  return event.includes(target) || target.includes(event)
+}
+
+type SeasonalOrderRow = {
+  sku: string | null
+  source_channel: string
+  quantity: number | null
+  amount_cents: number | null
+  occurred_at: Date | null
+  raw_payload: unknown
+}
+
+function seasonalOrderUnits(row: SeasonalOrderRow) {
+  return orderUnits({ quantity: row.quantity, raw_payload: row.raw_payload })
+}
+
+function summarizeSeasonalOrders(orders: SeasonalOrderRow[], growthFactor: number) {
+  const bySku = new Map<string, { count: number; units: number }>()
+  const byCategory: Record<string, number> = {}
+
+  for (const order of orders) {
+    const sku = order.sku || rawString(order.raw_payload, 'sku') || 'unknown'
+    const units = seasonalOrderUnits(order)
+    const current = bySku.get(sku) ?? { count: 0, units: 0 }
+    current.count += 1
+    current.units += units
+    bySku.set(sku, current)
+
+    const category = orderCategory(order)
+    byCategory[category] = (byCategory[category] ?? 0) + 1
+  }
+
+  return {
+    categoryGrowth: calculateChannelShares(byCategory),
+    affectedSkus: Array.from(bySku.entries())
+      .filter(([, values]) => values.count >= 5)
+      .map(([sku, values]) => ({
+        sku,
+        n1_volume: values.count,
+        n1_units: values.units,
+        projected_demand: projectDemand(values.count, growthFactor),
+      }))
+      .sort((left, right) => right.n1_volume - left.n1_volume)
+      .slice(0, 10),
   }
 }
 
@@ -903,6 +1090,7 @@ export async function executeTool(
 
     case 'predict_stockout': {
       const sku = String(args.sku ?? '').trim()
+      const seasonalContext = asRecord(args.seasonal_context)
       const product = await prisma.product.findFirst({
         where: { user_id: ctx.userId, active: true, sku: { equals: sku, mode: 'insensitive' } },
         select: {
@@ -931,21 +1119,34 @@ export async function executeTool(
         windowHours,
         'hours'
       )
-      const stockoutDays = calculateStockoutDays(product.quantity, velocityPerDay)
+      const growthFactor = Number(seasonalContext.growth_factor)
+      const projectedVelocityPerDay = seasonalContext.event_name
+        ? applyGrowthFactor(velocityPerDay, growthFactor)
+        : velocityPerDay
+      const stockoutDays = calculateStockoutDays(product.quantity, projectedVelocityPerDay)
       const leadTimeDays = product.supplier_lead_time_days ?? 7
       const reorderQty = calculateReorderQty(
-        velocityPerDay,
+        projectedVelocityPerDay,
         leadTimeDays,
         product.min_quantity,
         product.quantity
       )
+      const riskLevel =
+        stockoutDays === null ? 'safe' : stockoutDays < 7 ? 'critical' : stockoutDays < 14 ? 'warning' : 'safe'
 
       return {
         found: true,
         sku: product.sku,
         name: product.name,
+        current_stock: product.quantity,
+        current_velocity_per_day: velocityPerDay,
+        projected_velocity_per_day: projectedVelocityPerDay,
+        days_remaining: stockoutDays,
+        risk_level: riskLevel,
+        context: String(seasonalContext.event_name || 'normal'),
         on_hand: product.quantity,
         velocity_per_day: velocityPerDay,
+        projected_velocity_per_day_legacy: projectedVelocityPerDay,
         stockout_days: stockoutDays,
         supplier_lead_time_days: leadTimeDays,
         recommended_reorder_qty: reorderQty,
@@ -1028,15 +1229,15 @@ export async function executeTool(
 
     case 'get_seasonal_patterns': {
       const eventFilter = String(args.event ?? '').trim()
+      const category = String(args.category ?? '').trim()
       const now = new Date()
-      const until = new Date(now.getTime() + 120 * 24 * 3600 * 1000)
+      const until = new Date(now.getTime() + 365 * 24 * 3600 * 1000)
       const events = await prisma.commercialCalendar.findMany({
         where: {
           event_date: { gte: now, lte: until },
-          ...(eventFilter ? { event_name: { contains: eventFilter, mode: 'insensitive' } } : {}),
         },
         orderBy: { event_date: 'asc' },
-        take: 20,
+        take: 50,
         select: {
           region: true,
           event_name: true,
@@ -1045,23 +1246,120 @@ export async function executeTool(
           impact_tag: true,
         },
       })
+      const selectedEvent = eventFilter
+        ? events.find((event) => eventMatchesName(event.event_name, eventFilter))
+        : events[0]
+
+      if (!selectedEvent) {
+        return { error: 'Event not found', event: eventFilter || null }
+      }
+
+      const eventDate = selectedEvent.event_date
+      const n1Start = addDays(eventDate, -(365 + 7))
+      const n1End = addDays(eventDate, -(365 - 14))
+      const baselineStart = addDays(eventDate, -(365 + 90))
+      const baselineEnd = addDays(eventDate, -(365 + 30))
+      const channels = channelsForSeasonalEvent(selectedEvent.event_name, selectedEvent.region)
+      const baseWhere = {
+        user_id: ctx.userId,
+        kind: { in: ['order', 'orders'] },
+        source_channel: { in: channels },
+      }
+      const [n1Rows, directBaselineRows, fallbackBaselineRows] = await Promise.all([
+        prisma.operationalObject.findMany({
+          where: {
+            ...baseWhere,
+            occurred_at: { gte: n1Start, lte: n1End },
+          },
+          select: {
+            sku: true,
+            source_channel: true,
+            quantity: true,
+            amount_cents: true,
+            occurred_at: true,
+            raw_payload: true,
+          },
+        }),
+        prisma.operationalObject.findMany({
+          where: {
+            ...baseWhere,
+            occurred_at: { gte: baselineStart, lte: baselineEnd },
+          },
+          select: {
+            sku: true,
+            source_channel: true,
+            quantity: true,
+            amount_cents: true,
+            occurred_at: true,
+            raw_payload: true,
+          },
+        }),
+        prisma.operationalObject.findMany({
+          where: {
+            ...baseWhere,
+            raw_payload: {
+              path: ['source'],
+              equals: 'n1_seed',
+            },
+            occurred_at: {
+              gte: new Date('2025-02-01T00:00:00.000Z'),
+              lte: new Date('2025-10-31T23:59:59.999Z'),
+            },
+          },
+          select: {
+            sku: true,
+            source_channel: true,
+            quantity: true,
+            amount_cents: true,
+            occurred_at: true,
+            raw_payload: true,
+          },
+        }),
+      ])
+      const n1Orders = n1Rows.filter((order) => categoryMatches(order, category))
+      const directBaseline = directBaselineRows.filter((order) => categoryMatches(order, category))
+      const fallbackBaseline = fallbackBaselineRows
+        .filter((order) => categoryMatches(order, category))
+        .filter((order) => {
+          const payload = asRecord(order.raw_payload)
+          return payload.event === 'baseline'
+        })
+      const baselineOrders = directBaseline.length > 0 ? directBaseline : fallbackBaseline
+      const n1DailyAvg = calculateDailyAverage(
+        n1Orders.map((order) => ({ order_ts: order.occurred_at }))
+      )
+      const baselineDailyAvg = calculateDailyAverage(
+        baselineOrders.map((order) => ({ order_ts: order.occurred_at }))
+      )
+      const observed = n1Orders.length >= 20 && baselineDailyAvg > 0
+      const growthFactor = observed
+        ? calculateGrowthFactor(baselineDailyAvg, n1DailyAvg)
+        : calculateGrowthFactor(1, seasonalMagnitudeFactor(selectedEvent.magnitude_hint))
+      const summary = summarizeSeasonalOrders(n1Orders, growthFactor)
 
       return {
         sku: args.sku ?? null,
-        data_source: 'seasonal_assumption',
-        patterns: events.map((event) => {
-          const factor = seasonalMagnitudeFactor(event.magnitude_hint)
-          const growthFactor = calculateGrowthFactor(1, factor)
-          return {
-            region: event.region,
-            event_name: event.event_name,
-            event_date: event.event_date.toISOString().slice(0, 10),
-            impact_tag: event.impact_tag,
-            magnitude_hint: event.magnitude_hint,
-            growth_factor: growthFactor,
-            expected_growth_pct: Number(((growthFactor - 1) * 100).toFixed(2)),
-          }
-        }),
+        category: category || null,
+        event: selectedEvent.event_name,
+        event_date: selectedEvent.event_date.toISOString().slice(0, 10),
+        region: selectedEvent.region,
+        data_source: observed ? 'observed_n1' : 'seasonal_assumption',
+        n1_sample_size: n1Orders.length,
+        baseline_sample_size: baselineOrders.length,
+        n1_window: {
+          start: n1Start.toISOString().slice(0, 10),
+          end: n1End.toISOString().slice(0, 10),
+        },
+        baseline_window: {
+          start: baselineStart.toISOString().slice(0, 10),
+          end: baselineEnd.toISOString().slice(0, 10),
+        },
+        n1_daily_avg: n1DailyAvg,
+        baseline_daily_avg: baselineDailyAvg,
+        growth_factor: growthFactor,
+        expected_growth_pct: Number(((growthFactor - 1) * 100).toFixed(2)),
+        category_growth: summary.categoryGrowth,
+        affected_skus: summary.affectedSkus,
       }
     }
 
@@ -1177,6 +1475,17 @@ export async function executeTool(
       }
     }
 
+    case 'declare_supplier_loss': {
+      return declareSupplierLoss({
+        userId: ctx.userId,
+        supplier_name: String(args.supplier_name ?? ''),
+        sku: String(args.sku ?? ''),
+        loss_type: args.loss_type as (typeof SUPPLIER_LOSS_TYPES)[number],
+        quantity: Number(args.quantity ?? 1),
+        notes: args.notes ? String(args.notes) : null,
+      })
+    }
+
     case 'set_founder_state': {
       const state = normalizeFounderState(String(args.state ?? 'Available'))
       const untilRaw = String(args.until ?? '').trim()
@@ -1190,11 +1499,16 @@ export async function executeTool(
         update: { state, until },
         create: { user_id: ctx.userId, state, until },
       })
+      const shieldDecision =
+        state === 'Travelling' || state === 'Sick' || state === 'Vacation'
+          ? await evaluateReputationShieldForUser(ctx.userId)
+          : null
 
       return {
         ok: true,
         state: row.state,
         until: row.until?.toISOString() ?? null,
+        reputation_shield_decision_id: shieldDecision?.id ?? null,
       }
     }
 
@@ -1461,6 +1775,8 @@ export async function executeTool(
       // Si c'est un event leave, déclencher l'agent advisor en parallèle
       // (même logique que le webhook n8n, mais en direct pour cas où n8n n'est pas actif)
       if (created.kind === 'leave') {
+        await syncFounderStateFromCalendarForUser(ctx.userId)
+
         fetch(`${ctx.origin}/api/agent/calendar-advisor`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

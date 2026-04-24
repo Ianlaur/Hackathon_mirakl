@@ -26,6 +26,7 @@ describe('Leia tool surface', () => {
     expect(toolNames()).toEqual(
       expect.arrayContaining([
         'approve_decision',
+        'declare_supplier_loss',
         'execute_action',
         'override_decision',
         'reject_decision',
@@ -40,6 +41,61 @@ describe('Leia tool surface', () => {
     expect(validateToolArgs('query_velocity', { sku: 'NRD-CHAIR-012', window_hours: 48 })).toEqual({
       sku: 'NRD-CHAIR-012',
       window_hours: 48,
+    })
+  })
+
+  it('schema-validates seasonal read tool arguments', () => {
+    expect(
+      validateToolArgs('get_seasonal_patterns', {
+        event: 'Ferragosto',
+        category: 'lamps',
+      })
+    ).toEqual({
+      event: 'Ferragosto',
+      category: 'lamps',
+    })
+
+    expect(
+      validateToolArgs('predict_stockout', {
+        sku: 'NKS-00012',
+        seasonal_context: {
+          event_name: 'Ferragosto',
+          growth_factor: 1.34,
+        },
+      })
+    ).toEqual({
+      sku: 'NKS-00012',
+      seasonal_context: {
+        event_name: 'Ferragosto',
+        growth_factor: 1.34,
+      },
+    })
+  })
+
+  it('schema-validates supplier loss declarations', () => {
+    expect(() =>
+      validateToolArgs('declare_supplier_loss', {
+        supplier_name: 'Bois & Design',
+        sku: 'NRD-CHAIR-012',
+        loss_type: 'supplier_delay',
+        quantity: 5,
+      })
+    ).toThrow(/loss_type/)
+
+    expect(
+      validateToolArgs('declare_supplier_loss', {
+        supplier_name: 'Bois & Design',
+        sku: 'NRD-CHAIR-012',
+        loss_type: 'delivery_short',
+        quantity: 5,
+        notes: 'Delivered 45 chairs instead of 50',
+      })
+    ).toEqual({
+      supplier_name: 'Bois & Design',
+      sku: 'NRD-CHAIR-012',
+      loss_type: 'delivery_short',
+      quantity: 5,
+      notes: 'Delivered 45 chairs instead of 50',
     })
   })
 

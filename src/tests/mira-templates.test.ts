@@ -7,7 +7,7 @@ import {
 } from '@/lib/mira/templates'
 
 describe('MIRA template registry', () => {
-  it('registers all 14 decision templates', () => {
+  it('registers all 15 decision templates', () => {
     expect(MIRA_TEMPLATE_IDS).toEqual([
       'buffer_adjustment_v1',
       'calendar_posture_v1',
@@ -21,6 +21,7 @@ describe('MIRA template registry', () => {
       'restock_proposal_v1',
       'returns_pattern_v1',
       'seasonal_prediction_v1',
+      'supplier_loss_v1',
       'supplier_scorecard_v1',
       'vacation_queue_v1',
     ])
@@ -56,6 +57,22 @@ describe('MIRA template registry', () => {
 
     expect(renderTemplate('restock_proposal_v1', input)).toBe(
       'NRD-SHELF-008: sell-through 6/week, supplier lead time 14 weeks, safety buffer 3 weeks. Proposing reorder of 54 units.'
+    )
+  })
+
+  it('renders supplier losses in English deterministically', () => {
+    const input = {
+      supplier: 'Bois & Design',
+      quantity: 5,
+      sku: 'NRD-CHAIR-012',
+      loss_type: 'delivery_short',
+      cost: 212.5,
+      count: 2,
+      rate: 4.35,
+    }
+
+    expect(renderTemplate('supplier_loss_v1', input)).toBe(
+      'Supplier loss declared: Bois & Design short-delivered 5 units of NRD-CHAIR-012 (loss_type: delivery_short). Estimated cost: €212.50. This is the 2nd loss from this supplier in the last 90 days. Current defect rate: 4.35%.'
     )
   })
 

@@ -217,7 +217,7 @@ export default function SettingsPage() {
       <section className="mb-6 rounded-xl border border-[#DDE5EE] bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-[#03182F]">Navigation plugins</h2>
         <p className="mt-1 text-sm text-[#6B7480]">
-          Enable plugins to display their tabs in the sidebar.
+          Enable plugins to display their tabs and dashboard widgets.
         </p>
         <div className="mt-4 space-y-3">
           {NAVIGATION_CONFIG.plugins
@@ -228,6 +228,7 @@ export default function SettingsPage() {
               const tabs = plugin.items.flatMap((item) =>
                 item.subitems?.length ? [item.label, ...item.subitems.map((subitem) => subitem.label)] : [item.label]
               )
+              if (plugin.surfaceLabel) tabs.unshift(plugin.surfaceLabel)
 
               return (
                 <div

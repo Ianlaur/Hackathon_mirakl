@@ -30,6 +30,27 @@ function sentence(value: string) {
   return value.replace(/\s+/g, ' ').trim()
 }
 
+function formatMoney(value: unknown) {
+  return asNumber(value).toFixed(2)
+}
+
+function ordinal(value: unknown) {
+  const count = Math.max(0, Math.trunc(asNumber(value)))
+  const mod100 = count % 100
+  if (mod100 >= 11 && mod100 <= 13) return `${count}th`
+
+  switch (count % 10) {
+    case 1:
+      return `${count}st`
+    case 2:
+      return `${count}nd`
+    case 3:
+      return `${count}rd`
+    default:
+      return `${count}th`
+  }
+}
+
 function normalizeReason(value: unknown) {
   const reason = asString(value).trim()
   if (!reason) return 'operator review'
@@ -169,6 +190,16 @@ export const TEMPLATE_REGISTRY = {
       )} weeks vs ${asNumber(input.announced_lead_time_weeks)} announced over last ${asNumber(
         input.sample_size
       )} orders. Defect rate ${asNumber(input.defect_rate_pct)}%.`
+    ),
+  supplier_loss_v1: (input) =>
+    sentence(
+      `Supplier loss declared: ${asString(input.supplier)} short-delivered ${asNumber(
+        input.quantity
+      )} units of ${asString(input.sku)} (loss_type: ${asString(
+        input.loss_type
+      )}). Estimated cost: €${formatMoney(input.cost)}. This is the ${ordinal(
+        input.count
+      )} loss from this supplier in the last 90 days. Current defect rate: ${asNumber(input.rate)}%.`
     ),
 } satisfies Record<string, TemplateRenderer>
 

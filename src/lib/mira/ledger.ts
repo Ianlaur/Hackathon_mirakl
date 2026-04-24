@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { renderTemplate } from '@/lib/mira/templates'
+import { MIRA_TEMPLATE_IDS, renderTemplate } from '@/lib/mira/templates'
 
 export type DecisionTemplateRow = {
   id: string
@@ -121,10 +121,23 @@ export function buildTemplateInputFromLedgerRow(args: {
 }
 
 export async function listDecisionTemplates() {
+  await ensureDecisionTemplatesAllowlist()
+
   return prisma.$queryRaw<DecisionTemplateRow[]>`
     SELECT id, description
     FROM public.decision_templates
     ORDER BY id
+  `
+}
+
+export async function ensureDecisionTemplatesAllowlist() {
+  if (MIRA_TEMPLATE_IDS.length === 0) return
+
+  await prisma.$executeRaw`
+    INSERT INTO public.decision_templates (id, description)
+    SELECT template_id, 'Registered by Leia template registry'
+    FROM unnest(${MIRA_TEMPLATE_IDS}::text[]) AS template_id
+    ON CONFLICT (id) DO NOTHING
   `
 }
 
@@ -177,6 +190,8 @@ export async function createDecisionLedgerEntry(input: {
   triggeredBy?: string | null
   triggerEventId?: string | null
 }) {
+  await ensureDecisionTemplatesAllowlist()
+
   const logicalInference = renderTemplate(input.templateId, input.templateInput)
   const rawPayload = {
     ...(input.rawPayload || {}),

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
+import { syncFounderStateFromCalendarForUser } from '@/lib/mira/calendar-sync'
 
 const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal'] as const
 const eventImpacts = ['low', 'medium', 'high', 'critical'] as const
@@ -97,6 +98,8 @@ export async function POST(request: NextRequest) {
     const createdEvent = events[0]
 
     if (createdEvent.kind === 'leave') {
+      await syncFounderStateFromCalendarForUser(userId)
+
       notifyN8n({
         event_id: createdEvent.id,
         user_id: userId,

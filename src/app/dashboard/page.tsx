@@ -51,6 +51,12 @@ type DashboardChatMessage = {
   tool_calls?: LeiaToolCall[]
 }
 
+type RadarProfitRecovery = {
+  supplier_recovery_potential_eur: number
+  carrier_audit_savings_eur: number
+  total_eur: number
+}
+
 const fallbackOrders: DashboardOrderRow[] = [
   {
     id: 'MK-8829-X',
@@ -116,6 +122,14 @@ function formatOrderTime(value: string | null | undefined) {
   })
 }
 
+function formatDashboardMoney(value: number | null | undefined) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(Number(value ?? 0))
+}
+
 function getOrderStatusPresentation(
   financialStatus: string | null | undefined,
   fulfillmentStatus: string | null | undefined
@@ -161,12 +175,14 @@ export default function DashboardPage() {
   const [recommendations, setRecommendations] = useState<DashboardRecommendationRow[]>([])
   const [recommendationsLoading, setRecommendationsLoading] = useState(true)
   const [ordersData, setOrdersData] = useState<DashboardOrderRow[]>(fallbackOrders)
+  const [profitRecovery, setProfitRecovery] = useState<RadarProfitRecovery | null>(null)
   const [busyRecommendationId, setBusyRecommendationId] = useState<string | null>(null)
   const [actionNotice, setActionNotice] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const recorder = useAudioRecorder()
-  const { isProPluginActive } = usePluginContext()
+  const { isPluginActive } = usePluginContext()
+  const showShipmentPlugin = isPluginActive('plugin_operations')
   const recording = recorder.state === 'recording'
   const starting = recorder.state === 'requesting'
 
@@ -245,6 +261,24 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Dashboard orders error:', error)
       setOrdersData(fallbackOrders)
+    }
+  }
+
+  async function loadProfitRecovery() {
+    try {
+      const response = await fetch('/api/radar', { cache: 'no-store' })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok || !payload?.profit_recovery) return
+
+      setProfitRecovery({
+        supplier_recovery_potential_eur: Number(
+          payload.profit_recovery.supplier_recovery_potential_eur ?? 0
+        ),
+        carrier_audit_savings_eur: Number(payload.profit_recovery.carrier_audit_savings_eur ?? 0),
+        total_eur: Number(payload.profit_recovery.total_eur ?? 0),
+      })
+    } catch {
+      setProfitRecovery(null)
     }
   }
 
@@ -335,6 +369,7 @@ export default function DashboardPage() {
   useEffect(() => {
     void loadRecommendations()
     void loadOrders()
+    void loadProfitRecovery()
   }, [])
 
   useEffect(() => {
@@ -610,7 +645,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
           <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">TOTAL ORDERS TODAY</div>
           <div className="flex items-baseline justify-between">
@@ -654,9 +689,29 @@ export default function DashboardPage() {
             <div className="flex-1 bg-[#3FA46A] h-10 rounded-sm" />
           </div>
         </div>
+
+        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
+          <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">PROFIT RECOVERY</div>
+          <div className="flex items-baseline justify-between">
+            <div className="font-serif text-[38px] font-bold leading-none tracking-tight text-[#03182F]">
+              {formatDashboardMoney(profitRecovery?.total_eur)}
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/radar')}
+              className="rounded text-[#2764FF] font-serif text-sm font-medium transition-all duration-150 ease-out hover:underline focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
+              Radar
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-serif text-[#6B7480]">
+            <span>Carrier {formatDashboardMoney(profitRecovery?.carrier_audit_savings_eur)}</span>
+            <span>Supplier {formatDashboardMoney(profitRecovery?.supplier_recovery_potential_eur)}</span>
+          </div>
+        </div>
       </div>
 
-      {isProPluginActive && (
+      {showShipmentPlugin && (
         <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
           <div className="p-6 border-b border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
             <div>

@@ -2,12 +2,16 @@ import { describe, expect, it } from 'vitest'
 
 import {
   calculateChannelShares,
+  calculateDailyAverage,
   calculateGrowthFactor,
   calculateHoursOfStock,
   calculateMargin,
+  applyGrowthFactor,
+  projectDemand,
   calculateReorderQty,
   calculateReturnRate,
   calculateStockoutDays,
+  calculateSupplierLossCost,
   calculateVelocity,
 } from '@/lib/mira/tools-math'
 
@@ -68,12 +72,34 @@ describe('mira tools math', () => {
     expect(calculateGrowthFactor(100, 134)).toBe(1.34)
   })
 
+  it('calculates daily average from order timestamps', () => {
+    expect(
+      calculateDailyAverage([
+        { order_ts: '2025-08-10T08:00:00.000Z' },
+        { order_ts: '2025-08-12T08:00:00.000Z' },
+        { order_ts: '2025-08-12T18:00:00.000Z' },
+      ])
+    ).toBe(1.2414)
+  })
+
+  it('projects demand with deterministic rounding', () => {
+    expect(projectDemand(47, 1.34)).toBe(63)
+  })
+
+  it('applies growth factors to baseline velocity', () => {
+    expect(applyGrowthFactor(3.25, 1.34)).toBe(4.355)
+  })
+
   it('calculates return rate as a percentage', () => {
     expect(calculateReturnRate(4, 7)).toBeCloseTo(57.14, 2)
   })
 
   it('calculates margin percentage', () => {
     expect(calculateMargin(310, 214)).toBeCloseTo(30.97, 2)
+  })
+
+  it('calculates supplier loss cost from unit cost and impacted quantity', () => {
+    expect(calculateSupplierLossCost(42.5, 5)).toBe(212.5)
   })
 
   it('calculates hours of stock from on-hand and hourly velocity', () => {

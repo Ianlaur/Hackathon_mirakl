@@ -570,6 +570,24 @@ model OverrideRecord {
   @@schema("public")
 }
 
+model SupplierLoss {
+  loss_id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  timestamp          DateTime @default(now()) @db.Timestamptz(6)
+  supplier_name      String
+  sku                String
+  loss_type          String
+  quantity_impacted  Int
+  estimated_cost_eur Decimal  @db.Decimal(12, 2)
+  recovery_status    String   @default("not_claimed")
+  notes              String?
+  decision_id        String?  @db.Uuid
+
+  @@index([supplier_name, timestamp])
+  @@index([decision_id])
+  @@map("supplier_losses")
+  @@schema("public")
+}
+
 model FounderState {
   user_id    String   @id @db.Uuid
   state      String
@@ -594,6 +612,20 @@ model AutonomyConfig {
   @@schema("public")
 }
 
+model PluginInstallation {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  plugin_id  String
+  enabled    Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, plugin_id])
+  @@index([user_id, enabled])
+  @@map("plugin_installations")
+  @@schema("public")
+}
+
 model OperationalObject {
   id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id        String   @db.Uuid
@@ -614,6 +646,20 @@ model OperationalObject {
   @@index([user_id, occurred_at])
   @@index([user_id, kind, source_channel])
   @@map("operational_objects")
+  @@schema("public")
+}
+
+model CatalogReviewRecord {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.Uuid
+  sku            String
+  channel        String?
+  review_payload Json
+  status         String   @default("pending")
+  created_at     DateTime @default(now())
+
+  @@index([user_id, status, created_at])
+  @@map("catalog_review_records")
   @@schema("public")
 }
 

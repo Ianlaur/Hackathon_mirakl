@@ -11,6 +11,7 @@ import {
   LEGACY_PRO_PLUGIN_STORAGE_KEY,
   persistActivePlugins,
   readStoredActivePlugins,
+  sanitizeActivePluginsForRegistry,
   togglePluginId,
 } from '@/lib/plugins'
 
@@ -32,6 +33,21 @@ function readInitialPlugins(): string[] {
   return []
 }
 
+async function persistPluginsToDatabase(plugins: string[]) {
+  const response = await fetch('/api/plugins', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plugins }),
+  })
+
+  if (!response.ok) return null
+
+  const payload = await response.json().catch(() => null)
+  return Array.isArray(payload?.activePlugins)
+    ? sanitizeActivePluginsForRegistry(payload.activePlugins)
+    : null
+}
+
 export function useActivePlugins() {
   const [activePlugins, setActivePlugins] = useState<string[]>([])
   const [hydrated, setHydrated] = useState(false)
@@ -42,8 +58,44 @@ export function useActivePlugins() {
 
   useEffect(() => {
     // Keep first client render identical to server render to avoid hydration mismatch.
-    setActivePlugins(readInitialPlugins())
+    const initialPlugins = readInitialPlugins()
+    let cancelled = false
+
+    setActivePlugins(initialPlugins)
     setHydrated(true)
+
+    async function syncFromDatabase() {
+      try {
+        const response = await fetch('/api/plugins', { cache: 'no-store' })
+        if (!response.ok) return
+
+        const payload = await response.json().catch(() => null)
+        if (!payload || cancelled) return
+
+        if (payload.initialized === false && initialPlugins.length > 0) {
+          const migrated = await persistPluginsToDatabase(initialPlugins)
+          if (migrated && !cancelled) {
+            persistActivePlugins(migrated)
+            setActivePlugins(migrated)
+            emitActivePluginsChanged(migrated)
+          }
+          return
+        }
+
+        const next = sanitizeActivePluginsForRegistry(payload.activePlugins)
+        persistActivePlugins(next)
+        setActivePlugins(next)
+        emitActivePluginsChanged(next)
+      } catch {
+        // Local cache remains usable if the demo DB is unavailable.
+      }
+    }
+
+    void syncFromDatabase()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -68,11 +120,18 @@ export function useActivePlugins() {
   }, [hydrated, syncFromStorage])
 
   const setPlugins = useCallback((plugins: string[]) => {
-    const next = Array.from(new Set(plugins))
+    const next = sanitizeActivePluginsForRegistry(plugins)
     persistActivePlugins(next)
     window.localStorage.setItem(LEGACY_PRO_PLUGIN_STORAGE_KEY, String(next.length > 0))
     setActivePlugins(next)
     emitActivePluginsChanged(next)
+    void persistPluginsToDatabase(next).then((saved) => {
+      if (!saved) return
+      persistActivePlugins(saved)
+      window.localStorage.setItem(LEGACY_PRO_PLUGIN_STORAGE_KEY, String(saved.length > 0))
+      setActivePlugins(saved)
+      emitActivePluginsChanged(saved)
+    })
   }, [])
 
   const togglePlugin = useCallback((pluginId: string) => {

@@ -33,6 +33,7 @@ const TITLE_BY_TEMPLATE: Record<string, string> = {
   reconciliation_variance_v1: 'Écart de réconciliation',
   carrier_audit_v1: 'Audit transporteur',
   supplier_scorecard_v1: 'Score fournisseur',
+  supplier_loss_v1: 'Perte fournisseur',
 }
 
 function toIso(v: Date | string | null | undefined): string | null {

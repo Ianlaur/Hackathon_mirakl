@@ -15,9 +15,7 @@ const CHUNK_RETRY_WINDOW_MS = 20000
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const shouldHideSidebar = pathname.startsWith('/onboarding')
-  const shouldHideOrb =
-    shouldHideSidebar ||
-    pathname.startsWith('/dashboard')
+  const shouldHideOrb = shouldHideSidebar
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const handleSidebarChange = useCallback((expanded: boolean) => setSidebarExpanded(expanded), [])
 
