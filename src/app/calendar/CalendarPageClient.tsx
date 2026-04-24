@@ -174,7 +174,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'critical',
     zone: 'International',
-    notes: 'Traffic peak, aggressive promotions, stock tension and reinforcedecustomer support.',
+    notes: 'Traffic peak, aggressive promotions, stock tension and reinforced customer support.',
     locked: true,
   },
   {
@@ -200,7 +200,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'critical',
     zone: 'China / international sourcing',
-    notes: 'Plan ahead for supplier closures, prodection delays, transport booking and import stockouts.',
+    notes: 'Plan ahead for supplier closures, production delays, transport booking and import stockouts.',
     locked: true,
   },
   {
@@ -226,7 +226,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'high',
     zone: 'China / marketplaces',
-    notes: 'Major e-commerce promotional peak — useful for marketplace monitoring andecross-border ops.',
+    notes: 'Major e-commerce promotional peak — useful for marketplace monitoring and cross-border ops.',
     locked: true,
   },
   {
@@ -252,7 +252,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'France',
-    notes: 'Gift window — leverage with targetedecampaigns, bundles and guaranteed delivery SLAs.',
+    notes: 'Gift window — leverage with targeted campaigns, bundles and guaranteed delivery SLAs.',
     locked: true,
   },
   {
@@ -368,15 +368,15 @@ function inferImpact(text: string, kind: EventKind): EventImpact {
 }
 
 function inferZone(text: string, kind: EventKind) {
-  if (/(chine|chinois|sourcing|import)/.test(text)) return 'Chine / sourcing international'
+  if (/(chine|chinois|sourcing|import)/.test(text)) return 'China / international sourcing'
   if (/(france|ferie|soldes)/.test(text)) return 'France'
-  if (kind === 'leave') return 'Interne'
+  if (kind === 'leave') return 'Internal'
   return 'Internal'
 }
 
 function removeCommandWords(value: string) {
   return value
-    .replace(/\b(ajoute|ajouter|create|create|creater|creater|mets|mettre|pose|planifie|programme)\b/gi, '')
+    .replace(/\b(ajoute|ajouter|cree|crée|creer|créer|create|add|schedule|mets|mettre|pose|planifie|programme)\b/gi, '')
     .replace(/\b(mes|mon|ma|un|une|des|les|en)\b/gi, ' ')
     .replace(/\b(je prends|je pose|je serai|je suis|j ai|j'ai)\b/gi, ' ')
     .replace(/\s+/g, ' ')
@@ -392,7 +392,7 @@ function inferTitle(original: string, text: string, kind: EventKind) {
     .replace(/\ble\b.+$/i, '')
     .replace(/\bde\b.+$/i, '')
     .replace(/\b(demain|aujourd'hui|aujourd hui|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|prochain|prochaine)\b.+$/i, '')
-    .replace(/\btoute la day\b/gi, '')
+    .replace(/\btoute la journ[ée]e\b/gi, '')
     .trim()
 
   if (beforeDate.length >= 3) return titleCase(beforeDate)
@@ -591,7 +591,7 @@ const emptyForm: EventForm = {
   endTime: '',
   kind: 'leave',
   impact: 'medium',
-  zone: 'Interne',
+  zone: 'Internal',
   notes: '',
 }
 
@@ -631,16 +631,16 @@ export default function CalendarPageClient() {
 
         if (data.length > 0) {
           setEvents(data)
-          setSelectedEventId(data.find((event) => event.title === 'Nouvel An chinois')?.id || data[0].id)
-          setSelectedDate(data.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
+          setSelectedEventId(data.find((event) => event.title === 'Chinese New Year')?.id || data[0].id)
+          setSelectedDate(data.find((event) => event.title === 'Chinese New Year')?.startDate || todayKey)
           return
         }
 
         const seeded = await Promise.all(initialEvents.map((event) => createCalendarEvent(event)))
         if (ignore) return
         setEvents(seeded)
-        setSelectedEventId(seeded.find((event) => event.title === 'Nouvel An chinois')?.id || seeded[0]?.id || null)
-        setSelectedDate(seeded.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
+        setSelectedEventId(seeded.find((event) => event.title === 'Chinese New Year')?.id || seeded[0]?.id || null)
+        setSelectedDate(seeded.find((event) => event.title === 'Chinese New Year')?.startDate || todayKey)
       } catch (error) {
         if (!ignore) {
           setSyncError(error instanceof Error ? error.message : 'Unable to sync calendar')
@@ -966,12 +966,12 @@ export default function CalendarPageClient() {
 
   return (
     <div className="space-y-6">
-      <section className="dashboardecard p-5 sm:p-6">
+      <section className="dashboard-card p-5 sm:p-6">
         <div>
           <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Operational planning</p>
           <h1 className="mt-2 font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Calendar</h1>
           <p className="mt-2 max-w-2xl text-sm text-[#6B7480]">
-            Track time off, public holidays andecommercial peak periods that may affect your sales, stock and deliveries.
+            Track time off, public holidays and commercial peak periods that may affect your sales, stock and deliveries.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {isLoading && (
@@ -998,13 +998,13 @@ export default function CalendarPageClient() {
         </div>
       </section>
 
-      <section className="dashboardecard p-5 sm:p-7">
-        <div className="flex items-center justify-between mb-8">
+      <section className="dashboard-card p-5 sm:p-7">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <p className="font-serif text-base font-bold text-[#03182F]">Upcoming events</p>
-          <div className="inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
+          <div className="inline-flex max-w-full rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
             {[{ v: 30, l: '30 days' }, { v: 90, l: '3 months' }, { v: 180, l: '6 months' }].map((o) => (
               <button key={o.v} type="button" onClick={() => setTlRange(o.v)}
-                className={`rounded-md px-3 py-1 font-serif text-[13px] font-medium transition ${tlRange === o.v ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
+                className={`rounded-md px-3 py-1 font-serif text-[12px] font-medium transition sm:text-[13px] ${tlRange === o.v ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
               >{o.l}</button>
             ))}
           </div>
@@ -1035,32 +1035,72 @@ export default function CalendarPageClient() {
             pos.push(Math.min(100, p))
           })
           const trackX = (pct: number) => `clamp(48px, ${pct}%, calc(100% - 48px))`
+          const openEvent = (event: CalendarEvent) => {
+            const date = parseDateKey(event.startDate)
+            setDetailEventId(event.id)
+            setSelectedDate(event.startDate)
+            setActiveMonth(new Date(date.getFullYear(), date.getMonth(), 1))
+          }
           if (vis.length === 0) return <p className="text-sm text-[#6B7480]">No events in this period.</p>
           return (
-            <div className="relative px-4 sm:px-6">
-              <div className="absolute left-12 right-12 top-3 h-px bg-slate-200" />
-              <div className="absolute top-0" style={{ left: trackX(0) }}>
-                <p className="absolute -top-4 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-[#6B7480] whitespace-nowrap">Today</p>
-                <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
+            <>
+              <div className="space-y-2 sm:hidden">
+                {vis.map((evt) => {
+                  const k = getKindStyle(evt.kind)
+                  return (
+                    <button
+                      key={evt.id}
+                      type="button"
+                      onClick={() => openEvent(evt)}
+                      className="flex w-full items-center gap-3 rounded-lg border border-[#DDE5EE] bg-white px-3 py-2.5 text-left shadow-sm transition hover:border-[#2764FF]/40"
+                    >
+                      <span className={`h-3 w-3 shrink-0 rounded-full ${k.color}`} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-serif text-[13px] font-bold text-[#03182F]">{evt.title}</span>
+                        <span className="block font-serif text-[11px] capitalize text-[#6B7480]">{sd(evt.startDate)}</span>
+                      </span>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 font-serif text-[10px] font-bold ${impactLabels[evt.impact].chip}`}>
+                        {impactLabels[evt.impact].label}
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
-              {vis.map((evt, i) => { const k = getKindStyle(evt.kind); return (
-                <div key={evt.id} className="absolute cursor-pointer group" style={{ left: trackX(pos[i]) }}
-                  onClick={() => { setDetailEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
-                  <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} /></div>
-                  <div className="mt-2 -translate-x-1/2 w-24 text-center">
-                    <p className="font-serif text-[12px] font-bold text-[#03182F] truncate leading-tight">{evt.title}</p>
-                    <p className="font-serif text-[11px] text-[#6B7480] capitalize mt-0.5">{sd(evt.startDate)}</p>
-                  </div>
+
+              <div className="relative hidden px-6 sm:block">
+                <div className="absolute left-12 right-12 top-3 h-px bg-slate-200" />
+                <div className="absolute top-0" style={{ left: trackX(0) }}>
+                  <p className="absolute -top-4 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider text-[#6B7480]">Today</p>
+                  <div className="flex h-6 w-6 -translate-x-1/2 items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
                 </div>
-              ) })}
-              <div className="h-20" />
-            </div>
+                {vis.map((evt, i) => {
+                  const k = getKindStyle(evt.kind)
+                  return (
+                    <div
+                      key={evt.id}
+                      className="group absolute cursor-pointer"
+                      style={{ left: trackX(pos[i]) }}
+                      onClick={() => openEvent(evt)}
+                    >
+                      <div className="flex h-6 w-6 -translate-x-1/2 items-center justify-center">
+                        <div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} />
+                      </div>
+                      <div className="mt-2 w-24 -translate-x-1/2 text-center">
+                        <p className="truncate font-serif text-[12px] font-bold leading-tight text-[#03182F]">{evt.title}</p>
+                        <p className="mt-0.5 font-serif text-[11px] capitalize text-[#6B7480]">{sd(evt.startDate)}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+                <div className="h-20" />
+              </div>
+            </>
           )
         })()}
       </section>
 
       <div>
-        <section className="dashboardecard overflow-hidden p-4 sm:p-5">
+        <section className="dashboard-card overflow-hidden p-4 sm:p-5">
           <div className="mb-4 inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
             {[{ value: 'day' as CalendarView, label: 'Day' }, { value: 'week' as CalendarView, label: 'Week' }, { value: 'month' as CalendarView, label: 'Month' }].map((o) => (
               <button key={o.value} type="button" onClick={() => setCalendarView(o.value)}
@@ -1081,7 +1121,7 @@ export default function CalendarPageClient() {
               )}
             </button>
             <div className="flex items-center gap-3">
-              <h2 className="font-serif text-lg font-boldecapitalize text-[#03182F] sm:text-xl">
+              <h2 className="font-serif text-lg font-bold capitalize text-[#03182F] sm:text-xl">
                 {calendarView === 'month' && monthLabel(activeMonth)}
                 {calendarView === 'week' && `Week of ${new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(parseDateKey(activeWeekStart))}`}
                 {calendarView === 'day' && new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(parseDateKey(selectedDate))}
@@ -1111,7 +1151,7 @@ export default function CalendarPageClient() {
           {/* --- Month view --- */}
           {calendarView === 'month' && (
             <>
-              <div className="mt-4 grid gridecols-7 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
+              <div className="mt-4 grid grid-cols-7 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                   <div key={day} className="border-r border-slate-200 px-2 py-3 last:border-r-0">
                     {day}
@@ -1119,7 +1159,7 @@ export default function CalendarPageClient() {
                 ))}
               </div>
 
-              <div className="mt-2 grid gridecols-7 overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="mt-2 grid grid-cols-7 overflow-hidden rounded-xl border border-slate-200 bg-white">
                 {monthDays.map((day) => {
                   const dayEvents = events.filter((event) => isDateInRange(day.key, event))
                   const isSelected = selectedDate === day.key
@@ -1202,7 +1242,7 @@ export default function CalendarPageClient() {
             return (
               <div className="mt-4 space-y-0">
                 {/* Header */}
-                <div className="grid gridecols-[56px_repeat(7,1fr)] rounded-t-xl border border-b-0 border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
+                <div className="grid grid-cols-[56px_repeat(7,1fr)] rounded-t-xl border border-b-0 border-slate-200 bg-slate-50 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7480]">
                   <div className="border-r border-slate-200 px-1 py-3" />
                   {weekDays.map((wd) => (
                     <div key={wd.key} className={`border-r border-slate-200 px-1 py-3 last:border-r-0 ${wd.isToday ? 'bg-[#2764FF]/10 text-[#004bd9]' : ''}`}>
@@ -1214,7 +1254,7 @@ export default function CalendarPageClient() {
                 {/* All-day row */}
                 {hasAllDay && (
                   <div className="relative border border-b-0 border-slate-200 bg-slate-50/60">
-                    <div className="grid gridecols-[56px_repeat(7,1fr)]">
+                    <div className="grid grid-cols-[56px_repeat(7,1fr)]">
                       <div className="flex items-start justify-end border-r border-slate-100 pr-2 pt-2">
                         <span className="text-[10px] font-medium text-[#6B7480]">All day</span>
                       </div>
@@ -1246,7 +1286,7 @@ export default function CalendarPageClient() {
                   {weekHours.map((hour) => {
                     const label = `${String(hour).padStart(2, '0')}:00`
                     return (
-                      <div key={hour} className="grid gridecols-[56px_repeat(7,1fr)] border-b border-slate-100 last:border-b-0">
+                      <div key={hour} className="grid grid-cols-[56px_repeat(7,1fr)] border-b border-slate-100 last:border-b-0">
                         <div className="flex items-start justify-end border-r border-slate-100 pr-2 pt-1">
                           <span className="text-xs font-medium text-[#6B7480]">{label}</span>
                         </div>
@@ -1483,7 +1523,7 @@ export default function CalendarPageClient() {
                 <button
                   type="submit"
                   disabled={eventChatSending || !eventChatInput.trim()}
-                  className="h-10 rounded-lg bg-[#2764FF] px-4 font-serif text-[13px] font-bold text-white transition hover:bg-[#004bd9] disabledecursor-not-allowed disabled:opacity-60"
+                  className="h-10 rounded-lg bg-[#2764FF] px-4 font-serif text-[13px] font-bold text-white transition hover:bg-[#004bd9] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {eventChatSending ? 'Sending...' : 'Send'}
                 </button>
@@ -1498,7 +1538,7 @@ export default function CalendarPageClient() {
                     type="button"
                     onClick={deleteSelectedEvent}
                     disabled={deletingEventId === detailEvent.id}
-                    className="inline-flex h-10 items-center justify-center rounded-lg border border-[#F22E75]/20 px-4 font-serif text-[13px] font-bold text-[#F22E75] transition hover:bg-[#F22E75]/5 disabledecursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-[#F22E75]/20 px-4 font-serif text-[13px] font-bold text-[#F22E75] transition hover:bg-[#F22E75]/5 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {deletingEventId === detailEvent.id
                       ? 'Deleting...'
