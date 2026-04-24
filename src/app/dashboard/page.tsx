@@ -4,9 +4,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUp, Loader2, Mic, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import { LeiaChatMessageBubble, type LeiaToolCall } from '@/components/LeiaChatMessageBubble'
 import { useAudioRecorder } from '@/components/useAudioRecorder'
 import { usePluginContext } from '@/contexts/PluginContext'
+import { LEIA_QUICK_PROMPTS } from '@/lib/leia-prompts'
+import { getRecommendationSyncNotice } from '@/lib/demo-feedback'
 import {
+  buildDashboardHistoryMessage,
   getDashboardPrimaryActionLabel,
   getDashboardSecondaryActionLabel,
   selectDashboardRecommendations,
@@ -44,6 +48,7 @@ type DashboardChatMessage = {
   role: 'user' | 'assistant'
   content: string
   reasoningSummary?: string
+  tool_calls?: LeiaToolCall[]
 }
 
 const fallbackOrders: DashboardOrderRow[] = [
@@ -150,12 +155,14 @@ export default function DashboardPage() {
   const [sending, setSending] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [inputLanguage, setInputLanguage] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<DashboardChatMessage[]>([])
   const [chatOpen, setChatOpen] = useState(false)
   const [recommendations, setRecommendations] = useState<DashboardRecommendationRow[]>([])
   const [recommendationsLoading, setRecommendationsLoading] = useState(true)
   const [ordersData, setOrdersData] = useState<DashboardOrderRow[]>(fallbackOrders)
   const [busyRecommendationId, setBusyRecommendationId] = useState<string | null>(null)
+  const [actionNotice, setActionNotice] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const recorder = useAudioRecorder()
@@ -248,11 +255,12 @@ export default function DashboardPage() {
       setTranscribing(true)
       try {
         const fd = new FormData()
-        fd.append('audio', blob, 'prompt.webm')
+        fd.append('file', blob, 'prompt.webm')
         const res = await fetch('/api/mascot/transcribe', { method: 'POST', body: fd })
         if (res.ok) {
-          const { text } = await res.json()
+          const { text, language } = await res.json()
           if (text) setQuery((prev) => (prev ? `${prev} ${text}` : text))
+          if (typeof language === 'string' && language) setInputLanguage(language)
         }
       } catch {
         // Let the user retry without extra noise.
@@ -287,13 +295,33 @@ export default function DashboardPage() {
         throw new Error(payload?.error || 'Failed to update action.')
       }
 
+      const nextStatus =
+        typeof payload?.recommendation?.status === 'string'
+          ? payload.recommendation.status
+          : action === 'approve'
+            ? 'approved'
+            : 'rejected'
+
       setRecommendations((current) =>
-        current.map((item) =>
-          item.id === recommendation.id
-            ? { ...item, status: payload?.recommendation?.status || item.status }
-            : item
-        )
+        current
+          .map((item) =>
+            item.id === recommendation.id ? { ...item, status: nextStatus } : item
+          )
+          .filter((item) => item.status === 'pending_approval')
       )
+
+      const historyMessage = buildDashboardHistoryMessage(recommendation, action)
+      setChatMessages((current) => [
+        ...current,
+        {
+          id: `decision-${recommendation.id}-${Date.now()}`,
+          role: 'assistant',
+          content: historyMessage.content,
+          reasoningSummary: historyMessage.reasoningSummary,
+          tool_calls: undefined,
+        },
+      ])
+      setActionNotice(getRecommendationSyncNotice(action, recommendation.title))
     } catch (error) {
       setChatError(error instanceof Error ? error.message : 'Failed to update action.')
     } finally {
@@ -341,20 +369,31 @@ export default function DashboardPage() {
     }
   }, [chatOpen])
 
+  useEffect(() => {
+    if (!actionNotice) return
+    const timer = setTimeout(() => setActionNotice(null), 4500)
+    return () => clearTimeout(timer)
+  }, [actionNotice])
+
   async function handleSend() {
-    const message = query.trim()
+    return handleSendMessage(query.trim())
+  }
+
+  async function handleSendMessage(rawMessage: string) {
+    const message = rawMessage.trim()
     if (!message || sending) return
 
     setSending(true)
     setChatError(null)
-    setChatMessages((current) => [
-      ...current,
-      {
-        id: `u-${Date.now()}`,
-        role: 'user',
-        content: message,
-      },
-    ])
+      setChatMessages((current) => [
+        ...current,
+        {
+          id: `u-${Date.now()}`,
+          role: 'user',
+          content: message,
+          tool_calls: undefined,
+        },
+      ])
 
     try {
       const response = await fetch('/api/copilot/chat', {
@@ -363,6 +402,7 @@ export default function DashboardPage() {
         body: JSON.stringify({
           sessionId: sessionId || undefined,
           message,
+          language: inputLanguage || undefined,
         }),
       })
 
@@ -391,9 +431,11 @@ export default function DashboardPage() {
           role: 'assistant',
           content: assistantContent,
           reasoningSummary,
+          tool_calls: Array.isArray(payload?.tool_calls) ? payload.tool_calls : undefined,
         },
       ])
       setQuery('')
+      setInputLanguage(null)
       void loadRecommendations()
     } catch (error) {
       setChatError(error instanceof Error ? error.message : 'Failed to contact Leia.')
@@ -433,6 +475,19 @@ export default function DashboardPage() {
         </button>
       </div>
 
+      {actionNotice ? (
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 rounded-lg border border-[#3FA46A]/20 bg-[#3FA46A]/10 px-4 py-3 text-sm text-[#03182F] shadow-[0_1px_4px_rgba(3,24,47,0.08)]">
+          <p className="font-serif">{actionNotice}</p>
+          <button
+            type="button"
+            onClick={() => router.push('/actions')}
+            className="shrink-0 rounded border border-[#BFCBDA] bg-white px-3 py-1.5 font-serif text-[12px] font-bold text-[#30373E] transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+          >
+            Open Actions
+          </button>
+        </div>
+      ) : null}
+
       <div
         className={`iris-overlay ${chatOpen ? 'iris-overlay--open' : 'iris-overlay--closed'}`}
         onClick={(event) => {
@@ -441,6 +496,54 @@ export default function DashboardPage() {
         aria-hidden={!chatOpen}
       >
         <div className={`iris-panel ${chatOpen ? 'iris-panel--open' : 'iris-panel--closed'}`}>
+          <div ref={scrollRef} className="iris-conversation iris-conversation--panel">
+            {chatMessages.length === 0 && !sending && !chatError ? (
+              <div className="iris-conversation__empty">
+                <div className="iris-conversation__empty-header">
+                  <div className="iris-searchbar__glyph" aria-hidden>
+                    <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+                    <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+                    <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+                  </div>
+                  <p className="iris-conversation__empty-title font-serif">Leia is ready</p>
+                </div>
+                <p className="iris-conversation__empty-copy font-serif">
+                  Ask about stock, leave planning, or pending actions.
+                </p>
+                <div className="iris-conversation__suggestions">
+                  {LEIA_QUICK_PROMPTS.map((prompt) => (
+                    <button
+                      key={prompt.label}
+                      type="button"
+                      onClick={() => void handleSendMessage(prompt.message)}
+                      className="iris-conversation__suggestion"
+                    >
+                      {prompt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {chatMessages.map((message) => (
+              <LeiaChatMessageBubble
+                key={message.id}
+                message={message}
+                onNavigate={() => setChatOpen(false)}
+              />
+            ))}
+
+            {sending ? (
+              <div className="iris-conversation__thinking">
+                <span className="iris-conversation__thinking-dot" />
+                <span className="iris-conversation__thinking-dot" />
+                <span className="iris-conversation__thinking-dot" />
+              </div>
+            ) : null}
+
+            {chatError ? <div className="iris-conversation__error">{chatError}</div> : null}
+          </div>
+
           <form
             className="iris-searchbar"
             onSubmit={(event) => {
@@ -504,32 +607,6 @@ export default function DashboardPage() {
               <X className="h-4 w-4" />
             </button>
           </form>
-
-          {(chatMessages.length > 0 || chatError || sending) && (
-            <div ref={scrollRef} className="iris-conversation">
-              {chatMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`iris-msg ${message.role === 'assistant' ? 'iris-msg--assistant' : 'iris-msg--user'}`}
-                >
-                  <div className="iris-msg__bubble font-serif whitespace-pre-wrap">{message.content}</div>
-                  {message.role === 'assistant' && message.reasoningSummary ? (
-                    <p className="mt-1 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2 font-serif text-[12px] text-[#30373E]">
-                      {message.reasoningSummary}
-                    </p>
-                  ) : null}
-                </div>
-              ))}
-              {sending ? (
-                <div className="iris-conversation__thinking">
-                  <span className="iris-conversation__thinking-dot" />
-                  <span className="iris-conversation__thinking-dot" />
-                  <span className="iris-conversation__thinking-dot" />
-                </div>
-              ) : null}
-              {chatError ? <div className="iris-conversation__error">{chatError}</div> : null}
-            </div>
-          )}
         </div>
       </div>
 

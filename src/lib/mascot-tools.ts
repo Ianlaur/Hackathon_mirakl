@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { buildPlanItems, summarizePlan } from '@/lib/calendar-restock'
+import { requiresExplicitCalendarConfirmation } from '@/lib/calendar-confirmation'
 
 export type ToolDefinition = {
   type: 'function'
@@ -82,6 +83,10 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
             description: 'Impact estimé',
           },
           notes: { type: 'string', description: 'Notes optionnelles' },
+          confirmed: {
+            type: 'boolean',
+            description: "Mettre true uniquement après validation explicite du merchant. Obligatoire pour un congé.",
+          },
         },
         required: ['title', 'start_date', 'end_date', 'kind'],
       },
@@ -277,9 +282,26 @@ export async function executeTool(
       const kind = String(args.kind ?? 'internal')
       const impact = String(args.impact ?? 'medium')
       const notes = args.notes ? String(args.notes) : null
+      const confirmed = args.confirmed
 
       if (!title || !start || !end) {
         return { ok: false, error: 'title, start_date, end_date requis' }
+      }
+
+      if (requiresExplicitCalendarConfirmation(kind, confirmed)) {
+        return {
+          ok: true,
+          pending_confirmation: true,
+          message:
+            "Validation requise avant ajout au calendrier. Confirme avec 'oui' pour créer l'événement.",
+          event: {
+            title,
+            start,
+            end,
+            kind,
+          },
+          advisor_triggered: false,
+        }
       }
 
       const startTs = toIsoNoon(start)

@@ -14,7 +14,7 @@ export function RecommendationDetailPanel({
   onStatusChange,
 }: {
   recommendation: RecommendationDTO
-  onStatusChange: (next: RecommendationDTO) => void
+  onStatusChange: (next: RecommendationDTO, action: 'approve' | 'reject') => void
 }) {
   const payload = recommendation.action_payload
   const isPending = recommendation.status === 'pending_approval'
@@ -69,7 +69,7 @@ export function RecommendationDetailPanel({
         throw new Error(data?.error ?? 'Request failed')
       }
       const data = await resp.json()
-      onStatusChange({ ...recommendation, status: data.recommendation.status })
+      onStatusChange({ ...recommendation, status: data.recommendation.status }, action)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {

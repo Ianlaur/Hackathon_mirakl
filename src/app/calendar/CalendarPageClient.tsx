@@ -1,6 +1,8 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { canDeleteCalendarEvent, getCalendarEventDeleteTarget } from '@/lib/calendar-events'
+import { getCalendarSyncNotice } from '@/lib/demo-feedback'
 
 type CalendarView = 'month' | 'week' | 'day'
 type EventKind = 'holiday' | 'celebration' | 'peak' | 'leave'
@@ -598,6 +600,7 @@ export default function CalendarPageClient() {
   const [isLoading, setIsLoading] = useState(true)
   const [savingIds, setSavingIds] = useState<string[]>([])
   const [syncError, setSyncError] = useState<string | null>(null)
+  const [syncNotice, setSyncNotice] = useState<string | null>(null)
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [naturalInput, setNaturalInput] = useState('')
   const [tlRange, setTlRange] = useState(90)
@@ -606,6 +609,7 @@ export default function CalendarPageClient() {
   const [eventChatError, setEventChatError] = useState<string | null>(null)
   const [eventChatSessionId, setEventChatSessionId] = useState<string | null>(null)
   const [eventChatSending, setEventChatSending] = useState(false)
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null)
 
   useEffect(() => {
     let ignore = false
@@ -655,6 +659,12 @@ export default function CalendarPageClient() {
     setEventChatSending(false)
   }, [detailEventId])
 
+  useEffect(() => {
+    if (!syncNotice) return
+    const timer = setTimeout(() => setSyncNotice(null), 4500)
+    return () => clearTimeout(timer)
+  }, [syncNotice])
+
   const monthDays = useMemo(() => buildMonthDays(activeMonth), [activeMonth])
   const selectedEvent = useMemo(
     () => events.find((event) => event.id === selectedEventId) || null,
@@ -664,6 +674,7 @@ export default function CalendarPageClient() {
     () => (detailEventId ? events.find((event) => event.id === detailEventId) || null : null),
     [events, detailEventId]
   )
+  const canDeleteDetailEvent = canDeleteCalendarEvent(detailEvent)
   const selectedDateEvents = events
     .filter((event) => isDateInRange(selectedDate, event))
     .sort((a, b) => `${a.startDate}${a.startTime}${a.title}`.localeCompare(`${b.startDate}${b.startTime}${b.title}`))
@@ -696,6 +707,7 @@ export default function CalendarPageClient() {
       setEvents((current) => [...current, newEvent])
       setSelectedDate(newEvent.startDate)
       setSelectedEventId(newEvent.id)
+      setSyncNotice(getCalendarSyncNotice('created', newEvent.title))
       setForm(emptyForm)
       setNaturalInput('')
       setIsCreatingFromDate(false)
@@ -736,6 +748,7 @@ export default function CalendarPageClient() {
     updateCalendarEvent(selectedEvent.id, patch)
       .then((savedEvent) => {
         setEvents((current) => current.map((event) => (event.id === savedEvent.id ? savedEvent : event)))
+        setSyncNotice(getCalendarSyncNotice('updated', savedEvent.title))
       })
       .catch((error) => {
         setEvents((current) => current.map((event) => (event.id === previousEvent.id ? previousEvent : event)))
@@ -839,18 +852,32 @@ export default function CalendarPageClient() {
   }
 
   const deleteSelectedEvent = async () => {
-    if (!selectedEvent) return
-    const eventToDelete = selectedEvent
+    const eventToDelete = getCalendarEventDeleteTarget(detailEvent, selectedEvent)
+    if (!eventToDelete || !canDeleteCalendarEvent(eventToDelete) || deletingEventId) return
+
+    const existingIndex = events.findIndex((event) => event.id === eventToDelete.id)
+
+    setDeletingEventId(eventToDelete.id)
     setEvents((current) => current.filter((event) => event.id !== eventToDelete.id))
-    setSelectedEventId(null)
+    setSelectedEventId((current) => (current === eventToDelete.id ? null : current))
+    setDetailEventId((current) => (current === eventToDelete.id ? null : current))
 
     try {
       setSyncError(null)
       await deleteCalendarEvent(eventToDelete.id)
+      setSyncNotice(getCalendarSyncNotice('deleted', eventToDelete.title))
     } catch (error) {
-      setEvents((current) => [...current, eventToDelete])
+      setEvents((current) => {
+        const next = [...current]
+        const insertAt = existingIndex >= 0 ? Math.min(existingIndex, next.length) : next.length
+        next.splice(insertAt, 0, eventToDelete)
+        return next
+      })
       setSelectedEventId(eventToDelete.id)
+      setDetailEventId(eventToDelete.id)
       setSyncError(error instanceof Error ? error.message : 'Unable to delete event')
+    } finally {
+      setDeletingEventId(null)
     }
   }
 
@@ -952,6 +979,11 @@ export default function CalendarPageClient() {
             {syncError && (
               <span className="rounded-full bg-[#FFE7EC] px-3 py-1 text-xs font-semibold text-red-700">
                 {syncError}
+              </span>
+            )}
+            {syncNotice && (
+              <span className="rounded-full bg-[#3FA46A]/10 px-3 py-1 text-xs font-semibold text-[#1E6B42]">
+                {syncNotice}
               </span>
             )}
           </div>
@@ -1448,6 +1480,26 @@ export default function CalendarPageClient() {
                   {eventChatSending ? 'Sending...' : 'Send'}
                 </button>
               </form>
+
+              {canDeleteDetailEvent && (
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#DDE5EE] pt-4">
+                  <p className="font-serif text-[12px] text-[#6B7480]">
+                    Remove this time off from the calendar.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={deleteSelectedEvent}
+                    disabled={deletingEventId === detailEvent.id}
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-[#F22E75]/20 px-4 font-serif text-[13px] font-bold text-[#F22E75] transition hover:bg-[#F22E75]/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deletingEventId === detailEvent.id
+                      ? 'Deleting...'
+                      : detailEvent.kind === 'leave'
+                        ? 'Delete vacation'
+                        : 'Delete event'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

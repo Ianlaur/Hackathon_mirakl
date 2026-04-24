@@ -5,6 +5,7 @@ import { RefreshCw, Search, X } from 'lucide-react'
 import { RecommendationCard } from './RecommendationCard'
 import { RecommendationDetailPanel } from './RecommendationDetailPanel'
 import type { RecommendationDTO } from './types'
+import { getRecommendationSyncNotice } from '@/lib/demo-feedback'
 
 export default function ActionsPageClient({
   initialRecommendations,
@@ -18,6 +19,7 @@ export default function ActionsPageClient({
     initialRecommendations[0]?.id ?? null
   )
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [statusNotice, setStatusNotice] = useState<string | null>(null)
 
   const filteredRecommendations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -87,6 +89,12 @@ export default function ActionsPageClient({
     }
   }, [isModalOpen])
 
+  useEffect(() => {
+    if (!statusNotice) return
+    const timer = setTimeout(() => setStatusNotice(null), 4500)
+    return () => clearTimeout(timer)
+  }, [statusNotice])
+
   const statusTabs = [
     { value: 'all' as const, label: 'All', count: recommendations.length },
     { value: 'pending_approval' as const, label: 'Pending', count: pendingCount },
@@ -104,6 +112,11 @@ export default function ActionsPageClient({
               <p className="font-serif text-[14px] leading-6 text-[#6B7480]">
                 Review, approve, or reject AI operational decisions.
               </p>
+              {statusNotice ? (
+                <p className="mt-2 inline-flex rounded-lg border border-[#3FA46A]/20 bg-[#3FA46A]/10 px-3 py-1.5 font-serif text-[12px] text-[#03182F]">
+                  {statusNotice}
+                </p>
+              ) : null}
             </div>
             <div className="flex items-center gap-3">
               <span className="rounded-full bg-[#E0A93A]/10 px-3 py-1 text-[11px] font-bold text-[#E0A93A]">
@@ -209,13 +222,14 @@ export default function ActionsPageClient({
             <div className="min-h-0 flex-1 overflow-hidden p-6">
               <RecommendationDetailPanel
                 recommendation={selected}
-                onStatusChange={(next) =>
+                onStatusChange={(next, action) => {
                   setRecommendations((prev) =>
                     prev.map((recommendation) =>
                       recommendation.id === next.id ? next : recommendation
                     )
                   )
-                }
+                  setStatusNotice(getRecommendationSyncNotice(action, next.title))
+                }}
               />
             </div>
           </div>
