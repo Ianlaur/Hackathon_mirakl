@@ -13,9 +13,9 @@ import {
   calculateStockoutDays,
   calculateSupplierLossCost,
   calculateVelocity,
-} from '@/lib/mira/tools-math'
+} from '@/lib/leia/tools-math'
 
-describe('mira tools math', () => {
+describe('Leia tools math', () => {
   it('calculates velocity from units and days', () => {
     expect(calculateVelocity(42, 14)).toBe(3)
   })

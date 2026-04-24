@@ -145,23 +145,23 @@ export async function POST(request: NextRequest) {
 
     const startIso = event.start_at.toISOString().slice(0, 10)
     const endIso = event.end_at.toISOString().slice(0, 10)
-    const title = `🏖️ Plan congés ${startIso} → ${endIso}`
+    const title = `Vacation plan ${startIso} -> ${endIso}`
 
     const evidence = [
-      { label: "Période d'absence", value: `${startIso} → ${endIso}` },
-      { label: 'SKUs analysés', value: String(products.length) },
-      { label: 'SKUs à risque', value: String(items.length) },
+      { label: "Absence period", value: `${startIso} -> ${endIso}` },
+      { label: 'SKUs analyzed', value: String(products.length) },
+      { label: 'SKUs at risk', value: String(items.length) },
       {
-        label: 'Deadline commande',
-        value: summary.earliestDeadline?.toISOString().slice(0, 10) ?? '—',
+        label: 'Order deadline',
+        value: summary.earliestDeadline?.toISOString().slice(0, 10) ?? '-',
       },
-      { label: 'Coût total estimé', value: `${summary.totalCostEur.toFixed(2)} €` },
+      { label: 'Estimated total cost', value: `€${summary.totalCostEur.toFixed(2)}` },
       {
-        label: 'Événements commerce coïncidant',
+        label: 'Overlapping commercial events',
         value:
           coincidingEventsRaw.length > 0
             ? coincidingEventsRaw.map((e) => e.title).join(', ')
-            : 'Aucun',
+            : 'None',
       },
     ]
 

@@ -3,8 +3,8 @@ import {
   normalizeFounderState,
   safetyMultipliersForFounderState,
   type FounderStateName,
-} from '@/lib/mira/policy'
-import { syncFounderStateFromCalendarForUser } from '@/lib/mira/calendar-sync'
+} from '@/lib/leia/policy'
+import { syncFounderStateFromCalendarForUser } from '@/lib/leia/calendar-sync'
 
 export type FounderContext = {
   state: FounderStateName

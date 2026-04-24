@@ -7,7 +7,7 @@ export async function DELETE(request: NextRequest) {
     const user = await getCurrentUser()
     
     if (!user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // First delete all stock movements (due to foreign key constraint)

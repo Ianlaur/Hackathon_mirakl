@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { detectConversationLanguage, type ConversationLanguage } from '@/lib/mira/conversation'
+import { detectConversationLanguage, type ConversationLanguage } from '@/lib/leia/conversation'
 
 type BriefingMetrics = {
   pendingApprovals: number
@@ -22,13 +22,13 @@ const BRIEFING_BY_LANGUAGE: Record<ConversationLanguage, BriefingLineBuilder[]> 
         : 'Next event: none scheduled',
   ],
   fr: [
-    (m) => `Validations en attente : ${m.pendingApprovals}`,
+    (m) => `Pending approvals : ${m.pendingApprovals}`,
     (m) => `Decisions en file : ${m.queuedDecisions}`,
     (m) => `SKU en stock bas : ${m.lowStockSkus}`,
     (m) =>
       m.nextEventTitle && m.nextEventDate
-        ? `Prochain evenement : ${m.nextEventTitle} le ${m.nextEventDate}`
-        : 'Prochain evenement : aucun',
+        ? `Prochain Event : ${m.nextEventTitle} le ${m.nextEventDate}`
+        : 'Prochain Event : aucun',
   ],
   it: [
     (m) => `Approvazioni in attesa: ${m.pendingApprovals}`,

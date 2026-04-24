@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildGuardrailRefusal,
   classifyGuardrailViolation,
-} from '@/lib/mira/conversation'
+} from '@/lib/leia/conversation'
 
 describe('Leia guardrails', () => {
   it('classifies system prompt extraction as a guardrail violation', () => {
@@ -37,7 +37,7 @@ describe('Leia guardrails', () => {
   it('builds localized refusals for all supported languages', () => {
     expect(buildGuardrailRefusal('system_prompt', 'en')).toContain("I can't")
     expect(buildGuardrailRefusal('system_prompt', 'fr')).toContain('Je ne peux pas')
-    expect(buildGuardrailRefusal('system_prompt', 'it')).toContain('Non posso')
+    expect(buildGuardrailRefusal('system_prompt', 'it')).toContain('No posso')
     expect(buildGuardrailRefusal('system_prompt', 'de')).toContain('Ich kann')
     expect(buildGuardrailRefusal('system_prompt', 'es')).toContain('No puedo')
   })

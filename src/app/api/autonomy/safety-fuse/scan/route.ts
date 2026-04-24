@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUserId } from '@/lib/session'
-import { runSafetyFuseScanForUser } from '@/lib/mira/safety-fuse'
+import { runSafetyFuseScanForUser } from '@/lib/leia/safety-fuse'
 
 export const dynamic = 'force-dynamic'
 

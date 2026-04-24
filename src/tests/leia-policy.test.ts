@@ -4,7 +4,7 @@ import {
   evaluateFounderPolicy,
   normalizeAutonomyMode,
   safetyMultipliersForFounderState,
-} from '@/lib/mira/policy'
+} from '@/lib/leia/policy'
 
 describe('FounderPolicy', () => {
   it('maps watching mode to observe without a ledger write', () => {

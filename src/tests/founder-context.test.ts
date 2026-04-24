@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildFounderContext } from '@/lib/mira/founder-context'
+import { buildFounderContext } from '@/lib/leia/founder-context'
 
 describe('FounderContextAgent', () => {
   it('marks vacation as away and applies safety multipliers', () => {

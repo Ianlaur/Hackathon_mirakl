@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { checkRateLimit, resetRateLimitBuckets } from '@/lib/mira/rate-limit'
+import { checkRateLimit, resetRateLimitBuckets } from '@/lib/leia/rate-limit'
 
 describe('Leia route rate limiter', () => {
   it('allows requests until the configured limit is reached', () => {

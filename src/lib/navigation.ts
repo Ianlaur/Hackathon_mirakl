@@ -31,14 +31,14 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
     {
       id: 'plugin_actions',
       label: 'Actions',
-      description: 'Centre de traitement des actions opérationnelles',
+      description: 'Operational action processing center',
       position: 1,
       items: [{ id: 'actions', label: 'Actions', icon: 'Inbox', href: '/actions' }],
     },
     {
       id: 'plugin_operations',
-      label: 'Opérations',
-      description: 'Gestion logistique : calendrier et transport',
+      label: 'Operations',
+      description: 'Logistics management: calendar and transport',
       position: 2,
       items: [
         {
@@ -51,13 +51,13 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
     },
     {
       id: 'plugin_inventaire',
-      label: 'Inventaire avancé',
-      description: 'Gestion des entrepôts',
+      label: 'Advanced inventory',
+      description: 'Warehouse management',
       position: 3,
       items: [
         {
           id: 'entrepot',
-          label: 'Entrepôt',
+          label: 'Warehouse',
           icon: 'Warehouse',
           href: '/wms',
         },

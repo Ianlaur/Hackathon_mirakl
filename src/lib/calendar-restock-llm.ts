@@ -25,10 +25,10 @@ export type LlmEnrichmentOutput = {
 
 const SYSTEM_PROMPT = `You are an operations advisor for a solo merchant preparing for a leave period.
 Given the leave event, the list of at-risk SKUs with deterministic calculations, any calendar events coinciding with the leave, and the merchant profile, produce a JSON object with:
-- reasoningSummary: narrative explanation in FRENCH (2-4 sentences, empathetic tone, uses the merchant's "tu" form)
-- expectedImpact: short sentence in FRENCH describing the business outcome if the merchant approves
-- confidenceNote: short sentence in FRENCH describing the confidence level and what could shift the recommendation
-- supplementaryNotes: array of short strings in FRENCH (e.g. "Nouvel An chinois tombe pendant tes congés, ton fournisseur asiatique sera fermé.")
+- reasoningSummary: narrative explanation in English (2-4 sentences, empathetic tone)
+- expectedImpact: short sentence in English describing the business outcome if the merchant approves
+- confidenceNote: short sentence in English describing the confidence level and what could shift the recommendation
+- supplementaryNotes: array of short strings in English (e.g. "Chinese New Year overlaps with your vacation, and your Asian supplier may be closed.")
 
 Respond ONLY in valid JSON. No markdown, no commentary.`
 
@@ -37,13 +37,13 @@ export function buildDeterministicFallback(input: LlmEnrichmentInput): LlmEnrich
   const totalCost = input.atRiskItems.reduce((s, i) => s + i.estimatedCostEur, 0)
   const reasoningSummary =
     count === 0
-      ? `Aucun SKU à risque détecté pour ton absence. Tu peux partir tranquille.`
-      : `${count} produits risquent la rupture pendant tes congés. Passe les commandes avant la deadline pour être livré à temps.`
+      ? `No at-risk SKU detected for your absence.`
+      : `${count} products risk stockout during your absence. Place orders before the deadline to arrive on time.`
   const expectedImpact =
     count === 0
-      ? `Aucun impact attendu.`
-      : `Éviter ${count} ruptures potentielles pendant ton absence et protéger ${totalCost.toFixed(0)} € de chiffre d'affaires.`
-  const confidenceNote = `Confiance : élevée sur le filtrage déterministe, dépend de la stabilité de la vélocité de vente.`
+      ? `No impact expected.`
+      : `Avoid ${count} potential stockouts during your absence and protect €${totalCost.toFixed(0)} in revenue.`
+  const confidenceNote = `Confidence: high for deterministic filtering, depends on sales velocity stability.`
   return {
     reasoningSummary,
     expectedImpact,

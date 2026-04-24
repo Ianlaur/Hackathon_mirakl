@@ -22,7 +22,7 @@ export async function PATCH(
     const parsed = updateTaskSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Données invalides' },
+        { error: parsed.error.errors[0]?.message || 'Invalid data' },
         { status: 400 }
       )
     }
@@ -34,7 +34,7 @@ export async function PATCH(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Tâche non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
     const updateData: Record<string, unknown> = { ...parsed.data }

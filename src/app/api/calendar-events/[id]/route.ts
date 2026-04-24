@@ -19,7 +19,7 @@ type DbCalendarEvent = {
 }
 
 const eventSchema = z.object({
-  title: z.string().min(1, 'Le titre est requis').max(140).optional(),
+  title: z.string().min(1, 'Title is required').max(140).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   startTime: z.string().regex(/^$|^\d{2}:\d{2}$/).optional(),
@@ -66,7 +66,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const existing = existingRows[0]
 
     if (!existing) {
-      return NextResponse.json({ error: 'Événement introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
     const nextStartDate = data.startDate || existing.start_at.toISOString().slice(0, 10)
@@ -101,7 +101,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
     }
 
-    return NextResponse.json({ error: 'Impossible de mettre à jour l’événement' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to update event' }, { status: 500 })
   }
 }
 
@@ -116,7 +116,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
     `
 
     if (existing.length === 0) {
-      return NextResponse.json({ error: 'Événement introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
     await prisma.$executeRaw`
@@ -127,6 +127,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting calendar event:', error)
-    return NextResponse.json({ error: 'Impossible de supprimer l’événement' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to delete event' }, { status: 500 })
   }
 }

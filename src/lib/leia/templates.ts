@@ -203,7 +203,7 @@ export const TEMPLATE_REGISTRY = {
     ),
 } satisfies Record<string, TemplateRenderer>
 
-export const MIRA_TEMPLATE_IDS = Object.keys(TEMPLATE_REGISTRY).sort()
+export const LEIA_TEMPLATE_IDS = Object.keys(TEMPLATE_REGISTRY).sort()
 
 export function renderTemplate(templateId: string, input: Record<string, unknown>) {
   const renderer = TEMPLATE_REGISTRY[templateId as keyof typeof TEMPLATE_REGISTRY]

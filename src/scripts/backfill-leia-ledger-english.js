@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { prisma } = require('../lib/prisma')
-const { renderTemplate } = require('../lib/mira/templates')
+const { renderTemplate } = require('../lib/leia/templates')
 
 function loadLocalEnv() {
   const envPath = path.join(process.cwd(), '.env')
@@ -99,7 +99,7 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error('backfill-mira-ledger-english failed:', error)
+    console.error('backfill-leia-ledger-english failed:', error)
     process.exitCode = 1
   })
   .finally(async () => {

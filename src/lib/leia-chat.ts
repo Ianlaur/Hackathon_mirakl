@@ -5,7 +5,7 @@ import {
   classifyGuardrailViolation,
   resolveConversationLanguage,
   type ConversationLanguage,
-} from '@/lib/mira/conversation'
+} from '@/lib/leia/conversation'
 
 export type LeiaChatMessage = {
   role: 'user' | 'assistant' | 'system' | 'tool'

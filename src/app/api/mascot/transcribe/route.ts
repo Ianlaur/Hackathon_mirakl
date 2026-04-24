@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       const errText = await response.text()
       console.error('Whisper error:', response.status, errText)
       return NextResponse.json(
-        { error: `OpenAI Whisper a renvoyé ${response.status}` },
+        { error: `OpenAI Whisper returned ${response.status}` },
         { status: 502 }
       )
     }

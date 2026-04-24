@@ -5,7 +5,7 @@ import {
   declareSupplierLoss,
   getRadarSnapshot,
   ensureSupplierLossesTable,
-} from '@/lib/mira/supplier-losses'
+} from '@/lib/leia/supplier-losses'
 import { prisma } from '@/lib/prisma'
 
 const USER_ID = process.env.HACKATHON_USER_ID || '00000000-0000-0000-0000-000000000001'

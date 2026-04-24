@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getOpenAISettingsForUser } from '@/lib/openai-settings'
-import { checkRateLimit } from '@/lib/mira/rate-limit'
+import { checkRateLimit } from '@/lib/leia/rate-limit'
 import { getCurrentUserId } from '@/lib/session'
 import {
   type LeiaChatMessage,

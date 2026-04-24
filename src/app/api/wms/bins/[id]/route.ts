@@ -34,7 +34,7 @@ export async function GET(
     })
 
     if (!bin) {
-      return NextResponse.json({ error: 'Emplacement non trouvé' }, { status: 404 })
+      return NextResponse.json({ error: 'Bin not found' }, { status: 404 })
     }
 
     return NextResponse.json(bin)
@@ -57,7 +57,7 @@ export async function PATCH(
     const parsed = updateBinSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Données invalides' },
+        { error: parsed.error.errors[0]?.message || 'Invalid data' },
         { status: 400 }
       )
     }
@@ -68,7 +68,7 @@ export async function PATCH(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Emplacement non trouvé' }, { status: 404 })
+      return NextResponse.json({ error: 'Bin not found' }, { status: 404 })
     }
 
     // Verify new zone ownership if changing zone
@@ -77,7 +77,7 @@ export async function PATCH(
         where: { id: parsed.data.zone_id, user_id: userId }
       })
       if (!zone) {
-        return NextResponse.json({ error: 'Zone non trouvée' }, { status: 404 })
+        return NextResponse.json({ error: 'Zone not found' }, { status: 404 })
       }
     }
 
@@ -87,7 +87,7 @@ export async function PATCH(
         where: { user_id_code: { user_id: userId, code: parsed.data.code } }
       })
       if (codeExists) {
-        return NextResponse.json({ error: 'Ce code d\'emplacement existe déjà' }, { status: 400 })
+        return NextResponse.json({ error: 'This bin code already exists' }, { status: 400 })
       }
     }
 
@@ -124,7 +124,7 @@ export async function DELETE(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Emplacement non trouvé' }, { status: 404 })
+      return NextResponse.json({ error: 'Bin not found' }, { status: 404 })
     }
 
     // Check for pending picking tasks
@@ -134,7 +134,7 @@ export async function DELETE(
 
     if (pendingTasks > 0) {
       return NextResponse.json(
-        { error: 'Impossible de supprimer: des tâches de picking sont en cours' },
+        { error: 'Unable to delete: picking tasks are in progress' },
         { status: 400 }
       )
     }

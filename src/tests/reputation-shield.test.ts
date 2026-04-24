@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   evaluateReputationShield,
   identifyPrimaryChannel,
-} from '@/lib/mira/reputation-shield'
+} from '@/lib/leia/reputation-shield'
 
 describe('Reputation Shield', () => {
   it('identifies the highest revenue channel as primary', () => {

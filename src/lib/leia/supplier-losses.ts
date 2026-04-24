@@ -1,7 +1,7 @@
 import supplierCatalog from '@/config/suppliers.mock.json'
-import { createDecisionLedgerEntry } from '@/lib/mira/ledger'
-import { evaluateFounderPolicy } from '@/lib/mira/policy'
-import { calculateReturnRate, calculateSupplierLossCost } from '@/lib/mira/tools-math'
+import { createDecisionLedgerEntry } from '@/lib/leia/ledger'
+import { evaluateFounderPolicy } from '@/lib/leia/policy'
+import { calculateReturnRate, calculateSupplierLossCost } from '@/lib/leia/tools-math'
 import { prisma } from '@/lib/prisma'
 
 export const SUPPLIER_LOSS_TYPES = [

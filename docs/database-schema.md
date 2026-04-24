@@ -271,28 +271,28 @@ erDiagram
 
 ---
 
-## Tables par domaine
+## Tables By Domain
 
-| Domaine | Tables | Description |
+| Domain | Tables | Description |
 |---------|--------|-------------|
-| **Auth** | `user`, `account` | Authentification Neon Auth |
-| **Catalogue** | `product_categories`, `products` | Produits, SKUs, fournisseurs |
-| **Stock** | `stock_movements`, `stock_low_alerts` | Mouvements, alertes seuil bas |
-| **Entrepôt** | `warehouse_zones`, `warehouse_bins`, `bin_contents` | WMS zones/bins |
-| **Picking** | `picking_lists`, `picking_tasks` | Préparation commandes |
-| **Logistique** | `parcels` | Colis entrants/sortants |
-| **Calendrier** | `calendar_events`, `merchant_calendar_events` | Événements opérationnels |
-| **IA / Agent** | `merchant_ai_settings`, `merchant_profile_context`, `agent_context_snapshots` | Config IA marchand |
-| **Copilot** | `copilot_chat_sessions`, `copilot_chat_messages` | Historique conversations |
-| **Recommandations** | `agent_recommendations`, `recommendation_approvals`, `agent_execution_runs`, `external_context_signals` | Workflow recommandations |
-| **Shopify** | `shopify_connections`, `shopify_orders` | Intégration marketplace |
+| **Auth** | `user`, `account` | Neon Auth authentication |
+| **Catalog** | `product_categories`, `products` | Products, SKUs, and suppliers |
+| **Stock** | `stock_movements`, `stock_low_alerts` | Movements and low-stock alerts |
+| **Warehouse** | `warehouse_zones`, `warehouse_bins`, `bin_contents` | WMS zones and bins |
+| **Picking** | `picking_lists`, `picking_tasks` | Order picking |
+| **Logistics** | `parcels` | Inbound and outbound parcels |
+| **Calendar** | `calendar_events`, `merchant_calendar_events` | Operational events |
+| **AI / Agent** | `merchant_ai_settings`, `merchant_profile_context`, `agent_context_snapshots` | Merchant AI configuration |
+| **Copilot** | `copilot_chat_sessions`, `copilot_chat_messages` | Conversation history |
+| **Recommendations** | `agent_recommendations`, `recommendation_approvals`, `agent_execution_runs`, `external_context_signals` | Recommendation workflow |
+| **Shopify** | `shopify_connections`, `shopify_orders` | Marketplace integration |
 
 ---
 
-## Notes techniques
+## Technical Notes
 
-- Tous les IDs sont des UUID auto-générés (`gen_random_uuid()`)
-- Les prix utilisent `Decimal(12,2)` pour la précision financière
-- Les tables AI suivent un workflow : `recommendation` → `approval` → `execution_run`
-- `autonomy_mode` par défaut : `approval_required` (pas d'exécution auto)
-- Les `external_context_signals` enrichissent les recommandations avec du contexte externe (tendances, saisonnalité)
+- All IDs are auto-generated UUIDs (`gen_random_uuid()`).
+- Prices use `Decimal(12,2)` for financial precision.
+- AI tables follow the workflow: `recommendation` -> `approval` -> `execution_run`.
+- The default `autonomy_mode` is `approval_required`.
+- `external_context_signals` enrich recommendations with external context such as trends and seasonality.

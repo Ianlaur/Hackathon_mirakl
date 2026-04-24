@@ -1,85 +1,52 @@
-# Note de cadrage UX — Interaction Humain / Agent
+# Human-Agent UX Framing
 
-**Projet** : Supply Pilot AI (MIRAKL CONNECT)
-**Date** : Avril 2026
-**Objectif** : Décrire les choix d'interaction entre l'utilisateur final et les agents IA du produit — ce qui est visible, interruptible et configurable.
+## Objective
 
----
+Describe how the merchant interacts with LEIA and the operational agents: what is visible, interruptible, configurable, and reversible.
 
-## Philosophie
+## Principle
 
-Le produit suit un principe fondamental : **l'IA propose, l'humain dispose**. Aucune action autonome n'est exécutée sans validation explicite de l'utilisateur. L'IA agit comme un copilote nommé **Leia** — elle analyse, recommande et explique, mais le marchand garde le contrôle final sur toutes les décisions opérationnelles.
+LEIA proposes, the human decides. The product keeps the merchant in control by making reasoning, source data, and outcomes visible before decisions are approved.
 
----
+## Visible Reasoning
 
-## 1. Ce qui est visible
+Every recommendation appears in a dedicated Actions center with:
 
-### Recommandations contextuelles
-Chaque recommandation IA est affichée dans un **centre d'actions dédié** (page Actions) avec :
-- un **résumé du raisonnement** expliquant pourquoi l'IA recommande cette action
-- une **note de confiance** (niveau de certitude de l'agent)
-- l'**impact attendu** si l'utilisateur approuve (ex : "évite une rupture sur 3 SKUs, coût estimé 1 240 €")
-- les **données sources** : période analysée, SKUs à risque, vélocité de vente, délais fournisseurs
+- A concise reasoning summary.
+- The expected impact if the merchant approves.
+- Source data such as the analyzed period, risky SKUs, sales velocity, lead time, and cost.
 
-### Exécution des outils
-Lorsque Leia exécute un outil (création d'événement calendrier, plan de réapprovisionnement, brouillon d'email), l'action est **affichée en temps réel** dans le chat sous forme de chip visible (ex : "Création événement calendrier"), avec le résultat affiché en ligne dans la conversation.
+When LEIA runs a tool from chat, the action is shown in the conversation with a visible result.
 
-### Alertes proactives
-Sur le Dashboard et les pages métier (Losses, Stock, Orders), des **cartes de décision** signalent les situations critiques avec un code couleur sémantique :
-- Rouge (#F22E75) : risque urgent, action requise
-- Bleu (#2764FF) : insight Leia, opportunité
-- Jaune (#E0A93A) : avertissement, à surveiller
+## Decision States
 
----
+- `Pending`: the merchant needs to review the recommendation.
+- `Approved`: execution starts only after validation.
+- `Rejected`: the merchant declined the recommendation.
+- `Queued`: the action waits because founder state or governance requires it.
+- `Observed`: the system logged the signal but did not create an actionable decision.
 
-## 2. Ce qui est interruptible
+## Granular Approval
 
-### Approbation par recommandation
-Chaque recommandation suit un workflow explicite :
-- **"À valider"** → l'utilisateur examine les détails
-- **"Approuvée"** → exécution déclenchée uniquement après validation
-- **"Rejetée"** → avec commentaire optionnel pour améliorer les futures recommandations
+The merchant should be able to approve a subset of SKUs or lines, adjust quantities, and reject the rest. Cost and item counts update as selections change.
 
-### Sélection granulaire
-L'utilisateur ne valide pas en bloc : il peut **sélectionner individuellement les SKUs ou lignes** d'un plan de réapprovisionnement, ajuster les quantités, et ne valider qu'un sous-ensemble. Le coût et le nombre d'articles se mettent à jour dynamiquement.
+## Reversibility
 
-### Conversation naturelle
-Via le chat Leia (barre de recherche sur le Dashboard ou tiroir latéral), l'utilisateur peut :
-- demander des précisions avant de valider
-- modifier une recommandation par le langage naturel
-- annuler ou ajuster une action proposée
+Decision buttons appear as balanced choices. Reversible actions should include clear undo or override text. Overrides are stored for auditability.
 
-### Actions réversibles
-Les boutons de décision sont toujours présentés par paires :
-- **Action principale** (ex : "Approve Restock", "Apply Price Change")
-- **Alternative** (ex : "Ignore", "Snooze Alert", "Review Details")
+## Governance
 
----
+The governance model includes autonomy mode, founder state, safety fuses, and plugin visibility. The default posture is conservative: observe or ask before acting unless a reversible action is explicitly configured for automation.
 
-## 3. Ce qui est configurable
+## Calendar As Control Surface
 
-### Mode d'autonomie
-Le système dispose d'un paramètre `autonomy_mode` avec un défaut strict : **`approval_required`** — aucune exécution automatique. Ce paramètre est stocké par marchand et peut évoluer vers des modes plus autonomes (ex : auto-exécution sous un seuil de coût) tout en gardant la traçabilité.
+The merchant influences LEIA by enriching the operational calendar with leave, holidays, and commercial events. The calendar advisor uses those inputs to anticipate restock and exposure decisions.
 
-### Préférences modèle
-Le marchand peut choisir le modèle IA utilisé (`preferred_model`) pour ajuster le rapport qualité/coût des recommandations.
+## Summary
 
-### Activation des fonctionnalités
-Via la page Settings, l'utilisateur active ou désactive :
-- les fonctionnalités beta
-- les modules métier (inventaire, entrepôt)
-- les intégrations marketplace (Shopify, etc.)
-
-### Calendrier comme levier de contrôle
-L'utilisateur influence directement les décisions IA en enrichissant le calendrier opérationnel : congés, jours fériés, temps forts commerce. L'agent Calendar Advisor s'appuie sur ces événements pour anticiper les besoins de réapprovisionnement — l'humain contrôle les inputs, l'IA adapte ses outputs.
-
----
-
-## Synthèse
-
-| Dimension | Approche |
-|-----------|----------|
-| **Visibilité** | Tout raisonnement IA est affiché avec données sources, confiance et impact |
-| **Interruptibilité** | Validation explicite requise, sélection granulaire, rejet avec feedback |
-| **Configurabilité** | Mode autonomie, choix du modèle, activation de modules, calendrier opérationnel |
-| **Principe directeur** | L'IA ne fait rien sans l'accord de l'humain — elle éclaire, l'humain décide |
+| Dimension | Product Rule |
+| --- | --- |
+| Visibility | Show reasoning, data sources, confidence, and impact |
+| Interruptibility | Require explicit validation when risk is meaningful |
+| Configurability | Expose autonomy, founder state, plugins, and calendar controls |
+| Control | LEIA informs and prepares; the merchant remains accountable |

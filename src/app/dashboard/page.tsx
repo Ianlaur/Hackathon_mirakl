@@ -62,7 +62,7 @@ const fallbackOrders: DashboardOrderRow[] = [
     id: 'MK-8829-X',
     marketplace: 'Amazon US',
     icon: 'AMZ',
-    value: '$249.00',
+    value: '?249.00',
     status: 'FULFILLED',
     statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10',
     time: '14:22:05',
@@ -71,7 +71,7 @@ const fallbackOrders: DashboardOrderRow[] = [
     id: 'MK-8830-L',
     marketplace: 'Maison du Monde',
     icon: 'MDM',
-    value: '$1,120.45',
+    value: '?1,120.45',
     status: 'PROCESSING',
     statusStyle: 'text-[#2764FF] bg-[#2764FF]/10',
     time: '14:18:12',
@@ -80,7 +80,7 @@ const fallbackOrders: DashboardOrderRow[] = [
     id: 'MK-8831-Z',
     marketplace: 'Zalando EU',
     icon: 'ZLD',
-    value: '$89.99',
+    value: '?89.99',
     status: 'RISK ATTACHED',
     statusStyle: 'text-[#F22E75] bg-[#FFE7EC]',
     time: '14:05:44',
@@ -89,7 +89,7 @@ const fallbackOrders: DashboardOrderRow[] = [
     id: 'MK-8832-P',
     marketplace: 'Carrefour',
     icon: 'CRF',
-    value: '$42.50',
+    value: '?42.50',
     status: 'FULFILLED',
     statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10',
     time: '13:59:30',
@@ -97,7 +97,7 @@ const fallbackOrders: DashboardOrderRow[] = [
 ]
 
 function formatOrderValue(totalPrice: string | null | undefined, currency: string | null | undefined) {
-  if (!totalPrice) return '—'
+  if (!totalPrice) return '-'
 
   const amount = Number(totalPrice)
   if (Number.isNaN(amount)) return totalPrice
@@ -110,10 +110,10 @@ function formatOrderValue(totalPrice: string | null | undefined, currency: strin
 }
 
 function formatOrderTime(value: string | null | undefined) {
-  if (!value) return '—'
+  if (!value) return '-'
 
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
+  if (Number.isNaN(date.getTime())) return '-'
 
   return date.toLocaleTimeString('en-GB', {
     hour: '2-digit',
@@ -123,7 +123,7 @@ function formatOrderTime(value: string | null | undefined) {
 }
 
 function formatDashboardMoney(value: number | null | undefined) {
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'EUR',
     maximumFractionDigits: 0,
@@ -499,7 +499,7 @@ export default function DashboardPage() {
             <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
           </div>
           <span className="iris-searchbar__input font-serif text-[#6B7480]">
-            {sending ? 'Leia is responding…' : 'Ask Leia for operational insights…'}
+            {sending ? 'Leia is responding...' : 'Ask Leia for operational insights...'}
           </span>
           <span className="iris-searchbar__mic" aria-hidden>
             <Mic className="h-4 w-4" />
@@ -596,10 +596,10 @@ export default function DashboardPage() {
               className="iris-searchbar__input font-serif"
               placeholder={
                 recording
-                  ? 'Recording… click mic again to stop'
+                  ? 'Recording... click mic again to stop'
                   : sending
-                    ? 'Leia is responding…'
-                    : 'Ask Leia for operational insights…'
+                    ? 'Leia is responding...'
+                    : 'Ask Leia for operational insights...'
               }
               rows={1}
               value={query}
@@ -829,7 +829,7 @@ export default function DashboardPage() {
                     {recommendation.scenario_type.replaceAll('_', ' ')}
                   </span>
                   <span className={isPricing ? 'text-[#2764FF]' : 'text-[#F22E75]'}>
-                    {isPricing ? '★' : '⚠'}
+                    {isPricing ? '*' : '!'}
                   </span>
                 </div>
                 <div>
@@ -843,7 +843,7 @@ export default function DashboardPage() {
                     onClick={() => void handleRecommendationAction(recommendation, 'approve')}
                     className="bg-[#2764FF] text-white px-4 py-2 rounded font-serif text-sm transition-all duration-150 ease-out hover:bg-[#004bd9] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 disabled:opacity-50 flex-1"
                   >
-                    {busy ? 'Working…' : primaryLabel}
+                    {busy ? 'Working...' : primaryLabel}
                   </button>
                   {isPricing ? (
                     <button

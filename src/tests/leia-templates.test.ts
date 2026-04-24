@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  MIRA_TEMPLATE_IDS,
+  LEIA_TEMPLATE_IDS,
   renderTemplate,
   TEMPLATE_REGISTRY,
-} from '@/lib/mira/templates'
+} from '@/lib/leia/templates'
 
-describe('MIRA template registry', () => {
+describe('Leia template registry', () => {
   it('registers all 15 decision templates', () => {
-    expect(MIRA_TEMPLATE_IDS).toEqual([
+    expect(LEIA_TEMPLATE_IDS).toEqual([
       'buffer_adjustment_v1',
       'calendar_posture_v1',
       'carrier_audit_v1',
@@ -26,7 +26,7 @@ describe('MIRA template registry', () => {
       'vacation_queue_v1',
     ])
 
-    expect(Object.keys(TEMPLATE_REGISTRY).sort()).toEqual(MIRA_TEMPLATE_IDS)
+    expect(Object.keys(TEMPLATE_REGISTRY).sort()).toEqual(LEIA_TEMPLATE_IDS)
   })
 
   it('renders oversell risk in English deterministically', () => {

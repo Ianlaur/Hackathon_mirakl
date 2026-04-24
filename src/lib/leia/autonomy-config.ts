@@ -1,4 +1,4 @@
-import { normalizeAutonomyMode, type AutonomyPolicyMode } from '@/lib/mira/policy'
+import { normalizeAutonomyMode, type AutonomyPolicyMode } from '@/lib/leia/policy'
 
 export const DEFAULT_AUTONOMY_ACTION_TYPES = [
   'pause_listing',

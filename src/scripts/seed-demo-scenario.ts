@@ -9,7 +9,7 @@ if (!DEMO_USER_ID) {
 }
 
 async function main() {
-  // 1. Bascule quelques SKUs à stock critique pour que le calcul déterministe les flag
+  // 1. Set a few SKUs to critical stock so the deterministic calculation flags them
   const criticalSkus = ['NKS-00042', 'NKS-00021', 'NKS-00100', 'NKS-00055', 'NKS-00079']
   const products = await prisma.product.findMany({
     where: { user_id: DEMO_USER_ID!, sku: { in: criticalSkus } },
@@ -24,14 +24,14 @@ async function main() {
     console.log(`Stock ${p.sku} → ${newQty}`)
   }
 
-  // 2. Event congés ~10 jours → +20 jours
+  // 2. Vacation event ~10 jours → +20 jours
   const in10d = new Date(Date.now() + 10 * 24 * 3600 * 1000)
   const in20d = new Date(Date.now() + 20 * 24 * 3600 * 1000)
 
   const existing: Array<{ id: string }> = await prisma.$queryRaw`
     SELECT id FROM public.calendar_events
     WHERE user_id = ${DEMO_USER_ID}::uuid
-      AND title = 'Congés Savoie - Démo'
+      AND title = 'Savoie Vacation - Demo'
     LIMIT 1
   `
 
@@ -40,12 +40,12 @@ async function main() {
       INSERT INTO public.calendar_events (user_id, title, start_at, end_at, kind, impact, notes)
       VALUES (
         ${DEMO_USER_ID}::uuid,
-        'Congés Savoie - Démo',
+        'Savoie Vacation - Demo',
         ${in10d},
         ${in20d},
         'leave',
         'high',
-        'Événement seedé pour la démo Loom'
+        'Event seeded for the Loom demo'
       )
     `
     console.log('Created demo leave event')
@@ -53,11 +53,11 @@ async function main() {
     console.log('Demo leave event already exists, skipping create')
   }
 
-  // 3. Afficher l'ID de l'event démo
+  // 3. Print the demo event ID
   const eventRows: Array<{ id: string; start_at: Date; end_at: Date }> = await prisma.$queryRaw`
     SELECT id, start_at, end_at FROM public.calendar_events
     WHERE user_id = ${DEMO_USER_ID}::uuid
-      AND title = 'Congés Savoie - Démo'
+      AND title = 'Savoie Vacation - Demo'
     LIMIT 1
   `
   if (eventRows.length > 0) {

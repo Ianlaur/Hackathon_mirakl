@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   deriveActiveCalendarAbsence,
   shouldClearExpiredCalendarVacation,
-} from '@/lib/mira/calendar-sync'
+} from '@/lib/leia/calendar-sync'
 
 describe('calendar governance sync', () => {
   it('derives Vacation while a leave calendar event is active', () => {

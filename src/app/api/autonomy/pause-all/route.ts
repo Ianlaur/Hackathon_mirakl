@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
-import { buildAutonomySnapshot, buildPauseEverythingConfig } from '@/lib/mira/autonomy-config'
+import { buildAutonomySnapshot, buildPauseEverythingConfig } from '@/lib/leia/autonomy-config'
 
 export const dynamic = 'force-dynamic'
 

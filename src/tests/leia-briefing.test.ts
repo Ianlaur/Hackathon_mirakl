@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildBriefing } from '@/lib/mira/briefing'
+import { buildBriefing } from '@/lib/leia/briefing'
 
 describe('buildBriefing', () => {
   const metrics = {
@@ -30,7 +30,7 @@ describe('buildBriefing', () => {
     })
 
     expect(briefing.headline).toBe('Briefing du matin')
-    expect(briefing.lines[0]).toContain('Validations en attente : 3')
+    expect(briefing.lines[0]).toContain('Pending approvals : 3')
     expect(briefing.lines[3]).toContain('Black Friday le 2026-11-27')
   })
 

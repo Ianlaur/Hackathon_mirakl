@@ -4,7 +4,7 @@ import {
   DEFAULT_AUTONOMY_ACTION_TYPES,
   buildAutonomySnapshot,
   buildPauseEverythingConfig,
-} from '@/lib/mira/autonomy-config'
+} from '@/lib/leia/autonomy-config'
 
 describe('autonomy config helpers', () => {
   it('merges stored rows onto the default action type list', () => {

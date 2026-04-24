@@ -6,7 +6,7 @@ import {
   createOverrideRecord,
   listDecisionLedgerRows,
   updateDecisionLedgerStatus,
-} from '@/lib/mira/ledger'
+} from '@/lib/leia/ledger'
 import {
   applyGrowthFactor,
   calculateChannelShares,
@@ -17,15 +17,15 @@ import {
   calculateStockoutDays,
   calculateVelocity,
   projectDemand,
-} from '@/lib/mira/tools-math'
+} from '@/lib/leia/tools-math'
 import {
   evaluateFounderPolicy,
   normalizeAutonomyMode,
   normalizeFounderState,
-} from '@/lib/mira/policy'
-import { evaluateReputationShieldForUser } from '@/lib/mira/reputation-shield'
-import { syncFounderStateFromCalendarForUser } from '@/lib/mira/calendar-sync'
-import { declareSupplierLoss, SUPPLIER_LOSS_TYPES } from '@/lib/mira/supplier-losses'
+} from '@/lib/leia/policy'
+import { evaluateReputationShieldForUser } from '@/lib/leia/reputation-shield'
+import { syncFounderStateFromCalendarForUser } from '@/lib/leia/calendar-sync'
+import { declareSupplierLoss, SUPPLIER_LOSS_TYPES } from '@/lib/leia/supplier-losses'
 import { z } from 'zod'
 
 export type ToolDefinition = {
@@ -337,7 +337,7 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'get_stock_summary',
       description:
-        'Retourne un résumé du stock : nombre total de produits, produits en alerte (stock bas ou rupture), valeur totale estimée. À utiliser quand le merchant demande "où en est mon stock", "combien de produits", "quels sont les stocks bas".',
+        'Returns a stock summary: total products, products in alert (low stock or stockout), and estimated total value. Use when the merchant asks about stock status, product counts, or low-stock products.',
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -346,11 +346,11 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'get_product_by_sku',
       description:
-        "Récupère les détails d'un produit spécifique par son SKU (ex: NKS-00042). Retourne nom, quantité, seuil min, fournisseur, prix de vente. À utiliser quand le merchant demande combien il a d'un produit précis.",
+        "Gets details for a specific product by SKU (ex: NKS-00042). Returns name, quantity, minimum threshold, supplier, and selling price. Use when the merchant asks about one specific product.",
       parameters: {
         type: 'object',
         properties: {
-          sku: { type: 'string', description: 'Le SKU du produit, ex: NKS-00042' },
+          sku: { type: 'string', description: 'Product SKU, ex: NKS-00042' },
         },
         required: ['sku'],
       },
@@ -361,11 +361,11 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'search_products',
       description:
-        'Recherche des produits par mot-clé dans le nom. Retourne max 10 résultats. À utiliser quand le merchant cherche un type de produit (ex: "chaises", "tables").',
+        'Searches products by keyword in the name. Returns up to 10 results. Use when the merchant searches for a product type (ex: chairs, tables).',
       parameters: {
         type: 'object',
         properties: {
-          query: { type: 'string', description: 'Mot-clé à rechercher' },
+          query: { type: 'string', description: 'Keyword to search' },
         },
         required: ['query'],
       },
@@ -376,7 +376,7 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'list_pending_actions',
       description:
-        "Liste les recommandations en attente d'approbation dans l'inbox /actions. À utiliser quand le merchant demande ce qu'il a à faire, ce qui l'attend, ses actions en cours.",
+        "Lists recommendations waiting for approval in the /actions inbox. Use when the merchant asks what they need to do, what is waiting, or current actions.",
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -385,27 +385,27 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'create_calendar_event',
       description:
-        'Crée un événement dans le calendrier du merchant. Très utile pour les congés (kind=leave) qui déclenchent automatiquement une analyse de stock. Date format YYYY-MM-DD.',
+        'Creates an event in the merchant calendar. Useful for leave events (kind=leave), which automatically trigger stock analysis. Date format YYYY-MM-DD.',
       parameters: {
         type: 'object',
         properties: {
-          title: { type: 'string', description: "Titre de l'événement, ex: Congés Savoie" },
-          start_date: { type: 'string', description: 'Date début YYYY-MM-DD' },
+          title: { type: 'string', description: "Event title, ex: Savoie vacation" },
+          start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
           end_date: { type: 'string', description: 'Date fin YYYY-MM-DD' },
           kind: {
             type: 'string',
             enum: ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal'],
-            description: 'Type. Pour congés utiliser leave.',
+            description: 'Type. Use leave for vacation.',
           },
           impact: {
             type: 'string',
             enum: ['low', 'medium', 'high', 'critical'],
-            description: 'Impact estimé',
+            description: 'Estimated impact',
           },
           notes: { type: 'string', description: 'Notes optionnelles' },
           confirmed: {
             type: 'boolean',
-            description: "Mettre true uniquement après validation explicite du merchant. Obligatoire pour un congé.",
+            description: "Set true only after explicit merchant confirmation. Required for vacation.",
           },
         },
         required: ['title', 'start_date', 'end_date', 'kind'],
@@ -417,13 +417,13 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'propose_restock_plan',
       description:
-        "Génère un plan de réapprovisionnement pour les SKUs à risque de rupture sur un horizon donné (par défaut 30 jours). Crée une recommandation dans l'inbox /actions que le merchant peut approuver/rejeter. À utiliser quand le merchant demande 'prépare un plan restock', 'commande ce qu'il faut', ou après avoir détecté des stocks critiques.",
+        "Generates a replenishment plan for SKUs at stockout risk over a given horizon (default 30 days). Creates a recommendation in /actions that the merchant can approve or reject. Use when the merchant asks to prepare a restock plan, order what is needed, or after detecting critical stock.",
       parameters: {
         type: 'object',
         properties: {
           horizon_days: {
             type: 'number',
-            description: 'Nombre de jours de couverture ciblés (défaut 30)',
+            description: 'Target coverage days (default 30)',
           },
         },
         required: [],
@@ -435,13 +435,13 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'draft_supplier_emails',
       description:
-        "Génère des brouillons d'emails fournisseur, un par fournisseur concerné, pour commander les SKUs sous seuil. Retourne le sujet et le corps de chaque mail. Les mails ne sont PAS envoyés, uniquement préparés pour que le merchant les copie/colle ou les valide avant envoi. À utiliser quand le merchant demande 'écris les mails fournisseurs', 'prépare les commandes', 'rédige les relances'.",
+        "Generates supplier email drafts, one per affected supplier, to order SKUs below threshold. Returns each email subject and body. Emails are not sent; they are prepared for the merchant to validate before sending.",
       parameters: {
         type: 'object',
         properties: {
           horizon_days: {
             type: 'number',
-            description: 'Horizon de couverture en jours pour calculer les quantités (défaut 30)',
+            description: 'Coverage horizon in days for quantity calculation (default 30)',
           },
         },
         required: [],
@@ -1633,7 +1633,7 @@ export async function executeTool(
         },
       })
       if (!product) {
-        return { found: false, sku, message: `Aucun produit trouvé avec le SKU ${sku}` }
+        return { found: false, sku, message: `No product found with SKU ${sku}` }
       }
       return {
         found: true,
@@ -1738,7 +1738,7 @@ export async function executeTool(
           ok: true,
           pending_confirmation: true,
           message:
-            "Validation requise avant ajout au calendrier. Confirme avec 'oui' pour créer l'événement.",
+            "Validation required before adding to the calendar. Confirm with yes to create the event.",
           event: {
             title,
             start,
@@ -1772,8 +1772,8 @@ export async function executeTool(
 
       const created = rows[0]
 
-      // Si c'est un event leave, déclencher l'agent advisor en parallèle
-      // (même logique que le webhook n8n, mais en direct pour cas où n8n n'est pas actif)
+      // If this is a leave event, trigger the advisor agent in parallel
+      // Same logic as the n8n webhook, but direct when n8n is inactive
       if (created.kind === 'leave') {
         await syncFounderStateFromCalendarForUser(ctx.userId)
 
@@ -1808,12 +1808,12 @@ export async function executeTool(
           ok: true,
           created: false,
           horizon_days: horizonDays,
-          message: 'Aucun SKU sous risque de rupture sur cet horizon, pas de plan nécessaire.',
+          message: 'No SKU is at stockout risk on this horizon; no plan is needed.',
         }
       }
 
-      const title = `📦 Plan restock — ${plan.items.length} SKU critique${plan.items.length > 1 ? 's' : ''} (${horizonDays}j)`
-      const reasoning = `Sur les ${horizonDays} prochains jours, ${plan.items.length} produits risquent la rupture. Total estimé ${plan.totalCost.toFixed(0)} €.`
+      const title = `Restock plan - ${plan.items.length} critical SKU${plan.items.length > 1 ? 's' : ''} (${horizonDays} days)`
+      const reasoning = `Over the next ${horizonDays} days, ${plan.items.length} products risk stockout. Estimated total: €${plan.totalCost.toFixed(0)}.`
 
       const reco = await prisma.agentRecommendation.create({
         data: {
@@ -1822,17 +1822,17 @@ export async function executeTool(
           scenario_type: 'restock_plan_manual',
           status: 'pending_approval',
           reasoning_summary: reasoning,
-          expected_impact: `Éviter ${plan.items.length} ruptures potentielles et protéger environ ${plan.totalCost.toFixed(0)} € de chiffre d'affaires.`,
-          confidence_note: 'Confiance élevée sur le filtrage déterministe, à valider par le merchant.',
+          expected_impact: `Avoid ${plan.items.length} potential stockouts and protect roughly €${plan.totalCost.toFixed(0)} in revenue.`,
+          confidence_note: 'High confidence in deterministic filtering; merchant validation required.',
           evidence_payload: [
-            { label: 'Horizon', value: `${horizonDays} jours` },
-            { label: 'SKUs analysés', value: String(plan.productsCount) },
-            { label: 'SKUs à risque', value: String(plan.items.length) },
+            { label: 'Horizon', value: `${horizonDays} days` },
+            { label: 'SKUs analyzed', value: String(plan.productsCount) },
+            { label: 'SKUs at risk', value: String(plan.items.length) },
             {
-              label: 'Deadline commande au plus tard',
-              value: plan.earliestDeadline ?? '—',
+              label: 'Latest order deadline',
+              value: plan.earliestDeadline ?? '-',
             },
-            { label: 'Coût total estimé', value: `${plan.totalCost.toFixed(2)} €` },
+            { label: 'Estimated total cost', value: `€${plan.totalCost.toFixed(2)}` },
           ],
           action_payload: {
             horizon_days: horizonDays,
@@ -1868,7 +1868,7 @@ export async function executeTool(
         return {
           ok: true,
           drafts: [],
-          message: "Rien à commander pour l'instant, aucun SKU sous risque de rupture.",
+          message: "Nothing to order right now; no SKU is at stockout risk.",
         }
       }
 
@@ -1877,10 +1877,10 @@ export async function executeTool(
       })
       const merchantName = profile?.merchant_category ?? 'Nordika Studio'
 
-      // Grouper par fournisseur
+      // Group by supplier.
       const grouped = new Map<string, typeof plan.items>()
       for (const item of plan.items) {
-        const key = item.supplier ?? 'Fournisseur inconnu'
+        const key = item.supplier ?? 'Unknown supplier'
         const arr = grouped.get(key) ?? []
         arr.push(item)
         grouped.set(key, arr)
@@ -1896,22 +1896,22 @@ export async function executeTool(
         const tableLines = items
           .map(
             (i) =>
-              `- ${i.sku ?? '?'} — ${i.product_name} — ${i.recommended_qty} unités @ ${(i.unit_cost_eur ?? 0).toFixed(2)} € = ${(i.estimated_cost_eur ?? 0).toFixed(2)} €`
+              `- ${i.sku ?? '?'} - ${i.product_name} - ${i.recommended_qty} units @ €${(i.unit_cost_eur ?? 0).toFixed(2)} = €${(i.estimated_cost_eur ?? 0).toFixed(2)}`
           )
           .join('\n')
 
-        const subject = `Commande ${merchantName} — ${items.length} référence${items.length > 1 ? 's' : ''} (${items.reduce((s, i) => s + i.recommended_qty, 0)} unités)`
+        const subject = `Order ${merchantName} - ${items.length} reference${items.length > 1 ? 's' : ''} (${items.reduce((s, i) => s + i.recommended_qty, 0)} units)`
 
         const body =
-          `Bonjour,\n\n` +
-          `J'espère que vous allez bien. Je vous sollicite pour une commande de réassort :\n\n` +
+          `Hello,\n\n` +
+          `I am reaching out to request a replenishment order:\n\n` +
           tableLines +
-          `\n\nTotal estimé : ${total.toFixed(2)} €\n` +
+          `\n\nEstimated total: €${total.toFixed(2)}\n` +
           (earliestDeadline
-            ? `Idéalement livrée avant le ${earliestDeadline} pour éviter toute rupture.\n\n`
+            ? `Ideally delivered before ${earliestDeadline} to avoid stockouts.\n\n`
             : `\n`) +
-          `Merci de me confirmer disponibilité, délai de livraison et facture pro forma.\n\n` +
-          `Bien cordialement,\n` +
+          `Please confirm availability, delivery lead time, and pro forma invoice.\n\n` +
+          `Best regards,\n` +
           `Jean-Charles — ${merchantName}`
 
         return {

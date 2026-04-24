@@ -47,7 +47,7 @@ const emptySnapshot: RadarSnapshot = {
 }
 
 function money(value: number) {
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'EUR',
     maximumFractionDigits: 2,

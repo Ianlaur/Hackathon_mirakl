@@ -8,7 +8,7 @@ import {
   summarizeToolTrace,
   type LeiaChatMessage,
 } from '@/lib/leia-chat'
-import { checkRateLimit } from '@/lib/mira/rate-limit'
+import { checkRateLimit } from '@/lib/leia/rate-limit'
 import { getOpenAISettingsForUser } from '@/lib/openai-settings'
 import { prismaWithRetry } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'

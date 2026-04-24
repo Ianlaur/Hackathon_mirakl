@@ -6,18 +6,18 @@ export type LeiaQuickPrompt = {
 export const LEIA_QUICK_PROMPTS: LeiaQuickPrompt[] = [
   {
     label: 'Stock summary',
-    message: "Quel est mon stock aujourd'hui ?",
+    message: 'What is my stock position today?',
   },
   {
     label: 'Pending actions',
-    message: 'Quelles sont mes actions en attente ?',
+    message: 'What actions are pending?',
   },
   {
     label: 'Restock plan',
-    message: 'Prépare un plan de réapprovisionnement pour les produits critiques.',
+    message: 'Prepare a replenishment plan for critical products.',
   },
   {
     label: 'Leave planning',
-    message: 'Je vais partir en vacances du 2026-06-10 au 2026-06-15.',
+    message: 'I will be on vacation from 2026-06-10 to 2026-06-15.',
   },
 ]

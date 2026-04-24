@@ -27,7 +27,7 @@ function parsePrice(raw: string | null): number {
 }
 
 function randomStock(sellingPrice: number): number {
-  // Produits chers → stock plus faible, pas cher → stock plus grand
+  // Higher-ticket products carry lower stock; lower-ticket products carry deeper stock.
   if (sellingPrice === 0) return 10
   if (sellingPrice >= 500) return Math.floor(Math.random() * 15) + 5
   if (sellingPrice >= 200) return Math.floor(Math.random() * 40) + 10
@@ -47,8 +47,8 @@ async function main() {
   let updated = 0
 
   for (const row of rows) {
-    const name = row.title_fr || row.title_en || `Produit ${row.product_id}`
-    const description = row.description_fr || row.description_en || null
+    const name = row.title_en || row.title_fr || `Product ${row.product_id}`
+    const description = row.description_en || row.description_fr || null
     const sellingPrice = parsePrice(row.price_eur)
     const quantity = randomStock(sellingPrice)
     const minQuantity = Math.max(3, Math.ceil(quantity * 0.15))

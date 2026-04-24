@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const profileSchema = z.object({
-  name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
+  name: z.string().min(2, 'Name must contain at least 2 characters'),
   email: z.string().email('Email invalide'),
   phone: z.string().max(30).nullish().transform((value) => value || null),
   address: z.string().max(200).nullish().transform((value) => value || null),
@@ -242,7 +242,7 @@ export async function GET() {
     return NextResponse.json(mergeProfile(serializeUserProfile(user), override))
   } catch (error) {
     console.error('Error fetching profile:', error)
-    return NextResponse.json({ error: 'Impossible de récupérer le profil' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to load profile' }, { status: 500 })
   }
 }
 
@@ -271,6 +271,6 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
     }
 
-    return NextResponse.json({ error: 'Impossible de mettre à jour le profil' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to update profile' }, { status: 500 })
   }
 }

@@ -1,48 +1,38 @@
-# Script démo Loom — Calendar-Aware Restock Advisor
+# Loom Demo Script - Calendar-Aware Restock Advisor
 
-**Durée cible** : 90 secondes sur les 5-8 min du Loom complet.
+Target duration: 90 seconds inside the full Loom.
 
-## Préparation (avant Loom)
+## Preparation
 
-1. Exécuter depuis `src/` :
-
-   ```bash
-   npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/seed-demo-scenario.ts
-   ```
-
-   Reset stock à critique sur 5 SKUs + crée l'event "Congés Savoie - Démo" + affiche l'UUID.
-
-2. Ouvrir `http://localhost:3000/calendar` dans un onglet.
-3. Ouvrir `http://localhost:3000/actions` dans un second onglet.
-4. Noter l'UUID de l'event pour le curl de secours.
-
-## Déroulé
-
-| t (s) | Écran | Action | Voiceover |
-|---|---|---|---|
-| 00:00 | /calendar | Zoom sur les dates dans ~10 jours | "Jean-Charles veut partir 10 jours en Savoie." |
-| 00:10 | /calendar | Double-clic sur un jour, saisir "Congés Savoie", kind=leave | "Il crée l'événement dans son calendrier." |
-| 00:20 | sidebar | Cliquer sur Actions (badge compteur = 1) | "L'agent a détecté l'absence et préparé un plan." |
-| 00:25 | /actions | Reco "Plan congés" sélectionnée | "Un seul plan, pas 5 alertes séparées." |
-| 00:35 | /actions | Lire le tableau SKU, pointer la colonne Projection négative | "Voilà les 5 références qui vont tomber en rupture." |
-| 00:55 | /actions | Décocher 1 ligne | "Celle-là, je la gère avec un autre fournisseur." |
-| 01:05 | /actions | Clic "Approuver la sélection" | "Un clic — 4 commandes passées." |
-| 01:15 | Confirmation | Statut passe à "Approuvée" | "Jean-Charles peut partir. Le business continue sans lui." |
-
-## Plan B si n8n ne répond pas
-
-Déclencher la reco manuellement :
+Run from `src/`:
 
 ```bash
-curl -X POST "http://localhost:3000/api/agent/calendar-advisor/trigger?event_id=<UUID>"
+npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/seed-demo-scenario.ts
 ```
 
-Puis rafraîchir `/actions`.
+This resets selected stock levels to a critical state, creates a leave event, and prints the event UUID.
 
-## Reset rapide entre deux prises
+## Sequence
+
+| Time | Screen | Action | Voiceover |
+| --- | --- | --- | --- |
+| 00:00 | `/dashboard` | Open LEIA chat | "LEIA watches operations and knows the merchant calendar." |
+| 00:10 | `/calendar` | Create a leave event | "The merchant adds time away in the calendar." |
+| 00:20 | Sidebar | Open Actions | "LEIA detects the absence and prepares one consolidated plan." |
+| 00:25 | `/actions` | Select the calendar restock recommendation | "One plan, not five disconnected alerts." |
+| 00:35 | `/actions` | Point at projected negative stock | "These SKUs are expected to stock out during the absence." |
+| 00:55 | `/actions` | Deselect one SKU | "The merchant can exclude lines they want to handle separately." |
+| 01:05 | `/actions` | Approve the selection | "One click approves the plan." |
+| 01:15 | Confirmation | Status changes to approved | "The business keeps moving while the founder is away." |
+
+## Plan B
+
+If n8n is not connected, trigger the advisor manually:
 
 ```bash
-# Supprimer la reco pending pour rejouer
-npx prisma studio
-# Table agent_recommendations : delete row calendar_restock_plan pending_approval
+curl -X POST http://localhost:3000/api/agent/calendar-advisor/trigger \
+  -H "Content-Type: application/json" \
+  -d "{\"event_id\":\"EVENT_UUID\"}"
 ```
+
+Then refresh `/actions`.

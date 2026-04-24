@@ -36,7 +36,7 @@ export async function GET(
     })
 
     if (!zone) {
-      return NextResponse.json({ error: 'Zone non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Zone not found' }, { status: 404 })
     }
 
     return NextResponse.json(zone)
@@ -59,7 +59,7 @@ export async function PATCH(
     const parsed = updateZoneSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Données invalides' },
+        { error: parsed.error.errors[0]?.message || 'Invalid data' },
         { status: 400 }
       )
     }
@@ -70,7 +70,7 @@ export async function PATCH(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Zone non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Zone not found' }, { status: 404 })
     }
 
     // Check code uniqueness if updating code
@@ -79,7 +79,7 @@ export async function PATCH(
         where: { user_id_code: { user_id: userId, code: parsed.data.code } }
       })
       if (codeExists) {
-        return NextResponse.json({ error: 'Ce code de zone existe déjà' }, { status: 400 })
+        return NextResponse.json({ error: 'This zone code already exists' }, { status: 400 })
       }
     }
 
@@ -115,7 +115,7 @@ export async function DELETE(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Zone non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Zone not found' }, { status: 404 })
     }
 
     // Soft delete zone and all bins

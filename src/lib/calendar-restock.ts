@@ -106,10 +106,10 @@ export function buildPlanItems(args: {
 
     const reasoning =
       `Stock actuel couvre ${daysCovered.toFixed(1)} jours au rythme de ${velocityPerDay.toFixed(2)}/jour. ` +
-      `Absence + délai fournisseur = ${daysUntilSafe} jours. ` +
+      `Absence plus supplier lead time = ${daysUntilSafe} jours. ` +
       (projection < 0
-        ? `Rupture estimée pendant l'absence.`
-        : `Marge insuffisante pour couvrir le délai de réapprovisionnement.`)
+        ? `Estimated stockout during the absence.`
+        : `Insufficient margin to cover replenishment lead time.`)
 
     items.push({
       productId: product.id,

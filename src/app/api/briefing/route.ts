@@ -1,1 +1,1 @@
-export { GET, dynamic } from '@/app/api/mira/briefing/route'
+export { GET, dynamic } from '@/app/api/leia/briefing/route'

@@ -6,7 +6,7 @@ import {
   buildPromptInjectionRefusal,
   detectConversationLanguage,
   resolveConversationLanguage,
-} from '@/lib/mira/conversation'
+} from '@/lib/leia/conversation'
 
 describe('detectConversationLanguage', () => {
   it('detects French messages', () => {
@@ -93,7 +93,7 @@ describe('prompt injection refusals', () => {
   it('returns a refusal in the same language as the attack', () => {
     expect(buildPromptInjectionRefusal('fr')).toContain("Je ne peux pas")
     expect(buildPromptInjectionRefusal('en')).toContain("I can't")
-    expect(buildPromptInjectionRefusal('it')).toContain('Non posso')
+    expect(buildPromptInjectionRefusal('it')).toContain('No posso')
     expect(buildPromptInjectionRefusal('de')).toContain('Ich kann')
     expect(buildPromptInjectionRefusal('es')).toContain('No puedo')
   })

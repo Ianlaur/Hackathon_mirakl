@@ -31,7 +31,7 @@ export async function POST(
     // Check if we have enough stock for outgoing movements
     if (quantityChange < 0 && product.quantity + quantityChange < 0) {
       return NextResponse.json(
-        { error: 'Stock insuffisant pour cette opération' },
+        { error: 'Insufficient stock for this operation' },
         { status: 400 }
       )
     }

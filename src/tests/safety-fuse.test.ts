@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { evaluateSafetyFuse } from '@/lib/mira/safety-fuse'
+import { evaluateSafetyFuse } from '@/lib/leia/safety-fuse'
 
 describe('Safety Fuse', () => {
   it('does not trip return rate below threshold', () => {

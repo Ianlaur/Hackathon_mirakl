@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { MIRA_TEMPLATE_IDS, renderTemplate } from '@/lib/mira/templates'
+import { LEIA_TEMPLATE_IDS, renderTemplate } from '@/lib/leia/templates'
 
 export type DecisionTemplateRow = {
   id: string
@@ -131,12 +131,12 @@ export async function listDecisionTemplates() {
 }
 
 export async function ensureDecisionTemplatesAllowlist() {
-  if (MIRA_TEMPLATE_IDS.length === 0) return
+  if (LEIA_TEMPLATE_IDS.length === 0) return
 
   await prisma.$executeRaw`
     INSERT INTO public.decision_templates (id, description)
     SELECT template_id, 'Registered by Leia template registry'
-    FROM unnest(${MIRA_TEMPLATE_IDS}::text[]) AS template_id
+    FROM unnest(${LEIA_TEMPLATE_IDS}::text[]) AS template_id
     ON CONFLICT (id) DO NOTHING
   `
 }

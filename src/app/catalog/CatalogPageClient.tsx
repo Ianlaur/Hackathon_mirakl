@@ -146,7 +146,7 @@ export default function CatalogPageClient() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-[#FFE7EC] px-3 py-1 text-[11px] font-bold text-[#F22E75]">
-                SIMULÉ Mirakl push
+                SIMULATED Mirakl push
               </span>
               <button
                 type="button"
@@ -197,7 +197,7 @@ export default function CatalogPageClient() {
                 title="Simulation only"
               >
                 <Send className="h-4 w-4" />
-                Push to Mirakl SIMULÉ
+                Push to Mirakl SIMULATED
               </button>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function CatalogPageClient() {
                         {record.target_field}
                         {record.simulated ? (
                           <span className="ml-2 rounded bg-[#FFE7EC] px-1.5 py-0.5 font-sans text-[10px] font-bold text-[#F22E75]">
-                            SIMULÉ
+                            SIMULATED
                           </span>
                         ) : null}
                       </td>

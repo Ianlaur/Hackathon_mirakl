@@ -1,168 +1,99 @@
-# Hackathon Mirakl x Eugenia — UC1 Agent Led Merchant Company
+# Hackathon Mirakl x Eugenia - UC1 Agent-Led Merchant Company
 
-Projet Nathan (rôle CTO) sur la branche `nathan-calendar-advisor` (mirror équipe : `ianlaur/nathan-iris`). Pitch final **VEN 24 avril 2026, 14h** dans les locaux Mirakl.
+This repository contains the Nordika Studio demo app for an agent-led merchant workflow. The current working branch is `dev`; the AI assistant is named LEIA.
 
 ## Current Project State
 
-| Aspect | Status |
-|---|---|
-| Mascotte **LEIA** (orbe flottant + chat Spotlight) | ✅ Intégrée sur toutes les pages |
-| Chat tool-using (`/api/mascot/chat`, `gpt-5.4-mini`) | ✅ Tool calling OpenAI branché |
-| Réponses multilingues (EN/FR/IT/DE/ES) | ✅ Détection auto + réponse dans la langue du user |
-| Traces internes des décisions | ✅ Templates anglais dans `decision_ledger.logical_inference` |
-| **Calendar-Aware Restock Advisor** | ✅ Endpoint + logique + UI `/actions` |
-| Inbox `/actions` (approve/reject + tableau SKU) | ✅ Défensif vs anciennes recos |
-| Input vocal Whisper (`/api/mascot/transcribe`) | ✅ MediaRecorder + `whisper-1` en auto-détection |
-| Rendu markdown dans bulles assistant | ✅ react-markdown + remark-gfm |
-| Workflow n8n (`workflows/calendar-advisor.json`) | ✅ Fichier exportable (non déployé) |
-| Merge avec `ianlaur/dev` | ✅ Module `/copilot` équipier coexiste avec Leia |
-| Tests vitest (`src/tests/`) | ✅ Couverture étendue (calendar + LEIA multilingual + templates/math/invariant) |
-| Build Next.js | ✅ OK en dernière vérif |
-| Clé `OPENAI_API_KEY` dans `src/.env` | ✅ Configurée (gitignored) |
-| BDD Supabase (produits, recos, events) | ✅ 200 products Nordika importés, BDD nettoyée |
-| Déploiement Vercel | ❌ Pas encore fait |
-| n8n VPS branché en live | ❌ JSON prêt, à importer + configurer `APP_BASE_URL` |
-| Loom / deck / doc tech | ❌ À faire avant VEN 8h |
+| Area | Status |
+| --- | --- |
+| LEIA floating orb and Spotlight chat | Shipped across the app |
+| Tool-using chat | Uses `/api/mascot/chat` and `gpt-5.4-mini` |
+| Multilingual user interaction | LEIA detects EN/FR/IT/DE/ES and replies in the user's language |
+| Internal decision traces | Templates remain in English in `decision_ledger.logical_inference` |
+| Currency reference | EUR everywhere in app data, UI, and seed data |
+| Calendar-aware restock advisor | Endpoint, deterministic logic, and `/actions` UI are in place |
+| Whisper voice input | `/api/mascot/transcribe` uses automatic language detection |
+| n8n workflow | `workflows/calendar-advisor.json` is exportable but optional locally |
+| Tests | Vitest coverage includes calendar, LEIA, templates, math, guardrails, and governance |
+| Production build | `npm run build` passes from `src/` |
 
-## Language Model Rules
+## Language And Currency Rules
 
-- LEIA detecte la langue du dernier message user automatiquement.
-- Langues supportees: anglais, francais, italien, allemand, espagnol.
-- Reponse dans la meme langue que le user. Si ambigu, fallback anglais.
-- Les traces internes `decision_ledger.logical_inference` restent en anglais.
-- Whisper n'impose plus de langue: auto-detection uniquement.
-
-## Next Immediate Action
-
-**Relancer le dev server pour demo** :
-```bash
-cd "C:/Users/skwar/Desktop/hackaton/hackaton-mirakl/src"
-npm run dev
-```
-Puis tester : ouvrir `http://localhost:3000/dashboard`, cliquer sur l'orbe (bas-droite), vérifier que Leia répond (placeholder animé visible → *"combien de stock j'ai"* → appel tool `get_stock_summary`).
-
-**Si l'erreur `Cannot find module './9276.js'` revient** :
-```bash
-taskkill //F //IM node.exe && rm -rf "C:/Users/skwar/Desktop/hackaton/hackaton-mirakl/src/.next" && cd src && npm run dev
-```
-
-**Prochaine feature possible** (si demandée) : déploiement Vercel + branchement n8n VPS en live (voir `docs/n8n-setup.md`).
+- LEIA detects the latest user message language automatically.
+- Supported user languages: English, French, Italian, German, and Spanish.
+- If the language is ambiguous, LEIA defaults to English.
+- Internal templates and ledger traces stay in English.
+- Whisper voice transcription must not hardcode a language.
+- All monetary values are expressed in EUR.
+- UI currency displays use the euro symbol with English formatting, for example `€1,234.56`.
 
 ## Architecture
 
-```
-Dashboard/ Stock/ Actions/ Calendar
-       └─ [AppShell]
-            └─ <MascotOrb /> (fixed bottom-right, visible partout)
-                 └─ click → <MascotChatDrawer /> (overlay Spotlight, backdrop-blur)
-                      ├─ textarea auto-grow + placeholder typing animé
-                      ├─ bouton micro → POST /api/mascot/transcribe (Whisper auto-detect)
-                      ├─ submit → POST /api/mascot/chat (`gpt-5.4-mini` tool use)
-                      │    ├─ get_stock_summary / get_product_by_sku / search_products
-                      │    ├─ list_pending_actions
-                      │    ├─ create_calendar_event (leave → trigger advisor)
-                      │    ├─ propose_restock_plan
-                      │    └─ draft_supplier_emails
-                      ├─ ReactMarkdown sur bulles assistant
-                      └─ Cards récap : EventRecapCard, RestockPlanCard, EmailDraftCard
+```text
+Dashboard / Stock / Actions / Calendar
+  -> AppShell
+    -> MascotOrb
+      -> Spotlight chat drawer
+        -> POST /api/mascot/chat
+        -> LEIA tool loop in src/lib/leia-chat.ts
+        -> Governance, math, templates, and ledger helpers in src/lib/leia
 
-[calendar_events INSERT kind=leave]
-    └─ notifyN8n (fire-and-forget, non-blocking)
-         └─ webhook n8n (si N8N_WEBHOOK_URL défini)
-              └─ POST /api/agent/calendar-advisor {event_id, user_id}
-                   ├─ lib/calendar-restock.ts (projection déterministe)
-                   ├─ lib/calendar-restock-llm.ts (enrichissement + fallback)
-                   └─ INSERT agent_recommendations (scenario=calendar_restock_plan)
-                        └─ visible dans /actions
+calendar_events INSERT kind=leave
+  -> optional n8n webhook
+  -> POST /api/agent/calendar-advisor
+  -> deterministic restock projection
+  -> agent_recommendations
+  -> /actions inbox
 ```
 
-## Fichiers clés
+## Key Files
 
-| Fichier | Rôle |
-|---|---|
-| `src/components/MascotOrb.tsx` | Orbe flottant + animations fumée |
-| `src/components/MascotChatDrawer.tsx` | Overlay Spotlight + chat + markdown + cards |
-| `src/components/useAudioRecorder.ts` | Hook MediaRecorder + cleanup |
-| `src/lib/mascot-tools.ts` | 7 tool definitions + executors (Prisma) |
-| `src/app/api/mascot/chat/route.ts` | Route chat LEIA partagée |
-| `src/lib/leia-chat.ts` | Boucle tool calling OpenAI partagée |
-| `src/lib/mira/conversation.ts` | Détection de langue + prompt system multilingue |
-| `src/lib/mira/templates.ts` | 14 templates internes anglais |
-| `src/lib/mira/tools-math.ts` | Fonctions math déterministes |
-| `src/lib/mira/ledger.ts` | Helpers raw SQL `decision_ledger` / `override_records` |
-| `src/app/api/mascot/transcribe/route.ts` | Relay multipart vers Whisper auto-detect |
-| `src/app/api/mira/briefing/route.ts` | Morning briefing multilingue |
-| `src/app/api/agent/calendar-advisor/route.ts` | Agent restock (lecture BDD + reco) |
-| `src/app/actions/*` | Inbox page + card + detail panel avec approve/reject |
-| `src/app/globals.css` | Tous les styles `iris-*` (nom CSS historique, visible = LEIA) |
-| `src/lib/calendar-restock.ts` | Logique pure projection (testée) |
-| `src/scripts/cleanup-level-1.ts` | Purge BDD des artefacts de test (100 rows) |
-| `workflows/calendar-advisor.json` | Workflow n8n exportable |
-| `docs/superpowers/specs/2026-04-21-calendar-aware-restock-advisor-design.md` | Spec complet |
-| `docs/superpowers/plans/2026-04-21-calendar-aware-restock-advisor.md` | Plan 11 tâches |
-| `docs/demo-script.md` | Script Loom shot-by-shot 90s |
-| `docs/n8n-setup.md` | Guide d'activation n8n en prod |
+| File | Role |
+| --- | --- |
+| `src/components/MascotOrb.tsx` | Floating LEIA orb |
+| `src/lib/leia-chat.ts` | Shared OpenAI tool-calling loop |
+| `src/lib/leia/conversation.ts` | LEIA system prompt, language rules, and guardrails |
+| `src/lib/leia/templates.ts` | Internal English ledger templates |
+| `src/lib/leia/tools-math.ts` | Deterministic math helpers |
+| `src/lib/leia/ledger.ts` | Raw SQL helpers for `decision_ledger` and overrides |
+| `src/app/api/leia/briefing/route.ts` | Morning briefing API |
+| `src/app/api/mascot/chat/route.ts` | Chat endpoint |
+| `src/app/api/mascot/transcribe/route.ts` | Whisper relay |
+| `src/app/api/agent/calendar-advisor/route.ts` | Calendar-aware restock advisor |
+| `src/app/actions/*` | Actions inbox and approval flow |
+| `src/app/radar/page.tsx` | Losses Radar plugin view |
+| `src/supabase/seed/historical_orders_n1.sql` | N-1 seasonal historical order seed |
 
-## Git
+## Commands
 
-- **Branche locale** : `nathan-calendar-advisor`
-- **Remote origin** : fork perso `solanathouu/hackathon-mirakl-nordika`
-- **Remote ianlaur** : repo équipe `Ianlaur/Hackathon_mirakl` (branche `nathan-iris`)
-- **PR équipe** : https://github.com/Ianlaur/Hackathon_mirakl/pull/4
-- Pour push sur les 2 remotes en même temps :
-  ```bash
-  git push origin nathan-calendar-advisor && \
-    git push ianlaur nathan-calendar-advisor:nathan-iris
-  ```
-
-## Commandes utiles
+Run commands from `src/` unless stated otherwise.
 
 ```bash
-# Dev server
-cd src && npm run dev
-
-# Tests
-cd src && npm test
-
-# Type-check (sans toucher .next, safe même avec dev server qui tourne)
-cd src && npx tsc --noEmit --pretty
-
-# Build prod (⚠️ kill le dev server avant sinon EPERM Prisma + chunks périmés)
-cd src && npx next build
-
-# Dry-run BDD (compte les rows par table)
-cd src && npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/dryrun-cleanup.ts
-
-# Cleanup BDD niveau 1 (supprime recos + alertes + events leave tests)
-cd src && npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/cleanup-level-1.ts
-
-# Seed démo (reset stock + crée event leave)
-cd src && npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/seed-demo-scenario.ts
+npm run dev:3000
+npm test
+npx tsc --noEmit --pretty false
+npm run build
+npm run test:leia-math
+npm run test:leia-invariant
 ```
 
-## Env vars requises (`src/.env`)
+Stop the dev server before `npm run build` on Windows if Prisma reports a locked query engine DLL.
 
-```
-DATABASE_URL=postgresql://...supabase.com:5432/postgres
-DIRECT_URL=postgresql://...supabase.co:5432/postgres
+## Environment Variables
+
+```text
+DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://...
 HACKATHON_USER_ID=00000000-0000-0000-0000-000000000001
-OPENAI_API_KEY=sk-proj-...            # LEIA chat + Whisper
-N8N_WEBHOOK_URL=                      # optionnel, seulement si n8n actif
-DUST_ORCHESTRATOR_AGENT_ID=           # utilisé par le module /copilot de l'équipe
+OPENAI_API_KEY=...
+N8N_WEBHOOK_URL=
+DUST_ORCHESTRATOR_AGENT_ID=
 DUST_ORCHESTRATOR_API_KEY=
 ```
 
-## Points d'attention
+## Notes
 
-- **Cache `.next` se corrompt** quand dev server tourne pendant un `next build` ou gros refactor. Réflexe : `taskkill //F //IM node.exe && rm -rf src/.next && npm run dev`.
-- **Classes CSS `.iris-*`** sont historiques. Elles ne sont pas renommees en `.leia-*` pour garder le diff stable.
-- **Module `/copilot` équipe coexiste** avec Leia depuis le merge du 22/04. La sidebar n'a pas de lien vers `/copilot` (retiré par moi). Si l'équipe veut le remettre : 1 ligne dans `src/components/Sidebar.tsx`.
-- **Workflow n8n n'est PAS actif par défaut** — le JSON est livré comme asset (livrable Rendu #2). Pour l'activer en réel : voir `docs/n8n-setup.md`.
-- **Démo locale sans n8n** : l'appel direct à `/api/agent/calendar-advisor` est fait via `fetch` dans `create_calendar_event` (côté `lib/mascot-tools.ts`) — donc la chaîne leave → reco fonctionne même sans n8n. Si `N8N_WEBHOOK_URL` vide, le webhook est skippé mais Leia déclenche quand même l'advisor.
-
-## Reprise rapide (30 secondes)
-
-1. Lire cette section "Current Project State"
-2. Exécuter "Next Immediate Action"
-3. Si questionnement sur une feature → ouvrir le spec dans `docs/superpowers/specs/`
-4. Si bug UI → `tsc --noEmit` d'abord, puis inspecter le log dev server
+- CSS classes with the `iris-*` prefix are historical and remain for diff stability.
+- The `/copilot` module can coexist with LEIA, but it is not linked in the primary sidebar.
+- The n8n workflow is optional for local demos because LEIA can call the calendar advisor directly.
+- Legacy assistant-name references have been renamed to LEIA in active code and docs.

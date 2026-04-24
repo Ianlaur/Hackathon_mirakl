@@ -19,21 +19,21 @@ export type DecisionRecordInput = {
 }
 
 const TITLE_BY_TEMPLATE: Record<string, string> = {
-  oversell_risk_v1: 'Stock en tension',
-  restock_proposal_v1: 'Proposition de réassort',
-  vacation_queue_v1: 'En file — retour fondatrice',
-  reputation_shield_v1: 'Protection des avis',
-  returns_pattern_v1: 'Motif de retours',
-  seasonal_prediction_v1: 'Prédiction saisonnière',
-  listing_pause_v1: 'Pause de listing',
-  listing_resume_v1: 'Reprise de listing',
-  buffer_adjustment_v1: 'Ajustement de buffer',
-  calendar_posture_v1: 'Posture calendrier',
-  fuse_tripped_v1: 'Fuse déclenché',
-  reconciliation_variance_v1: 'Écart de réconciliation',
-  carrier_audit_v1: 'Audit transporteur',
-  supplier_scorecard_v1: 'Score fournisseur',
-  supplier_loss_v1: 'Perte fournisseur',
+  oversell_risk_v1: 'Stock running low',
+  restock_proposal_v1: 'Restock proposal',
+  vacation_queue_v1: 'Queued until founder returns',
+  reputation_shield_v1: 'Reputation shield',
+  returns_pattern_v1: 'Returns pattern',
+  seasonal_prediction_v1: 'Seasonal prediction',
+  listing_pause_v1: 'Listing pause',
+  listing_resume_v1: 'Listing resume',
+  buffer_adjustment_v1: 'Buffer adjustment',
+  calendar_posture_v1: 'Calendar posture',
+  fuse_tripped_v1: 'Safety fuse tripped',
+  reconciliation_variance_v1: 'Reconciliation variance',
+  carrier_audit_v1: 'Carrier audit',
+  supplier_scorecard_v1: 'Supplier scorecard',
+  supplier_loss_v1: 'Supplier loss',
 }
 
 function toIso(v: Date | string | null | undefined): string | null {
@@ -45,11 +45,11 @@ function toIso(v: Date | string | null | undefined): string | null {
 function buildEvidence(d: DecisionRecordInput): EvidenceEntry[] {
   const entries: EvidenceEntry[] = []
   if (d.sku) entries.push({ label: 'SKU', value: d.sku })
-  if (d.channel) entries.push({ label: 'Canal', value: d.channel })
+  if (d.channel) entries.push({ label: 'Channel', value: d.channel })
   entries.push({ label: 'Action', value: d.action_type })
   if (d.source_agent) entries.push({ label: 'Agent', value: d.source_agent })
-  if (d.trigger_event_id) entries.push({ label: 'Événement', value: d.trigger_event_id })
-  entries.push({ label: 'Réversible', value: d.reversible ? 'Oui' : 'Non' })
+  if (d.trigger_event_id) entries.push({ label: 'Event', value: d.trigger_event_id })
+  entries.push({ label: 'Reversible', value: d.reversible ? 'Yes' : 'No' })
   return entries
 }
 

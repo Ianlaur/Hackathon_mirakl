@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { createDecisionLedgerEntry } from '@/lib/mira/ledger'
-import { normalizeFounderState } from '@/lib/mira/policy'
+import { createDecisionLedgerEntry } from '@/lib/leia/ledger'
+import { normalizeFounderState } from '@/lib/leia/policy'
 
 export type ChannelRevenue = {
   channel: string

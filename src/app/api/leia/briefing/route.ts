@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { buildMorningBriefingForUser } from '@/lib/mira/briefing'
+import { buildMorningBriefingForUser } from '@/lib/leia/briefing'
 import { getCurrentUserId } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'

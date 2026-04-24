@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
-import { buildAutonomySnapshot } from '@/lib/mira/autonomy-config'
-import { getFounderContextForUser } from '@/lib/mira/founder-context'
-import { normalizeAutonomyMode } from '@/lib/mira/policy'
+import { buildAutonomySnapshot } from '@/lib/leia/autonomy-config'
+import { getFounderContextForUser } from '@/lib/leia/founder-context'
+import { normalizeAutonomyMode } from '@/lib/leia/policy'
 
 export const dynamic = 'force-dynamic'
 

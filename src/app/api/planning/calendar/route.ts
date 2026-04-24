@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 import { serializeJson } from '@/lib/serialize'
-import { syncFounderStateFromCalendarForUser } from '@/lib/mira/calendar-sync'
+import { syncFounderStateFromCalendarForUser } from '@/lib/leia/calendar-sync'
 
 const eventSchema = z.object({
   title: z.string().min(2).max(120),

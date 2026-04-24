@@ -23,7 +23,7 @@ const LANGUAGE_NAMES: Record<ConversationLanguage, string> = {
 const NO_DATA_BY_LANGUAGE: Record<ConversationLanguage, string> = {
   en: "I don't have that data. Tell me what is missing and I will look for it.",
   fr: "Je n'ai pas cette donnee. Dis-moi ce qui manque et je vais le chercher.",
-  it: 'Non ho questi dati. Dimmi cosa manca e lo cerchero.',
+  it: 'No ho questi dati. Dimmi cosa manca e lo cerchero.',
   de: 'Ich habe diese Daten nicht. Sag mir, was fehlt, und ich suche danach.',
   es: 'No tengo esos datos. Dime que falta y lo buscare.',
 }
@@ -31,7 +31,7 @@ const NO_DATA_BY_LANGUAGE: Record<ConversationLanguage, string> = {
 const PROMPT_INJECTION_REFUSAL_BY_LANGUAGE: Record<ConversationLanguage, string> = {
   en: "I can't follow requests to ignore my instructions or change my safety rules. Ask me about operations instead.",
   fr: "Je ne peux pas suivre une demande qui me dit d'ignorer mes instructions ou de changer mes regles. Demande-moi plutot une question operationnelle.",
-  it: 'Non posso seguire richieste che mi chiedono di ignorare le istruzioni o cambiare le regole di sicurezza. Chiedimi invece qualcosa sulle operations.',
+  it: 'No posso seguire richieste che mi chiedono di ignorare le istruzioni o cambiare le regole di sicurezza. Chiedimi invece qualcosa sulle operations.',
   de: 'Ich kann keine Anfrage befolgen, die meine Anweisungen ignorieren oder meine Sicherheitsregeln andern soll. Frag mich stattdessen nach den Operations.',
   es: 'No puedo seguir solicitudes que me pidan ignorar mis instrucciones o cambiar mis reglas de seguridad. Preguntame mejor por las operaciones.',
 }
@@ -64,13 +64,13 @@ const GUARDRAIL_REFUSAL_BY_LANGUAGE: Record<
   it: {
     prompt_injection: PROMPT_INJECTION_REFUSAL_BY_LANGUAGE.it,
     system_prompt:
-      'Non posso rivelare il prompt di sistema o le istruzioni nascoste. Chiedimi invece qualcosa sulle operations.',
+      'No posso rivelare il prompt di sistema o le istruzioni nascoste. Chiedimi invece qualcosa sulle operations.',
     internal_ids:
-      'Non posso rivelare identificativi interni, nomi di tabelle o dettagli di implementazione. Posso riassumere la decisione operativa.',
+      'No posso rivelare identificativi interni, nomi di tabelle o dettagli di implementazione. Posso riassumere la decisione operativa.',
     out_of_scope:
-      'Non posso gestire richieste di pricing, customer support o amministrazione. Posso aiutare con stock, ordini, calendario, trasporto e azioni governate.',
+      'No posso gestire richieste di pricing, customer support o amministrazione. Posso aiutare con stock, ordini, calendario, trasporto e azioni governate.',
     personality_hijack:
-      'Non posso cambiare identita, personalita o regole di sicurezza. Posso continuare come Leia sulle operations.',
+      'No posso cambiare identita, personalita o regole di sicurezza. Posso continuare come Leia sulle operations.',
   },
   de: {
     prompt_injection: PROMPT_INJECTION_REFUSAL_BY_LANGUAGE.de,
@@ -277,6 +277,7 @@ export function buildLeiaSystemPrompt({
     'Detect the user language from the latest user message and switch language if the user switches mid-conversation.',
     'Supported languages are English, French, Italian, German, and Spanish. If the request is ambiguous, default to English.',
     'Use short sentences. Be factual and calm. Use past tense for completed actions and present tense for current facts.',
+    'All monetary values are expressed in EUR. Nordika Studio operates primarily in Europe and EUR is the reference currency. If the user asks for conversion to a local currency, say it is an approximation.',
     'Never use emoji, exclamation marks, Oops, Super, or hedging.',
     'After every action, show how to undo it.',
     'Do not translate SKU codes, Nordika, Amazon, Google, Leia, or channel names such as amazon_it and google_de.',

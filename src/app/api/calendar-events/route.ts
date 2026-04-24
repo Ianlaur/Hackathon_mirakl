@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
-import { syncFounderStateFromCalendarForUser } from '@/lib/mira/calendar-sync'
+import { syncFounderStateFromCalendarForUser } from '@/lib/leia/calendar-sync'
 
 const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal'] as const
 const eventImpacts = ['low', 'medium', 'high', 'critical'] as const
@@ -20,7 +20,7 @@ type DbCalendarEvent = {
 }
 
 const eventSchema = z.object({
-  title: z.string().min(1, 'Le titre est requis').max(140),
+  title: z.string().min(1, 'Title is required').max(140),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   startTime: z.string().regex(/^$|^\d{2}:\d{2}$/).default(''),
@@ -65,7 +65,7 @@ export async function GET() {
     return NextResponse.json(events.map(serializeEvent))
   } catch (error) {
     console.error('Error fetching calendar events:', error)
-    return NextResponse.json({ error: 'Impossible de récupérer les événements' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to load events' }, { status: 500 })
   }
 }
 
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
     }
 
-    return NextResponse.json({ error: 'Impossible de créer l’événement' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to create event' }, { status: 500 })
   }
 }
 

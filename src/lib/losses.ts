@@ -75,6 +75,6 @@ export function buildLossEscalationBrief(lossCase: LossEvidenceCase) {
     `Location: ${lossCase.location}`,
     `Reference: ${lossCase.sourceOrderRef}`,
     `Latest detection: ${lossCase.latestDetectedAt}`,
-    `Notes: ${lossCase.notes.join(' | ') || 'None'}`,
+    `Notes: ${lossCase.notes.join(' | ') || 'Noe'}`,
   ].join('\n')
 }

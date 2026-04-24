@@ -1,36 +1,34 @@
-# Intro Mirakl × Mira — Visual Identity
+# Intro Mirakl x LEIA - Visual Identity
 
-## Style: Velvet Standard (Vignelli-inspired)
+## Style
 
-Premium enterprise reveal. Dark navy canvas — the Mirakl logo emerges from depth, not from a blank page. Generous negative space. Slow, deliberate motion. One accent hue: Mirakl blue. Everything glides; nothing snaps. The reveal of the dashboard is the cinematic payoff.
+Velvet Standard, inspired by Vignelli: a premium enterprise reveal with a dark navy canvas. The Mirakl logo should emerge from depth, not from a blank page. Motion is slow, deliberate, and polished. The dashboard reveal is the cinematic payoff.
 
 ## Colors
 
-- `#0A1528` — Deep navy canvas (background, base of depth)
-- `#0F2A44` — Mirakl deep blue (mid-tones, gradient stops)
-- `#3A6590` — Mirakl brand blue (logo native, rules) 
-- `#6EA0C9` — Mirakl light blue (halo glow, particles)
-- `#D6E4F2` — Frost white (typography, hairlines)
-- `#FFFFFF` — Flash peak only
+- `#0A1528` - Deep navy canvas
+- `#0F2A44` - Mirakl deep blue
+- `#3A6590` - Mirakl brand blue
+- `#6EA0C9` - Mirakl light blue
+- `#D6E4F2` - Frost typography
+- `#FFFFFF` - Transition flash only
 
 ## Typography
 
-- Headline/Tagline: `"Space Grotesk", "Helvetica Neue", Arial, sans-serif` — weight 300 (thin), ALL CAPS, letter-spacing `0.32em`
-- Ghost display: same stack, weight 100, 420px, opacity 0.04
-- No Inter. No Roboto. No gradient text.
+- Headline and tagline: `Space Grotesk`, `Helvetica Neue`, Arial, sans-serif; weight 300; all caps; letter spacing `0.32em`
+- Ghost display: same stack; weight 100; very large; opacity `0.04`
+- Avoid Inter, Roboto, generic gradient text, and heavy italic display type.
 
 ## Motion
 
-- Eases: `sine.inOut`, `power1.inOut`, `power2.in` (for dive), `power3.out` (for land)
-- Entrance tempo: slow (1.0–1.4s). Logo glides into existence — it does not snap.
-- Ambient: halo breath 2.4s, particles drift 8s+, ghost text slow drift
-- Zoom-through: decisive push (`power2.in`), peak flash, settle (`power3.out`)
+- Eases: `sine.inOut`, `power1.inOut`, `power2.in`, `power3.out`
+- Entrance tempo: 1.0-1.4s
+- Ambient layers: halo breathing, slow particle drift, subtle ghost text drift
+- Zoom-through: decisive push, peak flash, calm settle
 
-## What NOT to Do
+## Guardrails
 
-- No white background — navy is the identity
-- No `Inter`, no `Roboto`, no generic gradient text
-- No bouncy/elastic eases — this is dignified enterprise
-- No drop shadow with colored tint on the dashboard — keep it as a real product screenshot
-- No `rotate: 360` stunts on the logo — the logo never rotates
-- No purple-to-blue rainbow — Mirakl blue family only
+- Navy is the identity surface; avoid white-page openings.
+- Keep the dashboard as a real product screenshot, with no decorative colored shadow.
+- Do not rotate the logo.
+- Keep the palette in the Mirakl blue family.

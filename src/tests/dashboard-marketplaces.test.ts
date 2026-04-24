@@ -95,11 +95,11 @@ describe('selectDashboardRecommendations', () => {
 describe('marketplace helpers', () => {
   it('accepts a proposal by moving it to connected channels and removing it from proposals', () => {
     const proposals = [
-      { name: 'Darty', category: 'Electronics', dailyUsers: '2.4M', revenue: 'â‚¬850M' },
-      { name: 'Carrefour', category: 'Retail', dailyUsers: '4.8M', revenue: 'â‚¬1.2B' },
+      { name: 'Darty', category: 'Electronics', dailyUsers: '2.4M', revenue: '€850M' },
+      { name: 'Carrefour', category: 'Retail', dailyUsers: '4.8M', revenue: '€1.2B' },
     ]
     const connected = [
-      { name: 'Amazon', revenue: 'â‚¬42,000', change: '+12.4%', status: 'STABLE' as const, icon: 'AMZ' },
+      { name: 'Amazon', revenue: '€42,000', change: '+12.4%', status: 'STABLE' as const, icon: 'AMZ' },
     ]
 
     const result = acceptMarketplaceProposal(proposals, connected, 'Darty')
@@ -110,8 +110,8 @@ describe('marketplace helpers', () => {
 
   it('declines a proposal by removing it from the visible list', () => {
     const proposals = [
-      { name: 'Darty', category: 'Electronics', dailyUsers: '2.4M', revenue: 'â‚¬850M' },
-      { name: 'Carrefour', category: 'Retail', dailyUsers: '4.8M', revenue: 'â‚¬1.2B' },
+      { name: 'Darty', category: 'Electronics', dailyUsers: '2.4M', revenue: '€850M' },
+      { name: 'Carrefour', category: 'Retail', dailyUsers: '4.8M', revenue: '€1.2B' },
     ]
 
     expect(declineMarketplaceProposal(proposals, 'Carrefour').map((proposal) => proposal.name)).toEqual(['Darty'])

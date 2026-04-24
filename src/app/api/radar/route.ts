@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUserId } from '@/lib/session'
-import { getRadarSnapshot } from '@/lib/mira/supplier-losses'
+import { getRadarSnapshot } from '@/lib/leia/supplier-losses'
 
 export const dynamic = 'force-dynamic'
 

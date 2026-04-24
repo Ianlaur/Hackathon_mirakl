@@ -1,20 +1,20 @@
 import { describe, expect, it } from 'vitest'
 
-import { listDecisionTemplates, listDistinctLedgerTemplateIds } from '@/lib/mira/ledger'
-import { MIRA_TEMPLATE_IDS, renderTemplate } from '@/lib/mira/templates'
+import { listDecisionTemplates, listDistinctLedgerTemplateIds } from '@/lib/leia/ledger'
+import { LEIA_TEMPLATE_IDS, renderTemplate } from '@/lib/leia/templates'
 
-describe('mira template invariant', () => {
+describe('Leia template invariant', () => {
   it('matches the database allowlist in decision_templates', async () => {
     const rows = await listDecisionTemplates()
 
-    expect(rows.map((row) => row.id)).toEqual(MIRA_TEMPLATE_IDS)
+    expect(rows.map((row) => row.id)).toEqual(LEIA_TEMPLATE_IDS)
   })
 
   it('covers every template id already present in decision_ledger', async () => {
     const rows = await listDistinctLedgerTemplateIds()
 
     for (const templateId of rows) {
-      expect(MIRA_TEMPLATE_IDS).toContain(templateId)
+      expect(LEIA_TEMPLATE_IDS).toContain(templateId)
     }
   })
 
