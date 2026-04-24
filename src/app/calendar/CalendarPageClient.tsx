@@ -226,7 +226,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'high',
     zone: 'China / marketplaces',
-    notes: 'Major e-commerce promotional peak — useful for marketplace monitoring and cross-border ops.',
+    notes: 'Major e-commerce promotional peak: useful for marketplace monitoring and cross-border ops.',
     locked: true,
   },
   {
@@ -252,7 +252,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'France',
-    notes: 'Gift window — leverage with targeted campaigns, bundles and guaranteed delivery SLAs.',
+    notes: 'Gift window: leverage with targeted campaigns, bundles and guaranteed delivery SLAs.',
     locked: true,
   },
   {
@@ -265,7 +265,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'International',
-    notes: 'Gift peak — time-boxed offers and strict on-time delivery expectations.',
+    notes: 'Gift peak: time-boxed offers and strict on-time delivery expectations.',
     locked: true,
   },
 ]
@@ -281,12 +281,12 @@ function toDateKeyFromParts(day: number, month: number, year = today.getFullYear
   return toDateKey(new Date(year, month - 1, day))
 }
 
-function formatDateFr(dateKey: string) {
+function formatDateEn(dateKey: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(parseDateKey(dateKey))
 }
 
-function formatDateRangeFr(startDate: string, endDate: string) {
-  return startDate === endDate ? formatDateFr(startDate) : `${formatDateFr(startDate)} — ${formatDateFr(endDate)}`
+function formatDateRangeEn(startDate: string, endDate: string) {
+  return startDate === endDate ? formatDateEn(startDate) : `${formatDateEn(startDate)} - ${formatDateEn(endDate)}`
 }
 
 function parseDateKey(dateKey: string) {
@@ -376,7 +376,7 @@ function inferZone(text: string, kind: EventKind) {
 
 function removeCommandWords(value: string) {
   return value
-    .replace(/\b(ajoute|ajouter|cree|crée|creer|créer|create|add|schedule|mets|mettre|pose|planifie|programme)\b/gi, '')
+    .replace(/\b(ajoute|ajouter|cree|creer|create|add|schedule|mets|mettre|pose|planifie|programme)\b/gi, '')
     .replace(/\b(mes|mon|ma|un|une|des|les|en)\b/gi, ' ')
     .replace(/\b(je prends|je pose|je serai|je suis|j ai|j'ai)\b/gi, ' ')
     .replace(/\s+/g, ' ')
@@ -392,7 +392,7 @@ function inferTitle(original: string, text: string, kind: EventKind) {
     .replace(/\ble\b.+$/i, '')
     .replace(/\bde\b.+$/i, '')
     .replace(/\b(demain|aujourd'hui|aujourd hui|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|prochain|prochaine)\b.+$/i, '')
-    .replace(/\btoute la journ[ée]e\b/gi, '')
+    .replace(/\btoute la journee\b/gi, '')
     .trim()
 
   if (beforeDate.length >= 3) return titleCase(beforeDate)
@@ -514,7 +514,7 @@ function parseNaturalEvent(input: string, fallbackDate: string): ParsedNaturalEv
       notes: `Created from natural input: "${original}"`,
     },
     confidence,
-    summary: `${title} · ${formatDateRangeFr(dates.startDate, endDate)}${times.startTime ? ` · ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' · all day'}`,
+    summary: `${title} - ${formatDateRangeEn(dates.startDate, endDate)}${times.startTime ? ` - ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' - all day'}`,
   }
 }
 
@@ -727,7 +727,7 @@ export default function CalendarPageClient() {
   const createEvent = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!parsedNaturalEvent) {
-      setSyncError('Describe an event — e.g. "time off from May 5 to May 10, all day"')
+      setSyncError('Describe an event - e.g. "time off from May 5 to May 10, all day"')
       return
     }
     await saveDraftEvent(parsedNaturalEvent.event)
@@ -905,7 +905,7 @@ export default function CalendarPageClient() {
     const eventContext = [
       'Calendar event context:',
       `Title: ${detailEvent.title}`,
-      `Date range: ${formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}`,
+      `Date range: ${formatDateRangeEn(detailEvent.startDate, detailEvent.endDate)}`,
       `Impact: ${impactLabels[detailEvent.impact].label}`,
       `Type: ${getKindStyle(detailEvent.kind).label}`,
       `Zone: ${detailEvent.zone}`,
@@ -976,12 +976,12 @@ export default function CalendarPageClient() {
           <div className="mt-3 flex flex-wrap gap-2">
             {isLoading && (
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-[#6B7480]">
-                Loading from Supabase…
+                Loading from Supabase...
               </span>
             )}
             {savingIds.length > 0 && (
               <span className="rounded-full bg-[#2764FF]/10 px-3 py-1 text-xs font-semibold text-[#004bd9]">
-                Saving…
+                Saving...
               </span>
             )}
             {syncError && (
@@ -1020,7 +1020,7 @@ export default function CalendarPageClient() {
             return Math.max(0, Math.min(100, (Math.round((d.getTime() - rs.getTime()) / 86400000) / td) * 100))
           }
           const sd = (dk: string) => new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' }).format(parseDateKey(dk))
-          // Fewer events + wider breathing room on longer ranges (30j: 5 · 3mo: 6 · 6mo: 7)
+          // Fewer events + wider breathing room on longer ranges (30 days: 5, 3 months: 6, 6 months: 7)
           const mx = tlRange <= 30 ? 5 : tlRange <= 90 ? 6 : 7
           const vis = tl.slice(0, mx)
           // Keep points spaced while preserving order.
@@ -1203,7 +1203,7 @@ export default function CalendarPageClient() {
                               } ${isRangeEnd ? 'rounded-r-lg' : 'rounded-r-sm'} ${
                                 event.impact === 'critical' ? 'ring-1 ring-red-300' : ''
                               }`}
-                              title={`${event.title} · ${event.zone}`}
+                              title={`${event.title} - ${event.zone}`}
                             >
                               {event.startTime && isRangeStart ? `${event.startTime} ` : ''}
                               {event.title}
@@ -1303,7 +1303,7 @@ export default function CalendarPageClient() {
                               }`}
                               onClick={() => chooseDate(wd.key)}
                               onDoubleClick={() => {
-                                setNaturalInput(`on ${formatDateFr(wd.key).replaceAll('-', '/')} from ${hour}:00 to ${hour + 1}:00 `)
+                                setNaturalInput(`on ${formatDateEn(wd.key).replaceAll('-', '/')} from ${hour}:00 to ${hour + 1}:00 `)
                                 startCreateFromDate(wd.key)
                               }}
                             >
@@ -1314,7 +1314,7 @@ export default function CalendarPageClient() {
                                     key={event.id}
                                     onClick={(e) => { e.stopPropagation(); setDetailEventId(event.id); setSelectedDate(wd.key) }}
                                     className={`mb-0.5 cursor-pointer truncate rounded border px-1.5 py-0.5 text-[11px] font-semibold ${kind.chip} ${kind.border}`}
-                                    title={`${event.title} · ${event.startTime}${event.endTime ? `-${event.endTime}` : ''}`}
+                                    title={`${event.title} - ${event.startTime}${event.endTime ? `-${event.endTime}` : ''}`}
                                   >
                                     {event.startTime} {event.title}
                                   </div>
@@ -1386,7 +1386,7 @@ export default function CalendarPageClient() {
                       key={hour}
                       className="group flex border-b border-slate-100 last:border-b-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer"
                       onDoubleClick={() => {
-                        setNaturalInput(`on ${formatDateFr(selectedDate).replaceAll('-', '/')} from ${hour}:00 to ${hour + 1}:00 `)
+                        setNaturalInput(`on ${formatDateEn(selectedDate).replaceAll('-', '/')} from ${hour}:00 to ${hour + 1}:00 `)
                         startCreateFromDate(selectedDate)
                       }}
                     >
@@ -1456,7 +1456,7 @@ export default function CalendarPageClient() {
             <div className="mt-4 space-y-3">
               <div className="flex items-center gap-2 font-serif text-sm text-[#30373E]">
                 <svg className="h-4 w-4 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <span>{formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}</span>
+                <span>{formatDateRangeEn(detailEvent.startDate, detailEvent.endDate)}</span>
                 {detailEvent.startTime && (
                   <span className="text-[#6B7480]">{detailEvent.startTime}{detailEvent.endTime ? ` - ${detailEvent.endTime}` : ''}</span>
                 )}

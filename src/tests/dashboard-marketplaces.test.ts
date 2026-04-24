@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import {
   buildDashboardHistoryMessage,
   selectDashboardRecommendations,
@@ -93,6 +95,16 @@ describe('selectDashboardRecommendations', () => {
 })
 
 describe('marketplace helpers', () => {
+  it('keeps the legacy proposal chat out of active channels', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/marketplaces/active-connection/page.tsx'),
+      'utf8'
+    )
+
+    expect(source).not.toContain('Leia reviewed the proposal')
+    expect(source).not.toContain('Message ${selectedConv} team')
+  })
+
   it('accepts a proposal by moving it to connected channels and removing it from proposals', () => {
     const proposals = [
       { name: 'Darty', category: 'Electronics', dailyUsers: '2.4M', revenue: '€850M' },

@@ -1,9 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MoreVertical, Plus, RefreshCw, Settings, Store } from 'lucide-react'
+import { MoreVertical, Plus, RefreshCw, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { pickConversationName } from '@/lib/marketplaces'
 
 const marketplaces = [
   {
@@ -71,38 +70,6 @@ const apiRows = [
   { name: 'Leroy Merlin EU', lastSync: '2026-04-23 13:59:30', latency: '520ms', errorRate: '1.20%', errorColor: 'text-[#F22E75]' },
 ]
 
-const conversations = [
-  { name: 'Darty', lastMsg: 'LEIA: The category mapping is ready for your review.', time: '14:20', active: true },
-  { name: 'Carrefour', lastMsg: 'We are reviewing your luxury goods catalog.', time: 'YESTERDAY', active: false },
-  { name: 'Auchan', lastMsg: 'LEIA: Proposal sent for the Q4 integration phase.', time: 'MON', active: false },
-  { name: 'ManoMano', lastMsg: 'LEIA: Checking logistics API endpoints.', time: 'OCT 24', active: false },
-]
-
-const messages = [
-  {
-    from: 'partner',
-    text: 'Hello Fanny, we reviewed your catalog and would like to discuss a premium placement for the upcoming retail period.',
-    time: '10:45 AM',
-  },
-  {
-    from: 'leia',
-    text: 'Leia reviewed the proposal. Compatibility is high and the activation path is ready for your approval.',
-    time: '11:02 AM · AUTOPILOT',
-  },
-  {
-    from: 'partner',
-    text: 'Perfect. We have sent the technical requirements for the API sync and shipping rules.',
-    time: '14:15 PM',
-  },
-]
-
-const requirements = [
-  { label: 'Mirakl API Key', status: 'ok' },
-  { label: 'Catalog Matching (94%)', status: 'ok' },
-  { label: 'Shipping Policy Review', status: 'warn' },
-  { label: 'Contract Signature', status: 'pending' },
-]
-
 type ShopifyConnectionStatus = {
   id: string
   shopDomain: string
@@ -140,9 +107,6 @@ export default function ActiveConnectionPage() {
   const [shopifyLoading, setShopifyLoading] = useState(true)
   const [syncingShopify, setSyncingShopify] = useState(false)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
-  const [selectedConv, setSelectedConv] = useState(
-    pickConversationName(null, conversations.map((conversation) => conversation.name))
-  )
 
   const loadShopifyStatus = useCallback(async () => {
     setShopifyLoading(true)
@@ -173,9 +137,6 @@ export default function ActiveConnectionPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const partner = params.get('partner')
-    setSelectedConv(
-      pickConversationName(partner, conversations.map((conversation) => conversation.name))
-    )
 
     const status = params.get('shopify')
     const reason = params.get('reason')
@@ -346,179 +307,6 @@ export default function ActiveConnectionPage() {
             <div className="px-4 py-4 text-[13px] text-[#6B7480]">No Shopify shop connected yet.</div>
           )}
         </div>
-      </div>
-
-      <div className="flex border border-[#DDE5EE] bg-white rounded overflow-hidden" style={{ height: 'calc(100vh - 290px)' }}>
-        <aside className="w-80 border-r border-[#DDE5EE] flex flex-col overflow-y-auto flex-shrink-0">
-          <div className="p-4 border-b border-[#DDE5EE] bg-[#F2F8FF]/50">
-            <h3 className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Active Proposals</h3>
-          </div>
-          <div className="flex-grow">
-            {conversations.map((conversation) => (
-              <button
-                key={conversation.name}
-                type="button"
-                onClick={() => setSelectedConv(conversation.name)}
-                className={`w-full p-4 text-left transition-all duration-150 ease-out ${
-                  selectedConv === conversation.name
-                    ? 'bg-[#dce1ff]/30 border-l-4 border-[#004bd9]'
-                    : 'hover:bg-[#F2F8FF] border-l-4 border-transparent'
-                }`}
-              >
-                <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white border border-[#DDE5EE] flex items-center justify-center flex-shrink-0">
-                    <Store className="h-5 w-5 text-[#6B7480]" />
-                  </div>
-                  <div className="flex-grow min-w-0">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-serif text-sm font-bold text-[#03182F]">{conversation.name}</span>
-                      <span className="text-[10px] font-mono text-[#6B7480] uppercase">{conversation.time}</span>
-                    </div>
-                    <p className="text-[12px] text-[#6B7480] truncate italic">{conversation.lastMsg}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        <article className="flex-grow flex flex-col">
-          <header className="p-4 border-b border-[#DDE5EE] flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full border border-[#DDE5EE] flex items-center justify-center">
-                <Store className="h-5 w-5 text-[#6B7480]" />
-              </div>
-              <div>
-                <h2 className="font-serif text-lg font-bold text-[#03182F]">{selectedConv}</h2>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#3FA46A]" />
-                  <span className="text-[10px] font-mono text-[#6B7480] uppercase">Proposing Partner · Online</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setStatusMessage(`${selectedConv} marked as declined.`)}
-                className="h-9 px-4 flex items-center gap-2 border border-[#BFCBDA] text-[#30373E] text-[11px] font-bold rounded transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 uppercase"
-              >
-                Decline
-              </button>
-              <button
-                type="button"
-                onClick={() => setStatusMessage(`${selectedConv} approved for activation.`)}
-                className="h-9 px-4 flex items-center gap-2 bg-[#3FA46A] text-white text-[11px] font-bold rounded transition-all duration-150 ease-out hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#3FA46A]/40 uppercase shadow-sm"
-              >
-                Approve
-              </button>
-              <button
-                type="button"
-                onClick={focusShopifyInput}
-                className="h-9 px-4 flex items-center gap-2 bg-[#004bd9] text-white text-[11px] font-bold rounded transition-all duration-150 ease-out hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 uppercase shadow-sm"
-              >
-                Install
-              </button>
-            </div>
-          </header>
-
-          <div className="flex-grow overflow-y-auto p-6 space-y-8 bg-[#faf8ff]">
-            {messages.map((message, index) => {
-              if (message.from === 'leia') {
-                return (
-                  <div key={index} className="flex gap-4 max-w-2xl ml-auto flex-row-reverse">
-                    <div className="w-8 h-8 rounded-full bg-[#03182F] flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">AI</div>
-                    <div className="space-y-1 text-right">
-                      <div className="bg-[#004bd9] text-white p-4 rounded-xl rounded-tr-none shadow-sm">
-                        <p className="text-sm">{message.text}</p>
-                      </div>
-                      <span className="text-[10px] font-mono text-[#6B7480] uppercase mr-1">{message.time}</span>
-                    </div>
-                  </div>
-                )
-              }
-              return (
-                <div key={index} className="flex gap-4 max-w-2xl">
-                  <div className="w-8 h-8 rounded-full bg-white border border-[#DDE5EE] flex-shrink-0 flex items-center justify-center">
-                    <Store className="h-4 w-4 text-[#6B7480]" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="bg-white border border-[#DDE5EE] p-4 rounded-xl rounded-tl-none shadow-sm">
-                      <p className="text-sm text-[#30373E]">{message.text}</p>
-                    </div>
-                    <span className="text-[10px] font-mono text-[#6B7480] uppercase ml-1">{message.time}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <footer className="p-4 bg-white border-t border-[#DDE5EE] flex-shrink-0">
-            <div className="flex gap-3 items-center bg-[#03182F] rounded-full p-1.5 pl-4 shadow-lg">
-              <input
-                className="flex-grow bg-transparent border-none text-white text-sm focus:ring-0 focus:outline-none placeholder:text-[#6B7480] font-serif"
-                placeholder={`Message ${selectedConv} team...`}
-                type="text"
-                onFocus={() => setStatusMessage(`Compose a reply for ${selectedConv}.`)}
-              />
-              <button
-                type="button"
-                onClick={() => setStatusMessage(`Draft queued for ${selectedConv}.`)}
-                className="bg-[#004bd9] text-white px-4 h-9 rounded-full flex items-center justify-center transition-all duration-150 ease-out hover:bg-[#2764FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
-              >
-                Send
-              </button>
-            </div>
-          </footer>
-        </article>
-
-        <aside className="w-72 border-l border-[#DDE5EE] flex flex-col overflow-y-auto flex-shrink-0">
-          <div className="p-6 space-y-8">
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-lg bg-white border border-[#DDE5EE] shadow-sm mx-auto mb-4 flex items-center justify-center">
-                <Store className="h-10 w-10 text-[#6B7480]" />
-              </div>
-              <h3 className="font-serif text-[22px] font-bold text-[#03182F]">{selectedConv}</h3>
-              <p className="text-[12px] text-[#6B7480] mt-1">High-Tech & Electronics Marketplace</p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 bg-[#F2F8FF] rounded-lg border border-[#DDE5EE]">
-                <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-1">Daily Users</span>
-                <span className="font-serif text-2xl font-bold text-[#03182F]">2.4M</span>
-              </div>
-              <div className="p-4 bg-[#F2F8FF] rounded-lg border border-[#DDE5EE]">
-                <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-1">LY Revenue</span>
-                <span className="font-serif text-2xl font-bold text-[#03182F]">€850M</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-serif text-sm font-bold uppercase text-[#6B7480] tracking-wider">About</h4>
-              <p className="text-[13px] text-[#6B7480] leading-relaxed">
-                Leading French retailer with a qualified consumer base and a strong merchandising program for premium home categories.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-serif text-sm font-bold uppercase text-[#6B7480] tracking-wider">Requirements</h4>
-              <ul className="space-y-2">
-                {requirements.map((requirement) => (
-                  <li key={requirement.label} className="flex items-start gap-2 text-[13px] text-[#6B7480]">
-                    {requirement.status === 'ok' && <span className="text-[#3FA46A] text-base mt-0.5">&#10003;</span>}
-                    {requirement.status === 'warn' && <span className="text-[#E0A93A] text-base mt-0.5">&#9888;</span>}
-                    {requirement.status === 'pending' && <span className="text-[#BFCBDA] text-base mt-0.5">&#9675;</span>}
-                    <span>{requirement.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="p-4 bg-[#FFE7EC] rounded-lg border border-[#F22E75]/20">
-              <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#F22E75] uppercase block">Risk Signal</span>
-              <p className="text-[11px] text-[#F22E75] font-medium mt-1">Pricing for Black Friday must be finalized by Nov 1 to ensure placement.</p>
-            </div>
-          </div>
-        </aside>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

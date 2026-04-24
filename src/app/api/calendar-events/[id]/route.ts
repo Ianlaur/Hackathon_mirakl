@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
+import { normalizeCalendarDisplayEvent } from '@/lib/calendar-events'
 
 const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal', 'peak', 'celebration'] as const
 const eventImpacts = ['low', 'medium', 'high', 'critical'] as const
@@ -36,7 +37,7 @@ function toTimestamp(date: string, time: string, fallbackTime: string) {
 }
 
 function serializeEvent(event: DbCalendarEvent) {
-  return {
+  return normalizeCalendarDisplayEvent({
     id: event.id,
     title: event.title,
     startDate: event.start_at.toISOString().slice(0, 10),
@@ -48,7 +49,7 @@ function serializeEvent(event: DbCalendarEvent) {
     zone: event.zone || '',
     notes: event.notes || '',
     locked: event.locked,
-  }
+  })
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
