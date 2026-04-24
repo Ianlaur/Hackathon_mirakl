@@ -25,9 +25,12 @@ type OrderCountRow = { sku: string; cnt: number }
 type CoincidingEventRow = {
   title: string
   kind: string
+  impact: string
   start_at: Date
   end_at: Date
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,14 +85,29 @@ export async function POST(request: NextRequest) {
     `
     const ordersMap = new Map(orderCounts.map((r) => [r.sku, r.cnt]))
 
+    const attentionStart = new Date(event.start_at.getTime() - 14 * DAY_MS)
+    const attentionEnd = new Date(event.end_at.getTime() + 14 * DAY_MS)
+
     const coincidingEventsRaw = await prisma.$queryRaw<CoincidingEventRow[]>`
-      SELECT title, kind, start_at, end_at
+      SELECT title, kind, impact, start_at, end_at
       FROM public.calendar_events
       WHERE user_id = ${user_id}::uuid
         AND kind <> 'leave'
-        AND start_at <= ${event.end_at}
-        AND end_at >= ${event.start_at}
+        AND start_at <= ${attentionEnd}
+        AND end_at >= ${attentionStart}
+        AND (
+          kind IN ('commerce', 'peak', 'marketing', 'celebration')
+          OR impact IN ('high', 'critical')
+          OR title ~* '(sale|sales|soldes|black friday|cyber monday|christmas|noel|peak|promo)'
+        )
     `
+    const commercialEvents = coincidingEventsRaw.map((e) => ({
+      title: e.title,
+      kind: e.kind,
+      impact: e.impact,
+      start: e.start_at,
+      end: e.end_at,
+    }))
 
     const today = new Date()
     const items = buildPlanItems({
@@ -109,6 +127,7 @@ export async function POST(request: NextRequest) {
         productId: p.id,
         orders60d: p.sku ? (ordersMap.get(p.sku) ?? 0) : 0,
       })),
+      commercialEvents,
     })
 
     const summary = summarizePlan(items)
@@ -124,11 +143,11 @@ export async function POST(request: NextRequest) {
         leaveStart: event.start_at,
         leaveEnd: event.end_at,
         atRiskItems: items,
-        coincidingEvents: coincidingEventsRaw.map((e) => ({
+        coincidingEvents: commercialEvents.map((e) => ({
           title: e.title,
           kind: e.kind,
-          start: e.start_at,
-          end: e.end_at,
+          start: e.start,
+          end: e.end,
         })),
         merchantProfile: merchantProfile
           ? {
@@ -157,10 +176,10 @@ export async function POST(request: NextRequest) {
       },
       { label: 'Estimated total cost', value: `€${summary.totalCostEur.toFixed(2)}` },
       {
-        label: 'Overlapping commercial events',
+        label: 'Commercial pressure events',
         value:
-          coincidingEventsRaw.length > 0
-            ? coincidingEventsRaw.map((e) => e.title).join(', ')
+          commercialEvents.length > 0
+            ? commercialEvents.map((e) => e.title).join(', ')
             : 'None',
       },
     ]
@@ -177,6 +196,14 @@ export async function POST(request: NextRequest) {
       items_count: items.length,
       target: 'calendar_restock_plan',
       supplementary_notes: enrichment.supplementaryNotes,
+      commercial_events: commercialEvents.map((e) => ({
+        title: e.title,
+        kind: e.kind,
+        impact: e.impact,
+        start: e.start.toISOString().slice(0, 10),
+        end: e.end.toISOString().slice(0, 10),
+      })),
+      supply_strategies: enrichment.supplementaryNotes,
       items: items.map((i) => ({
         product_id: i.productId,
         sku: i.sku,
@@ -192,6 +219,8 @@ export async function POST(request: NextRequest) {
         priority: i.priority,
         order_deadline: i.orderDeadline.toISOString().slice(0, 10),
         reasoning: i.reasoning,
+        commercial_pressure_multiplier: i.commercialPressureMultiplier ?? 1,
+        supply_strategies: i.supplyStrategies ?? [],
       })),
     }
 
@@ -236,6 +265,7 @@ export async function POST(request: NextRequest) {
       recommendation_id: recommendation.id,
       items_count: items.length,
       total_cost_eur: summary.totalCostEur,
+      supply_strategies: enrichment.supplementaryNotes,
       llm_used: !enrichment.fallback,
     })
   } catch (error) {

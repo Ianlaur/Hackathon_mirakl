@@ -385,7 +385,7 @@ export const MASCOT_TOOLS: ToolDefinition[] = [
     function: {
       name: 'create_calendar_event',
       description:
-        'Creates an event in the merchant calendar. Useful for leave events (kind=leave), which automatically trigger stock analysis. Date format YYYY-MM-DD.',
+        'Creates an event in the merchant calendar. Useful for leave events (kind=leave), which automatically trigger stock analysis. Leave analysis must account for overlapping sales, soldes, and peak commercial periods and propose supply strategies. Date format YYYY-MM-DD.',
       parameters: {
         type: 'object',
         properties: {
@@ -1772,16 +1772,26 @@ export async function executeTool(
 
       const created = rows[0]
 
-      // If this is a leave event, trigger the advisor agent in parallel
-      // Same logic as the n8n webhook, but direct when n8n is inactive
+      let advisorResult: unknown = null
+
+      // If this is a leave event, trigger the advisor agent immediately.
+      // Same logic as the n8n webhook, but direct when n8n is inactive.
       if (created.kind === 'leave') {
         await syncFounderStateFromCalendarForUser(ctx.userId)
 
-        fetch(`${ctx.origin}/api/agent/calendar-advisor`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event_id: created.id, user_id: ctx.userId }),
-        }).catch((err) => console.error('advisor trigger failed:', err))
+        try {
+          const advisorResponse = await fetch(`${ctx.origin}/api/agent/calendar-advisor`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_id: created.id, user_id: ctx.userId }),
+          })
+          advisorResult = await advisorResponse.json().catch(() => null)
+          if (!advisorResponse.ok) {
+            console.error('advisor trigger failed:', advisorResult)
+          }
+        } catch (err) {
+          console.error('advisor trigger failed:', err)
+        }
       }
 
       return {
@@ -1794,6 +1804,7 @@ export async function executeTool(
           kind: created.kind,
         },
         advisor_triggered: created.kind === 'leave',
+        advisor_result: advisorResult,
       }
     }
 

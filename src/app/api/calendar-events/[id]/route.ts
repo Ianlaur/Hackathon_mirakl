@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 
-const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal'] as const
+const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal', 'peak', 'celebration'] as const
 const eventImpacts = ['low', 'medium', 'high', 'critical'] as const
 
 type DbCalendarEvent = {

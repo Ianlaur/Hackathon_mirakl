@@ -29,16 +29,23 @@ Given the leave event, the list of at-risk SKUs with deterministic calculations,
 - expectedImpact: short sentence in English describing the business outcome if the merchant approves
 - confidenceNote: short sentence in English describing the confidence level and what could shift the recommendation
 - supplementaryNotes: array of short strings in English (e.g. "Chinese New Year overlaps with your vacation, and your Asian supplier may be closed.")
+- if a sale, peak period, Black Friday, Christmas, or other commercial event overlaps the leave, explicitly propose supply strategies: pull orders forward, protect inbound capacity, prioritize high-margin channels, and prepare channel throttling if stock drops below buffer.
 
 Respond ONLY in valid JSON. No markdown, no commentary.`
 
 export function buildDeterministicFallback(input: LlmEnrichmentInput): LlmEnrichmentOutput {
   const count = input.atRiskItems.length
   const totalCost = input.atRiskItems.reduce((s, i) => s + i.estimatedCostEur, 0)
+  const peakEvent = input.coincidingEvents[0]
+  const supplyStrategies = Array.from(
+    new Set(input.atRiskItems.flatMap((item) => item.supplyStrategies ?? []))
+  )
   const reasoningSummary =
     count === 0
-      ? `No at-risk SKU detected for your absence.`
-      : `${count} products risk stockout during your absence. Place orders before the deadline to arrive on time.`
+      ? `No at-risk SKU detected for your absence${peakEvent ? `, but ${peakEvent.title} overlaps the leave window.` : '.'}`
+      : `${count} products risk stockout during your absence${
+          peakEvent ? ` while ${peakEvent.title} is active` : ''
+        }. Place orders before the deadline to arrive on time.`
   const expectedImpact =
     count === 0
       ? `No impact expected.`
@@ -48,7 +55,7 @@ export function buildDeterministicFallback(input: LlmEnrichmentInput): LlmEnrich
     reasoningSummary,
     expectedImpact,
     confidenceNote,
-    supplementaryNotes: [],
+    supplementaryNotes: supplyStrategies,
     fallback: true,
   }
 }

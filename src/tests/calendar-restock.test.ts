@@ -5,6 +5,7 @@ import {
   pickPriority,
   buildPlanItems,
   summarizePlan,
+  buildPeakSupplyStrategies,
   ProductForProjection,
   OrderAggregate,
 } from '@/lib/calendar-restock'
@@ -113,6 +114,52 @@ describe('buildPlanItems', () => {
     const items = buildPlanItems({ today, leaveStart, leaveEnd, products, orders })
     // leaveStart 2026-05-10, lead 7, buffer 2 → deadline 2026-05-01
     expect(items[0].orderDeadline.toISOString().slice(0, 10)).toBe('2026-05-01')
+  })
+  it('raises demand and recommendation quantities when leave overlaps a peak sale event', () => {
+    const [item] = buildPlanItems({
+      today,
+      leaveStart,
+      leaveEnd,
+      products,
+      orders,
+      commercialEvents: [
+        {
+          title: 'Summer sales France',
+          kind: 'commerce',
+          impact: 'high',
+          start: new Date('2026-05-12'),
+          end: new Date('2026-05-18'),
+        },
+      ],
+    })
+
+    expect(item.velocityPerDay).toBe(1.215)
+    expect(item.recommendedQty).toBe(17)
+    expect(item.commercialPressureMultiplier).toBe(1.35)
+    expect(item.supplyStrategies).toContain(
+      'Pull supplier orders forward before Summer sales France and protect inbound capacity before the leave starts.'
+    )
+  })
+})
+
+describe('buildPeakSupplyStrategies', () => {
+  it('proposes supply strategies for overlapping commercial peaks', () => {
+    const strategies = buildPeakSupplyStrategies([
+      {
+        title: 'Black Friday',
+        kind: 'commerce',
+        impact: 'critical',
+        start: new Date('2026-11-24'),
+        end: new Date('2026-11-28'),
+      },
+    ])
+
+    expect(strategies).toEqual([
+      'Commercial peak detected: Black Friday overlaps the leave window.',
+      'Pull supplier orders forward before Black Friday and protect inbound capacity before the leave starts.',
+      'Prioritize scarce stock for the highest-margin channels during the peak period.',
+      'Prepare a temporary channel throttle if projected stock falls below the safety buffer.',
+    ])
   })
 })
 

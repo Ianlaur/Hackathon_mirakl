@@ -13,6 +13,8 @@ export type PlanItemDTO = {
   priority: 'critical' | 'high' | 'medium'
   order_deadline: string
   reasoning: string
+  commercial_pressure_multiplier?: number
+  supply_strategies?: string[]
 }
 
 export type ActionPayload = {
@@ -25,6 +27,14 @@ export type ActionPayload = {
   items_count: number
   target: string
   supplementary_notes: string[]
+  supply_strategies?: string[]
+  commercial_events?: Array<{
+    title: string
+    kind: string
+    impact: string
+    start: string
+    end: string
+  }>
   items: PlanItemDTO[]
 }
 

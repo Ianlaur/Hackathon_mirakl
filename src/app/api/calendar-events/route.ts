@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 import { syncFounderStateFromCalendarForUser } from '@/lib/leia/calendar-sync'
 
-const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal'] as const
+const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal', 'peak', 'celebration'] as const
 const eventImpacts = ['low', 'medium', 'high', 'critical'] as const
 
 type DbCalendarEvent = {
@@ -99,6 +99,14 @@ export async function POST(request: NextRequest) {
 
     if (createdEvent.kind === 'leave') {
       await syncFounderStateFromCalendarForUser(userId)
+      const origin = new URL(request.url).origin
+
+      triggerCalendarAdvisor(origin, {
+        event_id: createdEvent.id,
+        user_id: userId,
+      }).catch((err) => {
+        console.error('calendar advisor trigger failed (non-blocking):', err)
+      })
 
       notifyN8n({
         event_id: createdEvent.id,
@@ -122,6 +130,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Unable to create event' }, { status: 500 })
   }
+}
+
+async function triggerCalendarAdvisor(origin: string, payload: Record<string, unknown>) {
+  await fetch(`${origin}/api/agent/calendar-advisor`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
 }
 
 async function notifyN8n(payload: Record<string, unknown>) {

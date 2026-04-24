@@ -13,6 +13,14 @@ export type OrderAggregate = {
   orders60d: number
 }
 
+export type CommercialEvent = {
+  title: string
+  kind: string
+  impact: string
+  start: Date
+  end: Date
+}
+
 export type Priority = 'critical' | 'high' | 'medium'
 
 export type PlanItem = {
@@ -30,6 +38,8 @@ export type PlanItem = {
   priority: Priority
   orderDeadline: Date
   reasoning: string
+  commercialPressureMultiplier?: number
+  supplyStrategies?: string[]
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -58,16 +68,58 @@ export function pickPriority(args: {
   return 'medium'
 }
 
+export function commercialEventDemandMultiplier(event: CommercialEvent): number {
+  const kind = event.kind.toLowerCase()
+  const title = event.title.toLowerCase()
+  const isCommercialPeak =
+    ['commerce', 'peak', 'marketing', 'celebration'].includes(kind) ||
+    /(sale|sales|soldes|black friday|cyber monday|christmas|noel|peak|promo)/.test(title)
+
+  if (!isCommercialPeak) return 1
+
+  const impact = event.impact.toLowerCase()
+  if (impact === 'critical') return 1.5
+  if (impact === 'high') return 1.35
+  if (impact === 'medium') return 1.2
+  return 1.1
+}
+
+export function demandMultiplierForCommercialEvents(events: CommercialEvent[] = []): number {
+  return events.reduce(
+    (max, event) => Math.max(max, commercialEventDemandMultiplier(event)),
+    1
+  )
+}
+
+export function buildPeakSupplyStrategies(events: CommercialEvent[] = []): string[] {
+  if (events.length === 0) return []
+
+  const strongest = [...events].sort(
+    (a, b) => commercialEventDemandMultiplier(b) - commercialEventDemandMultiplier(a)
+  )[0]
+
+  return [
+    `Commercial peak detected: ${strongest.title} overlaps the leave window.`,
+    `Pull supplier orders forward before ${strongest.title} and protect inbound capacity before the leave starts.`,
+    'Prioritize scarce stock for the highest-margin channels during the peak period.',
+    'Prepare a temporary channel throttle if projected stock falls below the safety buffer.',
+  ]
+}
+
 export function buildPlanItems(args: {
   today: Date
   leaveStart: Date
   leaveEnd: Date
   products: ProductForProjection[]
   orders: OrderAggregate[]
+  commercialEvents?: CommercialEvent[]
 }): PlanItem[] {
   const { today, leaveStart, leaveEnd, products, orders } = args
   const leaveDuration = daysBetween(leaveStart, leaveEnd)
   const ordersByProduct = new Map(orders.map((o) => [o.productId, o.orders60d]))
+  const commercialEvents = args.commercialEvents ?? []
+  const commercialPressureMultiplier = demandMultiplierForCommercialEvents(commercialEvents)
+  const supplyStrategies = buildPeakSupplyStrategies(commercialEvents)
 
   const items: PlanItem[] = []
 
@@ -75,7 +127,7 @@ export function buildPlanItems(args: {
     const orders60d = ordersByProduct.get(product.id) ?? 0
     if (orders60d === 0) continue
 
-    const velocityPerDay = orders60d / 60
+    const velocityPerDay = (orders60d / 60) * commercialPressureMultiplier
     const leadTime = product.supplierLeadTimeDays
     const daysCovered = product.currentStock / velocityPerDay
     const daysUntilSafe = daysBetween(today, leaveEnd) + leadTime
@@ -105,8 +157,11 @@ export function buildPlanItems(args: {
     })
 
     const reasoning =
-      `Stock actuel couvre ${daysCovered.toFixed(1)} jours au rythme de ${velocityPerDay.toFixed(2)}/jour. ` +
-      `Absence plus supplier lead time = ${daysUntilSafe} jours. ` +
+      `Current stock covers ${daysCovered.toFixed(1)} days at ${velocityPerDay.toFixed(2)}/day. ` +
+      `Absence plus supplier lead time = ${daysUntilSafe} days. ` +
+      (commercialPressureMultiplier > 1
+        ? `Commercial peak multiplier x${commercialPressureMultiplier.toFixed(2)} applied. `
+        : '') +
       (projection < 0
         ? `Estimated stockout during the absence.`
         : `Insufficient margin to cover replenishment lead time.`)
@@ -126,6 +181,8 @@ export function buildPlanItems(args: {
       priority,
       orderDeadline,
       reasoning,
+      commercialPressureMultiplier,
+      supplyStrategies,
     })
   }
 
