@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         deleted: 0,
-        message: 'Aucune catégorie vide à supprimer'
+        message: 'No empty categories to delete'
       })
     }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       deleted: result.count,
-      message: `${result.count} catégorie(s) vide(s) supprimée(s)`
+      message: `${result.count} empty categories deleted`
     })
   } catch (error) {
     console.error('Error deleting empty categories:', error)

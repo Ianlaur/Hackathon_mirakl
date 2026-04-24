@@ -9,26 +9,20 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useActivePlugins } from '@/hooks/useActivePlugins'
 import { NAVIGATION_CONFIG } from '@/lib/navigation'
-import {
-  ACTIVE_PLUGINS_CHANGED_EVENT,
-  ACTIVE_PLUGINS_STORAGE_KEY,
-  LEGACY_PRO_PLUGIN_STORAGE_KEY,
-  emitActivePluginsChanged,
-  hasStoredActivePlugins,
-  persistActivePlugins,
-  readStoredActivePlugins,
-} from '@/lib/plugins'
+import { LEGACY_PRO_PLUGIN_STORAGE_KEY } from '@/lib/plugins'
 
-const PRO_PLUGIN_STORAGE_KEY = LEGACY_PRO_PLUGIN_STORAGE_KEY
 const USER_PROFILE_STORAGE_KEY = 'mirakl_user_profile'
 const PRO_MODE_PLUGIN_IDS = NAVIGATION_CONFIG.plugins.map((plugin) => plugin.id)
 
 export type UserProfile = 'LOCAL' | 'INTERNATIONAL' | null
 
 type PluginContextValue = {
+  activePlugins: string[]
   isProPluginActive: boolean
   userProfile: UserProfile
+  isPluginActive: (pluginId: string) => boolean
   toggleProPlugin: () => void
   activateProPlugin: () => void
   deactivateProPlugin: () => void
@@ -43,60 +37,20 @@ function parseStoredProfile(value: string | null): UserProfile {
 }
 
 export function PluginProvider({ children }: { children: ReactNode }) {
-  const [isProPluginActive, setIsProPluginActive] = useState(false)
+  const { activePlugins, isActive, setPlugins } = useActivePlugins()
   const [userProfile, setUserProfileState] = useState<UserProfile>(null)
   const [hydrated, setHydrated] = useState(false)
-
-  const syncProStateFromStorage = useCallback(() => {
-    const activePlugins = readStoredActivePlugins()
-
-    if (hasStoredActivePlugins()) {
-      setIsProPluginActive(activePlugins.length > 0)
-      return
-    }
-
-    const legacyEnabled = window.localStorage.getItem(PRO_PLUGIN_STORAGE_KEY) === 'true'
-    setIsProPluginActive(legacyEnabled)
-  }, [])
+  const isProPluginActive = activePlugins.length > 0
 
   useEffect(() => {
     const storedProfile = window.localStorage.getItem(USER_PROFILE_STORAGE_KEY)
-
-    syncProStateFromStorage()
     setUserProfileState(parseStoredProfile(storedProfile))
     setHydrated(true)
-  }, [syncProStateFromStorage])
+  }, [])
 
   useEffect(() => {
     if (!hydrated) return
-
-    const onStorageChange = (event: StorageEvent) => {
-      if (
-        event.key &&
-        event.key !== PRO_PLUGIN_STORAGE_KEY &&
-        event.key !== ACTIVE_PLUGINS_STORAGE_KEY
-      ) {
-        return
-      }
-      syncProStateFromStorage()
-    }
-
-    const onPluginEvent = () => {
-      syncProStateFromStorage()
-    }
-
-    window.addEventListener('storage', onStorageChange)
-    window.addEventListener(ACTIVE_PLUGINS_CHANGED_EVENT, onPluginEvent)
-
-    return () => {
-      window.removeEventListener('storage', onStorageChange)
-      window.removeEventListener(ACTIVE_PLUGINS_CHANGED_EVENT, onPluginEvent)
-    }
-  }, [hydrated, syncProStateFromStorage])
-
-  useEffect(() => {
-    if (!hydrated) return
-    window.localStorage.setItem(PRO_PLUGIN_STORAGE_KEY, String(isProPluginActive))
+    window.localStorage.setItem(LEGACY_PRO_PLUGIN_STORAGE_KEY, String(isProPluginActive))
   }, [hydrated, isProPluginActive])
 
   useEffect(() => {
@@ -110,32 +64,17 @@ export function PluginProvider({ children }: { children: ReactNode }) {
     window.localStorage.removeItem(USER_PROFILE_STORAGE_KEY)
   }, [hydrated, userProfile])
 
-  const persistProMode = useCallback((enabled: boolean) => {
-    if (typeof window === 'undefined') return
-
-    const nextActivePlugins = enabled ? PRO_MODE_PLUGIN_IDS : []
-    window.localStorage.setItem(PRO_PLUGIN_STORAGE_KEY, String(enabled))
-    persistActivePlugins(nextActivePlugins)
-    emitActivePluginsChanged(nextActivePlugins)
-  }, [])
-
   const toggleProPlugin = useCallback(() => {
-    setIsProPluginActive((current) => {
-      const next = !current
-      persistProMode(next)
-      return next
-    })
-  }, [persistProMode])
+    setPlugins(isProPluginActive ? [] : PRO_MODE_PLUGIN_IDS)
+  }, [isProPluginActive, setPlugins])
 
   const activateProPlugin = useCallback(() => {
-    setIsProPluginActive(true)
-    persistProMode(true)
-  }, [persistProMode])
+    setPlugins(PRO_MODE_PLUGIN_IDS)
+  }, [setPlugins])
 
   const deactivateProPlugin = useCallback(() => {
-    setIsProPluginActive(false)
-    persistProMode(false)
-  }, [persistProMode])
+    setPlugins([])
+  }, [setPlugins])
 
   const setUserProfile = useCallback((profile: UserProfile) => {
     setUserProfileState(profile)
@@ -143,16 +82,20 @@ export function PluginProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<PluginContextValue>(
     () => ({
+      activePlugins,
       isProPluginActive,
       userProfile,
+      isPluginActive: isActive,
       toggleProPlugin,
       activateProPlugin,
       deactivateProPlugin,
       setUserProfile,
     }),
     [
+      activePlugins,
       activateProPlugin,
       deactivateProPlugin,
+      isActive,
       isProPluginActive,
       setUserProfile,
       toggleProPlugin,

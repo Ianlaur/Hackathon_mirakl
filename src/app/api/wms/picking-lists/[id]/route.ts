@@ -32,7 +32,7 @@ export async function GET(
     })
 
     if (!pickingList) {
-      return NextResponse.json({ error: 'Liste de picking non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Picking list not found' }, { status: 404 })
     }
 
     return NextResponse.json(pickingList)
@@ -55,7 +55,7 @@ export async function PATCH(
     const parsed = updatePickingListSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Données invalides' },
+        { error: parsed.error.errors[0]?.message || 'Invalid data' },
         { status: 400 }
       )
     }
@@ -66,7 +66,7 @@ export async function PATCH(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Liste de picking non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Picking list not found' }, { status: 404 })
     }
 
     const updateData: Record<string, unknown> = { ...parsed.data }
@@ -109,12 +109,12 @@ export async function DELETE(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Liste de picking non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Picking list not found' }, { status: 404 })
     }
 
     if (existing.status === 'completed') {
       return NextResponse.json(
-        { error: 'Impossible de supprimer une liste terminée' },
+        { error: 'Unable to delete a completed list' },
         { status: 400 }
       )
     }

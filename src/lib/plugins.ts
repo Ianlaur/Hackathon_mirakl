@@ -1,6 +1,10 @@
+import { NAVIGATION_CONFIG } from '@/lib/navigation'
+
 export const ACTIVE_PLUGINS_STORAGE_KEY = 'mirakl_active_plugins'
 export const LEGACY_PRO_PLUGIN_STORAGE_KEY = 'mirakl_global_control_tower_active'
 export const ACTIVE_PLUGINS_CHANGED_EVENT = 'mirakl:active_plugins_changed'
+
+const KNOWN_PLUGIN_IDS = NAVIGATION_CONFIG.plugins.map((plugin) => plugin.id)
 
 function sanitizePluginList(value: unknown): string[] {
   if (!Array.isArray(value)) return []
@@ -15,6 +19,11 @@ function sanitizePluginList(value: unknown): string[] {
   return Array.from(unique)
 }
 
+export function sanitizeActivePluginsForRegistry(value: unknown): string[] {
+  const known = new Set(KNOWN_PLUGIN_IDS)
+  return sanitizePluginList(value).filter((pluginId) => known.has(pluginId))
+}
+
 export function readStoredActivePlugins(): string[] {
   if (typeof window === 'undefined') return []
 
@@ -22,7 +31,7 @@ export function readStoredActivePlugins(): string[] {
   if (!raw) return []
 
   try {
-    return sanitizePluginList(JSON.parse(raw))
+    return sanitizeActivePluginsForRegistry(JSON.parse(raw))
   } catch {
     return []
   }
@@ -35,7 +44,10 @@ export function hasStoredActivePlugins(): boolean {
 
 export function persistActivePlugins(plugins: string[]) {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(ACTIVE_PLUGINS_STORAGE_KEY, JSON.stringify(sanitizePluginList(plugins)))
+  window.localStorage.setItem(
+    ACTIVE_PLUGINS_STORAGE_KEY,
+    JSON.stringify(sanitizeActivePluginsForRegistry(plugins))
+  )
 }
 
 export function isLegacyProEnabled(): boolean {
@@ -44,14 +56,16 @@ export function isLegacyProEnabled(): boolean {
 }
 
 export function togglePluginId(list: string[], pluginId: string): string[] {
-  return list.includes(pluginId) ? list.filter((id) => id !== pluginId) : [...list, pluginId]
+  return sanitizeActivePluginsForRegistry(
+    list.includes(pluginId) ? list.filter((id) => id !== pluginId) : [...list, pluginId]
+  )
 }
 
 export function emitActivePluginsChanged(plugins: string[]) {
   if (typeof window === 'undefined') return
   window.dispatchEvent(
     new CustomEvent(ACTIVE_PLUGINS_CHANGED_EVENT, {
-      detail: { plugins: sanitizePluginList(plugins) },
+      detail: { plugins: sanitizeActivePluginsForRegistry(plugins) },
     })
   )
 }

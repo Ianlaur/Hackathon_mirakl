@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         selling_price: sellingPrice,
         quantity: quantity,
         min_quantity: minQuantity,
-        unit: body.unit || 'pièce',
+        unit: body.unit || 'piece',
         location: body.location || null,
         supplier: body.supplier || null,
         image_url: body.image_url || null,

@@ -1,0 +1,34 @@
+[
+  {
+    "supplier_name": "Bois & Design",
+    "sku": "NRD-CHAIR-012",
+    "unit_cost_eur": 42.5,
+    "lead_time_days": 12,
+    "moq": 10,
+    "mocked": true
+  },
+  {
+    "supplier_name": "Scandi Wood Co",
+    "sku": "NRD-SHELF-008",
+    "unit_cost_eur": 38,
+    "lead_time_days": 7,
+    "moq": 10,
+    "mocked": true
+  },
+  {
+    "supplier_name": "Oak Mill Atelier",
+    "sku": "NRD-TABLE-004",
+    "unit_cost_eur": 96,
+    "lead_time_days": 14,
+    "moq": 5,
+    "mocked": true
+  },
+  {
+    "supplier_name": "Nordic Textile",
+    "sku": "NRD-SOFA-021",
+    "unit_cost_eur": 210,
+    "lead_time_days": 10,
+    "moq": 4,
+    "mocked": true
+  }
+]

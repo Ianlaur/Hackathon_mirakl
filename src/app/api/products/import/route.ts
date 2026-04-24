@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
             selling_price: parseFloat(product.selling_price) || 0,
             quantity: quantity,
             min_quantity: parseInt(product.min_quantity) || 0,
-            unit: product.unit || 'pièce',
+            unit: product.unit || 'piece',
             location: product.location || null,
             supplier: product.supplier || null,
           }

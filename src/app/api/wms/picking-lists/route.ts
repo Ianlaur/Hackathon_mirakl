@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const parsed = pickingListSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Données invalides' },
+        { error: parsed.error.errors[0]?.message || 'Invalid data' },
         { status: 400 }
       )
     }

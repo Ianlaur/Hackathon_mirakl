@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const parsed = zoneSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Données invalides' },
+        { error: parsed.error.errors[0]?.message || 'Invalid data' },
         { status: 400 }
       )
     }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     })
     
     if (existing) {
-      return NextResponse.json({ error: 'Ce code de zone existe déjà' }, { status: 400 })
+      return NextResponse.json({ error: 'This zone code already exists' }, { status: 400 })
     }
 
     const zone = await prisma.warehouseZone.create({

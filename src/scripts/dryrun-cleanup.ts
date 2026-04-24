@@ -18,9 +18,9 @@ async function main() {
     process.exit(1)
   }
 
-  console.log('\n=== DRY-RUN : état actuel de la BDD ===\n')
+  console.log('\n=== DRY-RUN : current database state ===\n')
 
-  console.log('--- DONNÉES NORDIKA DE BASE (intouchables) ---')
+  console.log('--- BASE NORDIKA DATA (do not touch) ---')
   await count(
     'data_orders_amazon',
     () => prisma.$queryRaw`SELECT count(*)::int cnt FROM public.data_orders_amazon`
@@ -43,9 +43,9 @@ async function main() {
       prisma.$queryRaw`SELECT count(*)::int cnt FROM public.data_supplier_catalog_nordika_200`
   )
 
-  console.log('\n--- TABLES SEED IANLAUR (à garder probablement) ---')
+  console.log('\n--- TABLES SEED IANLAUR (probably keep) ---')
   await count(
-    'calendar_events (jours fériés FR + temps forts + tests)',
+    'calendar_events (FR holidays + peak moments + tests)',
     () => prisma.$queryRaw`SELECT count(*)::int cnt FROM public.calendar_events WHERE user_id = ${USER_ID}::uuid`
   )
   await count(
@@ -57,7 +57,7 @@ async function main() {
     () => prisma.$queryRaw`SELECT count(*)::int cnt FROM public.calendar_events WHERE user_id = ${USER_ID}::uuid AND kind='commerce'`
   )
   await count(
-    '└─ dont kind=leave (créés par tests Iris / démo)',
+    '└─ dont kind=leave (created by Iris tests / demo)',
     () => prisma.$queryRaw`SELECT count(*)::int cnt FROM public.calendar_events WHERE user_id = ${USER_ID}::uuid AND kind='leave'`
   )
   await count(
@@ -69,9 +69,9 @@ async function main() {
     () => prisma.$queryRaw`SELECT count(*)::int cnt FROM public.loss_events WHERE user_id = ${USER_ID}::uuid`
   )
 
-  console.log('\n--- CRÉÉES PAR NOUS (import + seed + tests) ---')
+  console.log('\n--- CREATED BY US (import + seed + tests) ---')
   await count(
-    'products (importés depuis data_supplier_catalog)',
+    'products (imported from data_supplier_catalog)',
     () => prisma.$queryRaw`SELECT count(*)::int cnt FROM public.products WHERE user_id = ${USER_ID}::uuid`
   )
   await count(

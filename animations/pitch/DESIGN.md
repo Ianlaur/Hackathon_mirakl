@@ -1,74 +1,69 @@
-# Pitch Mirakl × Mira — Visual Identity (25s video)
+# Pitch Mirakl x LEIA - Visual Identity
 
 ## Style
 
-Velvet Standard (Vignelli) comme base — premium enterprise reveal.
-Touches de Data Drift (Anadol) pour les moments AI (orbe, thinking, tool calls).
-Pas de rainbow, pas d'Inter, pas de `#000` dead.
+Velvet Standard as the base: premium enterprise reveal, precise layout, deep navy atmosphere. Use light data-drift effects for AI moments such as the orb, thinking state, and tool calls. The feel should be controlled, confident, and product-led.
 
 ## Colors
 
-- `#0A1528` — Canvas navy profond (dominant)
-- `#060C18` — Navy quasi-noir (dégradés bas)
-- `#0F2A44` — Mirakl deep blue (accents)
-- `#3A6590` — Mirakl brand blue (signature, logo natif)
-- `#6EA0C9` — Mirakl bright blue (halos, particules, highlights)
-- `#6366F1` — Indigo Mira (chat, tool chips)
-- `#EC4899` — Pink Mira (tool result accent)
-- `#D6E4F2` — Frost (typography principale)
-- `#F43F5E` — Critical red (stock négatif)
-- `#10B981` — Success green (approval)
-- `#F59E0B` — Amber (badge "À valider")
-- `#FFFFFF` — Flash de transition uniquement
+- `#0A1528` - Deep navy canvas
+- `#060C18` - Near-black navy for lower gradients
+- `#0F2A44` - Mirakl deep blue
+- `#3A6590` - Mirakl brand blue
+- `#6EA0C9` - Mirakl light blue
+- `#6366F1` - LEIA indigo for chat and tool chips
+- `#EC4899` - LEIA pink for tool result accents
+- `#D6E4F2` - Frost typography
+- `#F43F5E` - Critical red
+- `#10B981` - Success green
+- `#F59E0B` - Amber pending state
+- `#FFFFFF` - Transition flash only
 
 ## Typography
 
-- **Display** : `Space Grotesk` 100/300/600 — ghost words, tagline, outro
-  - ALL CAPS + letter-spacing `0.42em+` pour labels
-  - Weight 100 pour les ghost 400px+
-- **UI** : `Inter` 300/400/600 — cards, counters, table SKU
-- **Numeric** : `font-variant-numeric: tabular-nums` obligatoire sur counters et tableaux
-- **Banned** : Roboto · Helvetica default · gradient text · heavy italic
+- Display: `Space Grotesk` weights 100, 300, 600 for ghost words, tagline, and outro
+- UI: `Inter` weights 300, 400, 600 for cards, counters, and SKU tables
+- Numeric values use tabular figures
+- Avoid Roboto, default Helvetica, gradient text, and heavy italic styling
 
-## Motion — par acte
+## Motion By Act
 
-| Acte | Durée | Easings dominants | Ambient |
-|------|-------|-------------------|---------|
-| 1 Reveal | 0-6s | expo.out · power3.out · power2.in | Halo breath · logo rotate · particle drift |
-| 2 Orb awakens | 6-10.5s | sine.inOut · power2.out · back.out(1.1) | Orb blobs drift · halo pulse |
-| 3 The ask | 10.5-15s | power3.out (drawer) · none (typewriter) · sine.inOut | Spinner rotation · cursor blink |
-| 4 The plan | 15-21s | expo.out (counters) · power2.out · back.out(1.2) on buttons | Counter ticks · badge pulse |
-| 5 Close | 21-25s | power3.in (click) · power2.out (fade) · sine.inOut (outro float) | Orb mini breath · fade radial |
+| Act | Duration | Dominant Easing | Ambient Layer |
+| --- | --- | --- | --- |
+| 1 Reveal | 0-6s | `expo.out`, `power3.out`, `power2.in` | Halo breath, logo reveal, particle drift |
+| 2 Orb awakens | 6-10.5s | `sine.inOut`, `power2.out`, `back.out(1.1)` | Orb drift, halo pulse |
+| 3 The ask | 10.5-15s | `power3.out`, typewriter linear timing | Spinner rotation, cursor blink |
+| 4 The plan | 15-21s | `expo.out`, `power2.out`, `back.out(1.2)` | Counter ticks, badge pulse |
+| 5 Close | 21-25s | `power3.in`, `power2.out`, `sine.inOut` | Mini orb breath, radial fade |
 
-## Layers per scene (3+ minimum)
+## Scene Layers
 
-1. **Background** : dégradé navy + particules slow drift (persistent)
-2. **Ghost** : mot géant opacity 5%, change par acte (MIRAKL → MIRA → CONGÉS → PLAN → MIRA)
-3. **Structural** : hairlines top/bottom, kickers coins top-left/right (persistent)
-4. **Content** : l'élément-héros de l'acte (logo / orbe / drawer / card / outro)
-5. **Accent** : glow streaks, flashs, chips, particle bursts pendant transitions
+1. Background: navy gradient and slow particle drift
+2. Ghost word: large low-opacity word changing by act, such as MIRAKL, LEIA, LEAVE, PLAN, LEIA
+3. Structure: top and bottom hairlines plus corner kickers
+4. Content: the hero object for the act, such as logo, orb, drawer, card, or outro
+5. Accent: glow streaks, flashes, chips, and particle bursts during transitions
 
-## Anti-patterns (never)
+## Anti-Patterns
 
-- Fond blanc plat → toujours dégradé navy + radial tint
-- Drop shadow colorée (cyan, violet) → drop-shadow navy uniquement
-- Centering + vide autour → toujours 2+ focal points, anchor edges
-- Rotation du ghost word → il est fixe (décor de fond)
-- Bouncy elastic ease → pas Folk Frequency, pas playful
-- Texte Inter 16px sur dark → minimum 20px + weight 300+
-- `#000` ou `#fff` purs hors flash → tinter bleu
+- No flat white background
+- No colorful decorative shadow on screenshots
+- No empty center-only composition
+- No rotating ghost word
+- No playful elastic bounce
+- No pure black or pure white outside transition flashes
 
-## Transitions between acts
+## Transitions
 
-- **1 → 2** : zoom-in sur dashboard (scale 1.8, translate vers bas-droit) — CONTINU, pas de cut
-- **2 → 3** : orbe explose en particules + drawer slide-down (translateY -100% → 0, backdrop-blur 16px)
-- **3 → 4** : wipe horizontal (divider vertical scaleX de la gauche à la droite)
-- **4 → 5** : click flash + fade to navy (scale 0.96 bouton + white flash + opacity out all)
+- 1 to 2: continuous zoom into the dashboard toward the bottom right
+- 2 to 3: orb particles expand while the chat drawer enters
+- 3 to 4: horizontal wipe using a vertical divider
+- 4 to 5: click flash, button scale, then fade to navy
 
-## Hero moments (= les frames exportables pour le pitch deck)
+## Deck Frames
 
-- t=2s — logo Mirakl full + halo + tagline
-- t=9s — orbe Mira pulsant + label "Mira"
-- t=14s — event recap 🏖️ Congés Savoie card visible
-- t=19s — 3 counters : 5 / €2,430 / 7 mai
-- t=24s — outro orbe + "Mira — Powered by Mirakl × Eugenia"
+- t=2s: Mirakl logo with halo and tagline
+- t=9s: LEIA orb pulsing with the label "LEIA"
+- t=14s: leave event recap card visible
+- t=19s: three counters: SKU count, recovery value in EUR, target date
+- t=24s: LEIA outro, powered by Mirakl x Eugenia

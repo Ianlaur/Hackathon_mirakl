@@ -7,7 +7,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       id: 'marketplaces',
       label: 'Marketplaces',
       icon: 'Store',
-      href: '/marketplaces/proposals',
+      href: '/marketplaces',
       expandable: true,
       subitems: [
         { id: 'integration-proposals', label: 'Opportunities', href: '/marketplaces/proposals' },
@@ -15,10 +15,12 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       ],
     },
     { id: 'calendar', label: 'Calendar', icon: 'Calendar', href: '/calendar' },
+    { id: 'catalog', label: 'Catalog', icon: 'FileSpreadsheet', href: '/catalog' },
     { id: 'leia', label: 'Leia', icon: 'Bot', href: '/actions' },
+    { id: 'governance', label: 'Governance', icon: 'ShieldCheck', href: '/governance' },
     { id: 'orders', label: 'Orders', icon: 'ShoppingCart', href: '/orders' },
     { id: 'stock', label: 'Stock', icon: 'Package', href: '/stock' },
-    { id: 'lost', label: 'Losses', icon: 'AlertTriangle', href: '/losses' },
+    { id: 'lost', label: 'Losses Radar', icon: 'AlertTriangle', href: '/radar' },
   ],
   bottomItems: [
     { id: 'appstore', label: 'App Store', icon: 'Grid', href: '/app-store' },
@@ -29,14 +31,14 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
     {
       id: 'plugin_actions',
       label: 'Actions',
-      description: 'Centre de traitement des actions opérationnelles',
+      description: 'Operational action processing center',
       position: 1,
       items: [{ id: 'actions', label: 'Actions', icon: 'Inbox', href: '/actions' }],
     },
     {
       id: 'plugin_operations',
-      label: 'Opérations',
-      description: 'Gestion logistique : calendrier et transport',
+      label: 'Operations',
+      description: 'Logistics management: calendar and transport',
       position: 2,
       items: [
         {
@@ -49,13 +51,13 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
     },
     {
       id: 'plugin_inventaire',
-      label: 'Inventaire avancé',
-      description: 'Gestion des entrepôts',
+      label: 'Advanced inventory',
+      description: 'Warehouse management',
       position: 3,
       items: [
         {
           id: 'entrepot',
-          label: 'Entrepôt',
+          label: 'Warehouse',
           icon: 'Warehouse',
           href: '/wms',
         },

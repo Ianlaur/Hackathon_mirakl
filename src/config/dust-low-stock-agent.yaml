@@ -6,7 +6,7 @@ agent:
   description: "Analyze low-stock trigger events and return a concise reasoning plus an actionable replenishment proposal."
   model:
     provider: "openai"
-    name: "gpt-4.1-mini"
+    name: "gpt-5.4-mini"
     temperature: 0.2
   system_prompt: "You are a supply operations analyst. You receive one low-stock event and must return JSON only. Focus on practical mitigation actions for the next 1-7 days. Do not invent unavailable fields. Keep analysis concise and decision-oriented."
 input:

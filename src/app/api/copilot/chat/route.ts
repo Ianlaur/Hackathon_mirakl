@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
 import { z } from 'zod'
-import { prisma, prismaWithRetry } from '@/lib/prisma'
+import { serializeJson } from '@/lib/copilot'
+import {
+  extractRecommendationIds,
+  runLeiaToolCallingConversation,
+  summarizeToolTrace,
+  type LeiaChatMessage,
+} from '@/lib/leia-chat'
+import { checkRateLimit } from '@/lib/leia/rate-limit'
+import { getOpenAISettingsForUser } from '@/lib/openai-settings'
+import { prismaWithRetry } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
-import { generateCopilotResponse, serializeJson } from '@/lib/copilot'
 
 const chatSchema = z.object({
   sessionId: z.string().uuid().optional(),
   message: z.string().min(2).max(4000),
+  language: z.string().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -60,17 +69,36 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserId()
+    const rateLimit = checkRateLimit(`copilot-chat:${userId}`, {
+      limit: 30,
+      windowMs: 60_000,
+    })
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many Leia chat requests. Try again in a moment.' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
     const payload = chatSchema.parse(body)
+    const origin = new URL(request.url).origin
+    const { apiKey, model } = await getOpenAISettingsForUser(userId)
 
-    const session =
-      payload.sessionId
-        ? await prismaWithRetry((db) =>
-            db.copilotChatSession.findFirst({
-              where: { id: payload.sessionId, user_id: userId },
-            })
-          )
-        : null
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'No OpenAI API key is configured on the server or merchant profile.' },
+        { status: 500 }
+      )
+    }
+
+    const session = payload.sessionId
+      ? await prismaWithRetry((db) =>
+          db.copilotChatSession.findFirst({
+            where: { id: payload.sessionId, user_id: userId },
+          })
+        )
+      : null
 
     const activeSession =
       session ||
@@ -83,6 +111,26 @@ export async function POST(request: NextRequest) {
         })
       ))
 
+    const previousMessages = await prismaWithRetry((db) =>
+      db.copilotChatMessage.findMany({
+        where: { session_id: activeSession.id },
+        orderBy: { created_at: 'asc' },
+        take: 20,
+      })
+    )
+
+    const conversationMessages: LeiaChatMessage[] = previousMessages
+      .filter((message) => message.role === 'user' || message.role === 'assistant')
+      .map((message) => ({
+        role: message.role as 'user' | 'assistant',
+        content: message.content,
+      }))
+
+    conversationMessages.push({
+      role: 'user',
+      content: payload.message,
+    })
+
     await prismaWithRetry((db) =>
       db.copilotChatMessage.create({
         data: {
@@ -94,33 +142,30 @@ export async function POST(request: NextRequest) {
       })
     )
 
-    const result = await generateCopilotResponse(userId, payload.message)
+    const result = await runLeiaToolCallingConversation({
+      apiKey,
+      model,
+      userId,
+      origin,
+      messages: conversationMessages,
+      explicitLanguage: payload.language,
+    })
 
-    const createdRecommendations = []
-    for (const suggestion of result.recommendations) {
-      const recommendation = await prismaWithRetry((db) =>
-        db.agentRecommendation.create({
-          data: {
-            user_id: userId,
-            title: suggestion.title,
-            scenario_type: suggestion.scenarioType,
-            reasoning_summary: suggestion.reasoningSummary,
-            evidence_payload: serializeJson(result.evidence) as Prisma.InputJsonValue,
-            expected_impact: suggestion.expectedImpact,
-            confidence_note: suggestion.confidenceNote,
-            approval_required: true,
-          action_payload: serializeJson({
-            target: suggestion.target,
-            payload: serializeJson(suggestion.payload || {}),
-            requestedFromChat: true,
-          }) as Prisma.InputJsonValue,
-          source: result.fallback ? 'copilot_fallback' : 'copilot',
-        },
-      })
-      )
+    const recommendationIds = extractRecommendationIds(result.toolCallsTrace)
+    const createdRecommendations = recommendationIds.length
+      ? await prismaWithRetry((db) =>
+          db.agentRecommendation.findMany({
+            where: {
+              user_id: userId,
+              id: { in: recommendationIds },
+            },
+            orderBy: { created_at: 'desc' },
+          })
+        )
+      : []
 
-      createdRecommendations.push(recommendation)
-    }
+    const reasoningSummary =
+      summarizeToolTrace(result.toolCallsTrace, result.language) || null
 
     const assistantMessage = await prismaWithRetry((db) =>
       db.copilotChatMessage.create({
@@ -128,9 +173,9 @@ export async function POST(request: NextRequest) {
           session_id: activeSession.id,
           user_id: userId,
           role: 'assistant',
-          content: result.answer,
-          reasoning_summary: result.reasoningSummary,
-          evidence_payload: serializeJson(result.evidence) as Prisma.InputJsonValue,
+          content: result.message.content,
+          reasoning_summary: reasoningSummary,
+          evidence_payload: serializeJson(result.toolCallsTrace) as Prisma.InputJsonValue,
           linked_recommendation_id: createdRecommendations[0]?.id || null,
         },
       })
@@ -142,7 +187,10 @@ export async function POST(request: NextRequest) {
           where: { id: activeSession.id },
           data: {
             last_message_at: new Date(),
-            title: activeSession.title === 'New chat' ? payload.message.slice(0, 60) : activeSession.title,
+            title:
+              activeSession.title === 'New chat'
+                ? payload.message.slice(0, 60)
+                : activeSession.title,
           },
         })
       ),
@@ -150,9 +198,12 @@ export async function POST(request: NextRequest) {
         db.agentContextSnapshot.create({
           data: {
             user_id: userId,
-            scenario_type: createdRecommendations[0]?.scenario_type || 'chat',
+            scenario_type: createdRecommendations[0]?.scenario_type || 'leia_chat',
             label: payload.message.slice(0, 80),
-            context_payload: serializeJson(result.context) as Prisma.InputJsonValue,
+            context_payload: serializeJson({
+              language: result.language,
+              tool_calls: result.toolCallsTrace,
+            }) as Prisma.InputJsonValue,
           },
         })
       ),
@@ -169,14 +220,19 @@ export async function POST(request: NextRequest) {
         evidence_payload: serializeJson(recommendation.evidence_payload),
         action_payload: serializeJson(recommendation.action_payload),
       })),
-      fallback: result.fallback,
-      model: result.usedModel,
+      fallback: false,
+      model,
+      language: result.language,
+      tool_calls: result.toolCallsTrace,
     })
   } catch (error) {
     console.error('Error processing copilot chat:', error)
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0]?.message || 'Invalid request' }, { status: 400 })
+      return NextResponse.json(
+        { error: error.errors[0]?.message || 'Invalid request' },
+        { status: 400 }
+      )
     }
 
     return NextResponse.json(

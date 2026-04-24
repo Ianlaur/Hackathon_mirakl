@@ -40,6 +40,8 @@ type ActionSuggestion = {
   payload?: Record<string, unknown>
 }
 
+const DEFAULT_OPENAI_MODEL = 'gpt-5.4-mini'
+
 function safeJsonParse<T>(value: string): T | null {
   try {
     return JSON.parse(value) as T
@@ -53,6 +55,11 @@ function normalizeList(raw: string | undefined) {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean)
+}
+
+function resolveOpenAIChatModel(value: string | null | undefined) {
+  const model = value?.trim()
+  return model && model.startsWith('gpt-5') ? model : DEFAULT_OPENAI_MODEL
 }
 
 export function serializeJson<T>(value: T): T {
@@ -422,7 +429,9 @@ export async function generateCopilotResponse(userId: string, userMessage: strin
     }
   }
 
-  const model = context.aiSettings?.preferred_model || process.env.OPENAI_MODEL?.trim() || 'gpt-4.1'
+  const model = resolveOpenAIChatModel(
+    context.aiSettings?.preferred_model || process.env.OPENAI_MODEL
+  )
 
   try {
     const modelResponse = await callOpenAI({
@@ -478,7 +487,7 @@ export async function getCopilotConfig(userId: string) {
   return {
     apiKeyConfigured: Boolean(aiSettings?.encrypted_api_key),
     apiKeyHint: aiSettings?.api_key_hint || null,
-    preferredModel: aiSettings?.preferred_model || 'gpt-4.1',
+    preferredModel: resolveOpenAIChatModel(aiSettings?.preferred_model),
     autonomyMode: aiSettings?.autonomy_mode || 'approval_required',
     merchantCategory: profile?.merchant_category || '',
     operatingRegions: profile?.operating_regions || [],
@@ -512,7 +521,7 @@ export async function upsertCopilotConfig(
   }
 ) {
   const aiData = {
-    preferred_model: payload.preferredModel || 'gpt-4.1',
+    preferred_model: resolveOpenAIChatModel(payload.preferredModel),
     autonomy_mode: payload.autonomyMode || 'approval_required',
     ...(payload.apiKey
       ? {

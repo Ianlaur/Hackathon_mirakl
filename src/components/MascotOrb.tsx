@@ -61,7 +61,7 @@ export default function MascotOrb() {
             <div className="mascot-orb__image-wrap">
               <Image
                 src="/mascot-orb.png"
-                alt="Mascotte Mirakl"
+                alt="Mirakl mascot"
                 width={112}
                 height={112}
                 priority
@@ -78,7 +78,7 @@ export default function MascotOrb() {
         </button>
       </div>
 
-      <MascotChatDrawer open={open} onClose={() => setOpen(false)} />
+      {open ? <MascotChatDrawer open={open} onClose={() => setOpen(false)} /> : null}
     </>
   )
 }

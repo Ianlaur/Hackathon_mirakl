@@ -1,13 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MoreVertical, Plus, RefreshCw, Settings } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const marketplaces = [
   {
     name: 'Amazon',
     bgColor: 'bg-[#03182F]',
-    icon: '🛒',
+    icon: 'AMZ',
     status: 'Active · Live',
     statusColor: 'text-[#3FA46A]',
     revenue: '€42,000',
@@ -21,8 +22,7 @@ const marketplaces = [
   {
     name: 'Rakuten',
     bgColor: 'bg-[#770031]',
-    icon: 'R',
-    isText: true,
+    icon: 'RKT',
     status: 'Active · Live',
     statusColor: 'text-[#3FA46A]',
     revenue: '€28,150',
@@ -36,7 +36,7 @@ const marketplaces = [
   {
     name: 'Cdiscount',
     bgColor: 'bg-[#2764FF]',
-    icon: '🛍️',
+    icon: 'CDS',
     status: 'Active · Live',
     statusColor: 'text-[#3FA46A]',
     revenue: '€15,400',
@@ -50,7 +50,7 @@ const marketplaces = [
   {
     name: 'Leroy Merlin',
     bgColor: 'bg-[#3FA46A]',
-    icon: '🏠',
+    icon: 'LRY',
     status: 'Syncing · 98%',
     statusColor: 'text-[#E0A93A]',
     revenue: '€9,820',
@@ -100,6 +100,8 @@ function formatDateTime(value?: string | null) {
 }
 
 export default function ActiveConnectionPage() {
+  const router = useRouter()
+  const inputRef = useRef<HTMLInputElement>(null)
   const [shopDomain, setShopDomain] = useState('')
   const [shopifyStatus, setShopifyStatus] = useState<ShopifyStatusPayload | null>(null)
   const [shopifyLoading, setShopifyLoading] = useState(true)
@@ -117,38 +119,9 @@ export default function ActiveConnectionPage() {
       setShopifyStatus(data)
     } catch (error) {
       console.error('Shopify status error:', error)
-      setStatusMessage(
-        error instanceof Error ? error.message : 'Unable to load Shopify status'
-      )
+      setStatusMessage(error instanceof Error ? error.message : 'Unable to load Shopify status')
     } finally {
       setShopifyLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void loadShopifyStatus()
-  }, [loadShopifyStatus])
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const status = params.get('shopify')
-    const reason = params.get('reason')
-
-    if (status === 'connected') {
-      setStatusMessage('Shopify connected successfully. Initial sync started.')
-      params.delete('shopify')
-      params.delete('reason')
-      const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`
-      window.history.replaceState({}, '', next)
-      return
-    }
-
-    if (status === 'error') {
-      setStatusMessage(`Shopify connection failed${reason ? `: ${reason}` : ''}`)
-      params.delete('shopify')
-      params.delete('reason')
-      const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`
-      window.history.replaceState({}, '', next)
     }
   }, [])
 
@@ -157,9 +130,40 @@ export default function ActiveConnectionPage() {
     [shopifyStatus]
   )
 
+  useEffect(() => {
+    void loadShopifyStatus()
+  }, [loadShopifyStatus])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const partner = params.get('partner')
+
+    const status = params.get('shopify')
+    const reason = params.get('reason')
+
+    if (partner && !status) {
+      setStatusMessage(`${partner} selected in channels.`)
+    }
+
+    if (status === 'connected') {
+      setStatusMessage('Shopify connected successfully. Initial sync started.')
+      return
+    }
+
+    if (status === 'error') {
+      setStatusMessage(`Shopify connection failed${reason ? `: ${reason}` : ''}`)
+    }
+  }, [])
+
+  const focusShopifyInput = () => {
+    inputRef.current?.focus()
+    inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
   const handleConnectShopify = () => {
     if (!shopDomain.trim()) {
       setStatusMessage('Please enter your Shopify shop domain (example: your-store.myshopify.com).')
+      focusShopifyInput()
       return
     }
 
@@ -189,9 +193,7 @@ export default function ActiveConnectionPage() {
       await loadShopifyStatus()
     } catch (error) {
       console.error('Shopify sync error:', error)
-      setStatusMessage(
-        error instanceof Error ? error.message : 'Unable to sync Shopify data'
-      )
+      setStatusMessage(error instanceof Error ? error.message : 'Unable to sync Shopify data')
     } finally {
       setSyncingShopify(false)
     }
@@ -199,7 +201,6 @@ export default function ActiveConnectionPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-end">
         <div>
           <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">
@@ -209,13 +210,16 @@ export default function ActiveConnectionPage() {
             Real-time operational status across your global distribution network.
           </p>
         </div>
-        <button className="h-9 px-4 bg-[#2764FF] text-white text-[13px] font-semibold rounded-lg hover:bg-[#2764FF]/90 transition-colors flex items-center gap-2 shadow-sm">
+        <button
+          type="button"
+          onClick={focusShopifyInput}
+          className="h-9 px-4 bg-[#2764FF] text-white text-[13px] font-semibold rounded-lg transition-all duration-150 ease-out hover:bg-[#2764FF]/90 focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 flex items-center gap-2 shadow-sm"
+        >
           <Plus className="h-4 w-4" />
           Connect New Channel
         </button>
       </div>
 
-      {/* Shopify App Control */}
       <div className="bg-white border border-[#DDE5EE] rounded-lg p-6 space-y-4 shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -237,6 +241,7 @@ export default function ActiveConnectionPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <input
+            ref={inputRef}
             type="text"
             value={shopDomain}
             onChange={(event) => setShopDomain(event.target.value)}
@@ -246,7 +251,7 @@ export default function ActiveConnectionPage() {
           <button
             type="button"
             onClick={handleConnectShopify}
-            className="h-10 px-4 bg-[#2764FF] text-white text-[13px] font-semibold rounded-lg hover:bg-[#2764FF]/90 transition-colors"
+            className="h-10 px-4 bg-[#2764FF] text-white text-[13px] font-semibold rounded-lg transition-all duration-150 ease-out hover:bg-[#2764FF]/90 focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
           >
             Connect Shopify
           </button>
@@ -254,7 +259,7 @@ export default function ActiveConnectionPage() {
             type="button"
             onClick={() => void handleSyncShopify()}
             disabled={!hasShopifyConnection || syncingShopify}
-            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-[#F2F8FF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${syncingShopify ? 'animate-spin' : ''}`} />
             Sync Orders
@@ -262,7 +267,7 @@ export default function ActiveConnectionPage() {
           <button
             type="button"
             onClick={() => void loadShopifyStatus()}
-            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg hover:bg-[#F2F8FF] transition-colors"
+            className="h-10 px-4 border border-[#BFCBDA] text-[#30373E] text-[13px] font-semibold rounded-lg transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
           >
             Refresh Status
           </button>
@@ -304,36 +309,34 @@ export default function ActiveConnectionPage() {
         </div>
       </div>
 
-      {/* Marketplace Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {marketplaces.map((mp) => (
+        {marketplaces.map((marketplace) => (
           <div
-            key={mp.name}
-            className="bg-white border border-[#DDE5EE] rounded-lg p-6 transition-all hover:border-[#2764FF]/30 shadow-[0_1px_4px_rgba(0,0,0,0.1)]"
+            key={marketplace.name}
+            className="bg-white border border-[#DDE5EE] rounded-lg p-6 transition-all duration-150 ease-out hover:border-[#2764FF]/30 shadow-[0_1px_4px_rgba(0,0,0,0.1)]"
           >
-            {/* Header */}
             <div className="flex justify-between items-start mb-8">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg ${mp.bgColor} flex items-center justify-center`}>
-                  {mp.isText ? (
-                    <span className="text-white font-bold text-xl italic">{mp.icon}</span>
-                  ) : (
-                    <span className="text-lg">{mp.icon}</span>
-                  )}
+                <div className={`w-10 h-10 rounded-lg ${marketplace.bgColor} flex items-center justify-center`}>
+                  <span className="text-white text-[11px] font-bold">{marketplace.icon}</span>
                 </div>
                 <div>
-                  <h3 className="font-serif text-base font-bold text-[#03182F]">{mp.name}</h3>
-                  <span className={`text-[10px] uppercase tracking-widest font-bold ${mp.statusColor}`}>
-                    {mp.status}
+                  <h3 className="font-serif text-base font-bold text-[#03182F]">{marketplace.name}</h3>
+                  <span className={`text-[10px] uppercase tracking-widest font-bold ${marketplace.statusColor}`}>
+                    {marketplace.status}
                   </span>
                 </div>
               </div>
-              <button className="text-[#6B7480] hover:text-[#03182F]">
+              <button
+                type="button"
+                onClick={() => router.push('/settings')}
+                className="text-[#6B7480] transition-all duration-150 ease-out hover:text-[#03182F] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 rounded"
+                aria-label={`Open ${marketplace.name} settings`}
+              >
                 <MoreVertical className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Revenue */}
             <div className="space-y-6">
               <div>
                 <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase mb-1">
@@ -341,36 +344,38 @@ export default function ActiveConnectionPage() {
                 </p>
                 <div className="flex items-baseline gap-2">
                   <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">
-                    {mp.revenue}
+                    {marketplace.revenue}
                   </span>
-                  <span className={`text-[12px] italic ${mp.revenueUp ? 'text-[#3FA46A]' : 'text-[#F22E75]'}`}>
-                    {mp.revenueChange}
+                  <span className={`text-[12px] italic ${marketplace.revenueUp ? 'text-[#3FA46A]' : 'text-[#F22E75]'}`}>
+                    {marketplace.revenueChange}
                   </span>
                 </div>
               </div>
 
-              {/* Stats */}
               <div className="grid grid-cols-2 gap-4 py-4 border-y border-[#DDE5EE]">
                 <div>
                   <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase mb-1">
                     Items Sold
                   </p>
-                  <p className="font-serif text-lg font-bold text-[#03182F]">{mp.itemsSold}</p>
+                  <p className="font-serif text-lg font-bold text-[#03182F]">{marketplace.itemsSold}</p>
                 </div>
                 <div>
                   <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase mb-1">
                     Unique Customers
                   </p>
-                  <p className="font-serif text-lg font-bold text-[#03182F]">{mp.customers}</p>
+                  <p className="font-serif text-lg font-bold text-[#03182F]">{marketplace.customers}</p>
                 </div>
               </div>
 
-              {/* Sparkline + Action */}
               <div className="flex items-center justify-between pt-2">
                 <svg className="w-24 h-8 overflow-visible" viewBox="0 0 100 30">
-                  <path d={mp.sparkPath} fill="none" stroke={mp.sparkColor} strokeWidth="1.5" />
+                  <path d={marketplace.sparkPath} fill="none" stroke={marketplace.sparkColor} strokeWidth="1.5" />
                 </svg>
-                <button className="text-[#2764FF] text-[13px] font-semibold hover:underline">
+                <button
+                  type="button"
+                  onClick={() => router.push('/orders')}
+                  className="text-[#2764FF] text-[13px] font-semibold transition-all duration-150 ease-out hover:underline focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 rounded"
+                >
                   View Ledger
                 </button>
               </div>
@@ -379,7 +384,6 @@ export default function ActiveConnectionPage() {
         ))}
       </div>
 
-      {/* API Health Table */}
       <div className="bg-white border border-[#DDE5EE] rounded-lg overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
         <div className="px-6 py-4 border-b border-[#DDE5EE] bg-[#F2F8FF] flex justify-between items-center">
           <h3 className="font-serif text-base font-bold text-[#03182F]">API Health & Sync Status</h3>
@@ -411,8 +415,8 @@ export default function ActiveConnectionPage() {
             {apiRows.map((row) => (
               <tr key={row.name} className="hover:bg-[#F2F8FF] transition-colors">
                 <td className="px-6 py-4 flex items-center gap-3">
-                  <div className="w-6 h-6 rounded bg-[#03182F]/5 flex items-center justify-center text-[#03182F] text-xs">
-                    ☁️
+                  <div className="w-6 h-6 rounded bg-[#03182F]/5 flex items-center justify-center text-[#03182F] text-[10px] font-bold">
+                    API
                   </div>
                   <span className="font-serif text-sm font-semibold">{row.name}</span>
                 </td>
@@ -420,7 +424,12 @@ export default function ActiveConnectionPage() {
                 <td className="px-6 py-4 text-[13px]">{row.latency}</td>
                 <td className={`px-6 py-4 text-[13px] ${row.errorColor}`}>{row.errorRate}</td>
                 <td className="px-6 py-4 text-right">
-                  <button className="text-[#2764FF] hover:text-[#2764FF]/70">
+                  <button
+                    type="button"
+                    onClick={() => router.push('/settings')}
+                    className="text-[#2764FF] transition-all duration-150 ease-out hover:text-[#2764FF]/70 focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 rounded"
+                    aria-label={`Open settings for ${row.name}`}
+                  >
                     <Settings className="h-4 w-4" />
                   </button>
                 </td>

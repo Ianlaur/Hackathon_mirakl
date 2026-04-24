@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -21,6 +21,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import {
+  PresentationOrder,
+  expandOrdersDataset,
+  exportOrdersCsv,
+  filterOrders,
+  paginateOrders,
+} from '@/lib/orders'
 
 const stats = [
   { label: 'IN TRANSIT', value: '128', color: 'text-[#2764FF]', badge: '89%', badgeBg: 'bg-[#2764FF]/10 text-[#2764FF]' },
@@ -278,6 +285,9 @@ const SOURCE_OPTIONS = [
   { key: 'shopify', label: 'Shopify' },
 ] as const
 
+const STATUS_OPTIONS = ['All statuses', 'Action Required', 'Shipped', 'Delivered', 'Processing'] as const
+const PAGE_SIZE = 6
+
 const SOURCE_DATA = {
   all: {
     sourceLabel: 'All Sources',
@@ -443,17 +453,108 @@ function formatAmount(amount: number) {
   return `${sign}${formatNumber(abs, 0)} €`
 }
 
+function downloadReport(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function OrdersPage() {
   const [selectedSource, setSelectedSource] = useState<SourceKey>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<(typeof STATUS_OPTIONS)[number]>('All statuses')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [decisionState, setDecisionState] = useState<'idle' | 'queued' | 'snoozed'>('idle')
+  const [activityMessage, setActivityMessage] = useState<string | null>(null)
+  const [selectedBalanceLabel, setSelectedBalanceLabel] = useState<string | null>(null)
   const selectedData = SOURCE_DATA[selectedSource]
+
+  const expandedOrders = useMemo(
+    () =>
+      expandOrdersDataset(
+        selectedData.orders as PresentationOrder[],
+        Math.max(selectedData.orders.length, Math.min(selectedData.ordersCount, 12))
+      ),
+    [selectedData.orders, selectedData.ordersCount]
+  )
+  const filteredOrders = useMemo(
+    () => filterOrders(expandedOrders, searchQuery, statusFilter),
+    [expandedOrders, searchQuery, statusFilter]
+  )
+  const pageCount = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE))
+  const paginatedOrders = useMemo(
+    () => paginateOrders(filteredOrders, currentPage, PAGE_SIZE),
+    [filteredOrders, currentPage]
+  )
+  const selectedOrder =
+    filteredOrders.find((order) => order.orderId === selectedOrderId) ||
+    paginatedOrders[0] ||
+    filteredOrders[0] ||
+    null
+
+  useEffect(() => {
+    setCurrentPage(1)
+    setDecisionState('idle')
+    setActivityMessage(null)
+    setSelectedBalanceLabel(null)
+  }, [selectedSource, searchQuery, statusFilter])
+
+  useEffect(() => {
+    if (currentPage > pageCount) {
+      setCurrentPage(pageCount)
+    }
+  }, [currentPage, pageCount])
+
+  useEffect(() => {
+    if (filteredOrders.length === 0) {
+      setSelectedOrderId(null)
+      return
+    }
+
+    if (!selectedOrderId || !filteredOrders.some((order) => order.orderId === selectedOrderId)) {
+      setSelectedOrderId(paginatedOrders[0]?.orderId || filteredOrders[0]?.orderId || null)
+    }
+  }, [filteredOrders, paginatedOrders, selectedOrderId])
+
+  const handleExportReport = () => {
+    const filename = `${selectedData.sourceLabel.toLowerCase().replace(/\s+/g, '-')}-orders-report.csv`
+    downloadReport(filename, exportOrdersCsv(filteredOrders))
+    setActivityMessage(`Exported ${filteredOrders.length} orders for ${selectedData.sourceLabel}.`)
+  }
+
+  const handleBalanceFocus = (label: string) => {
+    setSelectedBalanceLabel(label)
+    setShowFilters(true)
+    setCurrentPage(1)
+    document.getElementById('orders-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setActivityMessage(`${label} moved into focus.`)
+  }
+
+  const handleQuickDecision = (action: 'replenish' | 'snooze') => {
+    if (action === 'replenish') {
+      setDecisionState('queued')
+      setActivityMessage(`Replenishment draft queued for ${selectedData.quickDecisionTitle}.`)
+      return
+    }
+
+    setDecisionState('snoozed')
+    setActivityMessage(`Alert snoozed for ${selectedData.sourceLabel}.`)
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-wrap justify-between items-end gap-4">
         <div>
           <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Orders</h1>
-          <p className="font-serif text-[13px] text-[#6B7480] mt-1 italic">Real-time fulfillment operations and logistics hub.</p>
+          <p className="font-serif text-[13px] text-[#6B7480] mt-1 italic">
+            Real-time fulfillment operations and logistics hub.
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {SOURCE_OPTIONS.map((source) => {
               const active = source.key === selectedSource
@@ -462,8 +563,10 @@ export default function OrdersPage() {
                   key={source.key}
                   type="button"
                   onClick={() => setSelectedSource(source.key)}
-                  className={`h-8 rounded-full px-3 font-serif text-[12px] font-bold transition-colors ${
-                    active ? 'bg-[#2764FF] text-white' : 'bg-white text-[#30373E] border border-[#DDE5EE] hover:bg-[#F2F8FF]'
+                  className={`h-8 rounded-full px-3 font-serif text-[12px] font-bold transition-all duration-150 ease-out outline-none ring-0 focus:ring-2 focus:ring-[#2764FF]/50 ${
+                    active
+                      ? 'bg-[#2764FF] text-white'
+                      : 'bg-white text-[#30373E] border border-[#DDE5EE] hover:bg-[#F2F8FF]'
                   }`}
                 >
                   {source.label}
@@ -479,19 +582,71 @@ export default function OrdersPage() {
               className="pl-10 pr-4 h-9 w-64 bg-white border border-[#DDE5EE] rounded font-serif text-[13px] focus:ring-1 focus:ring-[#2764FF] focus:border-[#2764FF] outline-none"
               placeholder={`Search ${selectedData.sourceLabel.toLowerCase()} orders...`}
               type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
             />
           </div>
-          <button className="h-9 px-4 border border-[#BFCBDA] rounded flex items-center gap-2 bg-white font-serif text-[13px] font-bold hover:bg-[#F2F8FF] transition-colors">
+          <button
+            type="button"
+            onClick={() => setShowFilters((value) => !value)}
+            className="h-9 px-4 border border-[#BFCBDA] rounded flex items-center gap-2 bg-white font-serif text-[13px] font-bold hover:bg-[#F2F8FF] transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+          >
             <SlidersHorizontal className="h-4 w-4" />
-            Filter
+            {showFilters ? 'Hide Filters' : 'Filter'}
           </button>
-          <button className="h-9 px-4 bg-[#2764FF] text-white rounded font-serif text-[13px] font-bold hover:opacity-90 transition-opacity">
+          <button
+            type="button"
+            onClick={handleExportReport}
+            disabled={filteredOrders.length === 0}
+            className="h-9 px-4 bg-[#2764FF] text-white rounded font-serif text-[13px] font-bold hover:opacity-90 transition-all duration-150 ease-out disabled:opacity-50 outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+          >
             Export Report
           </button>
         </div>
       </div>
 
-      {/* Key Indicators */}
+      {showFilters ? (
+        <div className="rounded-xl border border-[#DDE5EE] bg-white p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {STATUS_OPTIONS.map((status) => {
+              const active = statusFilter === status
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setStatusFilter(status)}
+                  className={`rounded-full px-3 py-1.5 font-serif text-[12px] font-bold transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50 ${
+                    active
+                      ? 'bg-[#03182F] text-white'
+                      : 'bg-[#F2F8FF] text-[#30373E] hover:bg-[#E7EEF7]'
+                  }`}
+                >
+                  {status}
+                </button>
+              )
+            })}
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('')
+                setStatusFilter('All statuses')
+                setSelectedBalanceLabel(null)
+                setActivityMessage('Order filters cleared.')
+              }}
+              className="ml-auto rounded-full px-3 py-1.5 font-serif text-[12px] font-bold text-[#2764FF] hover:bg-[#F2F8FF] transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
+              Reset filters
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {activityMessage ? (
+        <div className="rounded-xl border border-[#DDE5EE] bg-white px-4 py-3 font-serif text-[13px] text-[#30373E] shadow-sm">
+          {activityMessage}
+        </div>
+      ) : null}
+
       <div className="space-y-4">
         <div className="bg-white border border-[#DDE5EE] rounded-xl p-4 sm:p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
@@ -508,7 +663,11 @@ export default function OrdersPage() {
                     </span>
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
-                        isPositive ? 'text-[#3FA46A] bg-[#3FA46A]/10' : isNegative ? 'text-[#ba1a1a] bg-[#ba1a1a]/10' : 'text-[#6B7480] bg-[#F2F8FF]'
+                        isPositive
+                          ? 'text-[#3FA46A] bg-[#3FA46A]/10'
+                          : isNegative
+                            ? 'text-[#ba1a1a] bg-[#ba1a1a]/10'
+                            : 'text-[#6B7480] bg-[#F2F8FF]'
                       }`}
                     >
                       {isPositive ? <ArrowUpRight className="h-3 w-3" /> : null}
@@ -525,8 +684,20 @@ export default function OrdersPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={selectedData.trafficTrendData} margin={{ top: 12, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="4 4" stroke="#DDE5EE" vertical={false} />
-                <XAxis dataKey="date" stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }} />
-                <YAxis stroke="#6B7480" tickLine={false} axisLine={false} tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }} width={36} />
+                <XAxis
+                  dataKey="date"
+                  stroke="#6B7480"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }}
+                />
+                <YAxis
+                  stroke="#6B7480"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }}
+                  width={36}
+                />
                 <Tooltip
                   cursor={{ stroke: '#DDE5EE', strokeDasharray: '4 4' }}
                   content={({ active, payload, label }) => {
@@ -569,8 +740,12 @@ export default function OrdersPage() {
                   <div key={kpi.title} className="rounded-xl border border-dashed border-[#DDE5EE] p-4">
                     <p className="font-serif text-[13px] text-[#30373E]">{kpi.title}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">{formatAmount(kpi.value)}</span>
-                      {kpi.subRatio ? <span className="font-serif text-[16px] text-[#30373E]">({kpi.subRatio})</span> : null}
+                      <span className="font-serif text-[44px] font-bold leading-none tracking-tight text-[#03182F]">
+                        {formatAmount(kpi.value)}
+                      </span>
+                      {kpi.subRatio ? (
+                        <span className="font-serif text-[16px] text-[#30373E]">({kpi.subRatio})</span>
+                      ) : null}
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[12px] font-bold ${
                           positive ? 'bg-[#3FA46A]/10 text-[#3FA46A]' : 'bg-[#FFE7EC] text-[#ba1a1a]'
@@ -596,8 +771,18 @@ export default function OrdersPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={selectedData.marketplaceRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#DDE5EE" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12, fontFamily: 'var(--font-roboto-serif)' }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }} tickLine={false} axisLine={false} width={38} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12, fontFamily: 'var(--font-roboto-serif)' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fontFamily: 'var(--font-roboto-serif)' }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={38}
+                  />
                   <Tooltip
                     cursor={{ fill: '#F2F8FF' }}
                     formatter={(value: number) => formatCurrency(value)}
@@ -638,7 +823,13 @@ export default function OrdersPage() {
             <div key={item.label} className="bg-white border border-dashed border-[#DDE5EE] rounded-xl p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <p className="font-serif text-[17px] text-[#30373E]">{item.label}</p>
-                <button className="font-serif text-[13px] text-[#2764FF] hover:underline">View all</button>
+                <button
+                  type="button"
+                  onClick={() => handleBalanceFocus(item.label)}
+                  className="font-serif text-[13px] text-[#2764FF] hover:underline transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50 rounded"
+                >
+                  View all
+                </button>
               </div>
               <div className="mt-3 flex flex-wrap items-end gap-3">
                 <span className="font-serif text-[58px] leading-none tracking-tight font-bold text-[#03182F]">
@@ -651,15 +842,41 @@ export default function OrdersPage() {
             </div>
           ))}
         </div>
+
+        {selectedBalanceLabel ? (
+          <div className="rounded-xl border border-[#DDE5EE] bg-white p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">
+                  Balance Focus
+                </p>
+                <p className="font-serif text-[15px] text-[#03182F] mt-1">{selectedBalanceLabel}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedBalanceLabel(null)}
+                className="rounded-full px-3 py-1.5 font-serif text-[12px] font-bold text-[#2764FF] hover:bg-[#F2F8FF] transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+              >
+                Clear focus
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
-      {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {selectedData.stats.map((s) => (
-          <div key={s.label} className="p-6 bg-white border border-[#DDE5EE] rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
-            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">{s.label}</span>
+          <div
+            key={s.label}
+            className="p-6 bg-white border border-[#DDE5EE] rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+          >
+            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase block mb-2">
+              {s.label}
+            </span>
             <div className="flex items-end justify-between">
-              <span className="font-serif text-[44px] font-bold leading-none tracking-tight italic text-[#03182F]">{s.value}</span>
+              <span className="font-serif text-[44px] font-bold leading-none tracking-tight italic text-[#03182F]">
+                {s.value}
+              </span>
               <div className={`w-12 h-6 rounded flex items-center justify-center ${s.badgeBg}`}>
                 <span className="text-[10px] font-serif">{s.badge}</span>
               </div>
@@ -668,106 +885,206 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white border border-[#DDE5EE] rounded-xl overflow-hidden">
+      <div id="orders-table" className="bg-white border border-[#DDE5EE] rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead className="bg-[#F2F8FF] border-b border-[#DDE5EE]">
             <tr>
-              {['Marketplace', 'Order ID & Date', 'Status', 'Items', 'Value'].map((h, i) => (
-                <th key={h} className={`px-6 py-4 font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase ${i === 4 ? 'text-right' : ''}`}>
-                  {h}
+              {['Marketplace', 'Order ID & Date', 'Status', 'Items', 'Value'].map((header, index) => (
+                <th
+                  key={header}
+                  className={`px-6 py-4 font-serif text-[10px] font-bold tracking-[0.1em] text-[#30373E] uppercase ${
+                    index === 4 ? 'text-right' : ''
+                  }`}
+                >
+                  {header}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-[#DDE5EE]">
-            {selectedData.orders.map((o) => (
-              <tr key={o.orderId} className="hover:bg-[#F2F8FF] transition-colors cursor-pointer">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded ${o.mpColor} flex items-center justify-center text-[8px] text-white font-bold`}>
-                      {o.mpCode}
-                    </div>
-                    <span className="font-serif text-[13px]">{o.marketplace}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col">
-                    <span className="font-serif text-[12px] font-bold text-[#03182F]">{o.orderId}</span>
-                    <span className="font-serif text-[12px] text-[#6B7480]">{o.date}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase ${o.statusStyle}`}>
-                    {o.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center -space-x-2">
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF]" />
-                    {o.items > 1 && (
-                      <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF] flex items-center justify-center">
-                        <span className="text-[10px] font-serif text-[#6B7480]">+{o.items - 1}</span>
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span className="font-serif text-[13px] font-bold">{o.value}</span>
+            {paginatedOrders.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-10 text-center font-serif text-[13px] text-[#6B7480]">
+                  No orders match the current filters.
                 </td>
               </tr>
-            ))}
+            ) : (
+              paginatedOrders.map((order) => {
+                const active = order.orderId === selectedOrder?.orderId
+                return (
+                  <tr
+                    key={order.orderId}
+                    onClick={() => {
+                      setSelectedOrderId(order.orderId)
+                      setActivityMessage(`${order.orderId} loaded into the review panel.`)
+                    }}
+                    className={`cursor-pointer transition-all duration-150 ease-out ${
+                      active ? 'bg-[#F2F8FF]' : 'hover:bg-[#F2F8FF]'
+                    }`}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-8 h-8 rounded ${order.mpColor} flex items-center justify-center text-[8px] text-white font-bold`}
+                        >
+                          {order.mpCode}
+                        </div>
+                        <span className="font-serif text-[13px]">{order.marketplace}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-serif text-[12px] font-bold text-[#03182F]">{order.orderId}</span>
+                        <span className="font-serif text-[12px] text-[#6B7480]">{order.date}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase ${order.statusStyle}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center -space-x-2">
+                        <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF]" />
+                        {order.items > 1 ? (
+                          <div className="w-8 h-8 rounded-full border-2 border-white bg-[#F2F8FF] flex items-center justify-center">
+                            <span className="text-[10px] font-serif text-[#6B7480]">+{order.items - 1}</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="font-serif text-[13px] font-bold">{order.value}</span>
+                    </td>
+                  </tr>
+                )
+              })
+            )}
           </tbody>
         </table>
 
-        {/* Pagination */}
-        <div className="px-6 py-4 bg-white border-t border-[#DDE5EE] flex items-center justify-between">
+        <div className="px-6 py-4 bg-white border-t border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
           <span className="font-serif text-[12px] text-[#6B7480]">
-            Showing <span className="font-bold">1-{selectedData.orders.length}</span> of <span className="font-bold">{formatNumber(selectedData.ordersCount, 0)}</span> orders
+            Showing{' '}
+            <span className="font-bold">
+              {filteredOrders.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}-
+              {Math.min(currentPage * PAGE_SIZE, filteredOrders.length)}
+            </span>{' '}
+            of <span className="font-bold">{formatNumber(filteredOrders.length, 0)}</span> orders
           </span>
           <div className="flex gap-1">
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+              className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-[#F2F8FF] transition-all duration-150 ease-out disabled:opacity-50 outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <button className="w-8 h-8 rounded bg-[#2764FF] text-white text-[11px] font-bold">1</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">2</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] text-[11px] font-bold text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">3</button>
-            <button className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-[#F2F8FF] transition-colors">
+            {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 rounded text-[11px] font-bold transition-all duration-150 ease-out outline-none focus:ring-2 focus:ring-[#2764FF]/50 ${
+                  page === currentPage
+                    ? 'bg-[#2764FF] text-white'
+                    : 'border border-[#DDE5EE] text-[#6B7480] hover:bg-[#F2F8FF]'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+              disabled={currentPage === pageCount}
+              className="w-8 h-8 rounded border border-[#DDE5EE] flex items-center justify-center text-[#6B7480] hover:bg-[#F2F8FF] transition-all duration-150 ease-out disabled:opacity-50 outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Bottom: Logistics Feed + Quick Decision */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-        {/* Logistics Feed */}
-        <div className="col-span-8 bg-white border border-[#DDE5EE] rounded-lg p-6">
+        <div className="xl:col-span-8 bg-white border border-[#DDE5EE] rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-serif text-base font-bold text-[#03182F]">Logistics Feed</h3>
-            <span className="text-[10px] font-serif uppercase text-[#2764FF] bg-[#F2F8FF] px-2 py-1 rounded">Live Syncing</span>
+            <span className="text-[10px] font-serif uppercase text-[#2764FF] bg-[#F2F8FF] px-2 py-1 rounded">
+              Live Syncing
+            </span>
           </div>
           <div className="space-y-3">
-            {selectedData.logFeed.map((l, i) => (
-              <div key={i} className="flex items-center h-8 border-b border-[#DDE5EE]">
-                <span className={`w-2 h-2 rounded-full ${l.color} mr-4 ${l.pulse ? 'animate-pulse' : ''}`} />
-                <span className="font-serif text-[10px] text-[#6B7480] w-20">{l.time}</span>
-                <span className="font-serif text-[13px] text-[#03182F]">{l.text}</span>
+            {selectedData.logFeed.map((logEntry, index) => (
+              <div key={index} className="flex items-center min-h-8 border-b border-[#DDE5EE] py-1">
+                <span
+                  className={`w-2 h-2 rounded-full ${logEntry.color} mr-4 ${logEntry.pulse ? 'animate-pulse' : ''}`}
+                />
+                <span className="font-serif text-[10px] text-[#6B7480] w-20">{logEntry.time}</span>
+                <span className="font-serif text-[13px] text-[#03182F]">{logEntry.text}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Quick Decision */}
-        <div className="col-span-4 bg-[#03182F] text-white rounded-lg p-6 flex flex-col justify-between">
-          <div>
-            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-2">QUICK DECISION</span>
-            <h4 className="font-serif text-base font-bold mb-2">{selectedData.quickDecisionTitle}</h4>
-            <p className="font-serif text-[12px] text-[#DDE5EE]">{selectedData.quickDecisionText}</p>
+        <div className="xl:col-span-4 bg-[#03182F] text-white rounded-lg p-6 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div>
+              <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase block mb-2">
+                Decision Center
+              </span>
+              <h4 className="font-serif text-base font-bold mb-2">
+                {selectedOrder ? `Review ${selectedOrder.orderId}` : selectedData.quickDecisionTitle}
+              </h4>
+              <p className="font-serif text-[12px] text-[#DDE5EE]">
+                {selectedOrder
+                  ? `${selectedOrder.marketplace} · ${selectedOrder.status} · ${selectedOrder.value}`
+                  : selectedData.quickDecisionText}
+              </p>
+            </div>
+            {selectedOrder ? (
+              <div className="rounded-lg border border-[#BFCBDA]/20 bg-white/5 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-serif text-[11px] text-[#DDE5EE]">Selected order</span>
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${selectedOrder.statusStyle}`}>
+                    {selectedOrder.status}
+                  </span>
+                </div>
+                <div className="mt-3 space-y-2 font-serif text-[12px] text-[#DDE5EE]">
+                  <p>Marketplace: {selectedOrder.marketplace}</p>
+                  <p>Items: {selectedOrder.items}</p>
+                  <p>Date: {selectedOrder.date}</p>
+                </div>
+              </div>
+            ) : null}
+            {decisionState !== 'idle' ? (
+              <div className="rounded-lg border border-[#BFCBDA]/20 bg-white/5 px-3 py-2 font-serif text-[12px] text-[#DDE5EE]">
+                {decisionState === 'queued'
+                  ? 'Restock plan prepared.'
+                  : 'Alert snoozed for the next review cycle.'}
+              </div>
+            ) : null}
           </div>
           <div className="mt-4 space-y-2">
-            <button className="w-full h-9 bg-[#2764FF] text-white rounded font-serif text-[13px] font-bold hover:opacity-90">Auto-Replenish</button>
-            <button className="w-full h-9 bg-transparent border border-[#BFCBDA] text-white rounded font-serif text-[13px] font-bold hover:bg-[#F2F8FF]/10">Snooze Alert</button>
+            <button
+              type="button"
+              onClick={() => handleQuickDecision('replenish')}
+              disabled={decisionState === 'queued'}
+              className="w-full h-9 bg-[#2764FF] text-white rounded font-serif text-[13px] font-bold hover:opacity-90 transition-all duration-150 ease-out disabled:opacity-60 outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
+              {decisionState === 'queued' ? 'Replenish queued' : 'Auto-Replenish'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickDecision('snooze')}
+              disabled={decisionState === 'snoozed'}
+              className="w-full h-9 bg-transparent border border-[#BFCBDA] text-white rounded font-serif text-[13px] font-bold hover:bg-[#F2F8FF]/10 transition-all duration-150 ease-out disabled:opacity-60 outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
+              {decisionState === 'snoozed' ? 'Alert snoozed' : 'Snooze Alert'}
+            </button>
           </div>
         </div>
       </div>

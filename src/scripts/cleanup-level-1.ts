@@ -16,23 +16,23 @@ async function main() {
     DELETE FROM public.agent_recommendations
     WHERE user_id = ${USER_ID}::uuid
   `
-  console.log(`agent_recommendations supprimées (cascade approvals + runs) : ${recosDel}`)
+  console.log(`agent_recommendations deleted (cascade approvals + runs) : ${recosDel}`)
 
   // 2) Stock low alerts
   const slaDel = await prisma.$executeRaw`
     DELETE FROM public.stock_low_alerts
     WHERE user_id = ${USER_ID}::uuid
   `
-  console.log(`stock_low_alerts supprimées                                : ${slaDel}`)
+  console.log(`stock_low_alerts deleted                                : ${slaDel}`)
 
-  // 3) Calendar events kind='leave' (créés par nos tests Iris)
+  // 3) Calendar events kind='leave' (created par nos tests Iris)
   const leavesDel = await prisma.$executeRaw`
     DELETE FROM public.calendar_events
     WHERE user_id = ${USER_ID}::uuid AND kind = 'leave'
   `
-  console.log(`calendar_events (kind=leave) supprimés                      : ${leavesDel}`)
+  console.log(`calendar_events (kind=leave) deleted                      : ${leavesDel}`)
 
-  console.log('\n=== VÉRIFICATION POST-CLEANUP ===\n')
+  console.log('\n=== POST-CLEANUP VERIFICATION ===\n')
 
   const recos = await prisma.$queryRaw<Array<{ cnt: number }>>`
     SELECT count(*)::int cnt FROM public.agent_recommendations WHERE user_id = ${USER_ID}::uuid
@@ -61,10 +61,10 @@ async function main() {
   console.log(`agent_execution_runs restants      : ${runs[0].cnt}`)
   console.log(`stock_low_alerts restantes         : ${sla[0].cnt}`)
   console.log(`calendar_events kind=leave         : ${leaves[0].cnt}`)
-  console.log(`calendar_events TOTAL              : ${totalEvents[0].cnt}  (holidays/commerce/autres préservés)`)
-  console.log(`products                           : ${products[0].cnt}  (préservés)`)
+  console.log(`calendar_events TOTAL              : ${totalEvents[0].cnt}  (holidays/commerce/autres preserved)`)
+  console.log(`products                           : ${products[0].cnt}  (preserved)`)
 
-  console.log('\n✓ Cleanup terminé.')
+  console.log('\n✓ Cleanup complete.')
 }
 
 main()

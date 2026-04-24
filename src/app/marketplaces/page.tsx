@@ -2,26 +2,44 @@
 
 import { useState } from 'react'
 import { Store, Mail, ArrowRight, Paperclip, Send, X, Check, Download } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type Tab = 'proposals' | 'active'
+type ConnectedMarketplace = {
+  name: string
+  revenue: string
+  change: string
+  status: 'STABLE' | 'REVIEW' | 'PENDING'
+  icon: string
+}
+type MarketplaceProposal = {
+  name: string
+  category: string
+  dailyUsers: string
+  revenue: string
+}
+type MarketplaceSuggestion = {
+  name: string
+  desc: string
+}
 
 /* ── Data ── */
 
-const connectedMarketplaces = [
+const initialConnectedMarketplaces: ConnectedMarketplace[] = [
   { name: 'Amazon', revenue: '€42,000', change: '+12.4%', status: 'STABLE' as const, icon: '🛒' },
   { name: 'Rakuten', revenue: '€28,500', change: '+5.1%', status: 'STABLE' as const, icon: '🏬' },
   { name: 'Cdiscount', revenue: '€14,200', change: '-2.4%', status: 'REVIEW' as const, icon: '📦' },
   { name: 'Leroy Merlin', revenue: '€31,800', change: '+18.2%', status: 'STABLE' as const, icon: '🔨' },
 ]
 
-const proposals = [
+const initialProposals: MarketplaceProposal[] = [
   { name: 'Darty', category: 'Electronics & Home', dailyUsers: '2.4M', revenue: '€850M' },
   { name: 'Carrefour', category: 'Retail Giant', dailyUsers: '4.8M', revenue: '€1.2B' },
   { name: 'Auchan', category: 'Hypermarket Chain', dailyUsers: '3.1M', revenue: '€920M' },
   { name: 'ManoMano', category: 'DIY & Garden', dailyUsers: '1.8M', revenue: '€540M' },
 ]
 
-const suggestions = [
+const marketplaceSuggestions: MarketplaceSuggestion[] = [
   { name: 'Vente-privee', desc: 'Ideal for clearance of high-end furniture stock.' },
   { name: 'Wayfair', desc: 'Strong alignment with your upholstery product category.' },
   { name: 'Home24', desc: 'Growth opportunity in the DACH furniture market.' },
@@ -61,7 +79,21 @@ const requirements = [
 
 /* ── Components ── */
 
-function ProposalsTab() {
+function ProposalsTab({
+  connectedMarketplaces,
+  proposals,
+  onAccept,
+  onDecline,
+  onExplore,
+  onMessage,
+}: {
+  connectedMarketplaces: ConnectedMarketplace[]
+  proposals: MarketplaceProposal[]
+  onAccept: (partnerName: string) => void
+  onDecline: (partnerName: string) => void
+  onExplore: (suggestion: MarketplaceSuggestion) => void
+  onMessage: (partnerName: string) => void
+}) {
   return (
     <div className="space-y-6">
       {/* Connected Marketplaces */}
@@ -89,7 +121,13 @@ function ProposalsTab() {
                   <svg className={`w-24 h-6 ${neg ? 'text-[#F22E75]' : 'text-[#3FA46A]'}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 100 20">
                     <path d={neg ? 'M0 5 L20 8 L40 6 L60 12 L80 15 L100 18' : 'M0 18 L20 12 L40 10 L60 5 L80 8 L100 2'} />
                   </svg>
-                  <button className="text-[#004bd9] text-xs font-bold hover:underline">DETAILS</button>
+                  <button
+                    type="button"
+                    onClick={() => onMessage(mp.name)}
+                    className="text-[#004bd9] text-xs font-bold hover:underline"
+                  >
+                    DETAILS
+                  </button>
                 </div>
               </div>
             )
@@ -124,23 +162,29 @@ function ProposalsTab() {
                 </div>
                 <div className="flex justify-end gap-2">
                   <button
+                    type="button"
+                    onClick={() => onDecline(p.name)}
                     className="h-9 w-9 bg-[#ba1a1a] text-white hover:bg-[#ba1a1a]/90 transition-colors rounded shadow-sm flex items-center justify-center"
-                    aria-label="Decline"
-                    title="Decline"
+                    aria-label={`Decline ${p.name}`}
+                    title={`Decline ${p.name}`}
                   >
                     <X className="h-4 w-4" />
                   </button>
                   <button
+                    type="button"
+                    onClick={() => onMessage(p.name)}
                     className="h-9 w-9 bg-[#004bd9] text-white hover:bg-[#004bd9]/90 transition-colors rounded shadow-sm flex items-center justify-center"
-                    aria-label="Message"
-                    title="Message"
+                    aria-label={`Message ${p.name}`}
+                    title={`Message ${p.name}`}
                   >
                     <Mail className="h-4 w-4" />
                   </button>
                   <button
+                    type="button"
+                    onClick={() => onAccept(p.name)}
                     className="h-9 w-9 bg-[#3FA46A] text-white hover:bg-[#3FA46A]/90 transition-colors rounded shadow-sm flex items-center justify-center"
-                    aria-label="Accept"
-                    title="Accept"
+                    aria-label={`Accept ${p.name}`}
+                    title={`Accept ${p.name}`}
                   >
                     <Check className="h-4 w-4" />
                   </button>
@@ -158,14 +202,18 @@ function ProposalsTab() {
           <div className="flex-1 h-px bg-slate-100" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {suggestions.map((s) => (
+          {marketplaceSuggestions.map((s) => (
             <div key={s.name} className="bg-white border border-dashed border-[#BFCBDA] p-5 flex flex-col items-center text-center rounded-lg hover:border-[#004bd9] transition-all">
               <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
                 <Store className="h-8 w-8 text-slate-300" />
               </div>
               <h5 className="font-serif text-base font-bold text-[#03182F]">{s.name}</h5>
               <p className="text-[12px] text-[#6B7480] mt-1 px-4">{s.desc}</p>
-              <button className="mt-4 text-xs font-bold text-[#004bd9] flex items-center gap-1 hover:gap-2 transition-all">
+              <button
+                type="button"
+                onClick={() => onExplore(s)}
+                className="mt-4 text-xs font-bold text-[#004bd9] flex items-center gap-1 hover:gap-2 transition-all"
+              >
                 EXPLORE MATCH <ArrowRight className="h-3 w-3" />
               </button>
             </div>
@@ -351,7 +399,50 @@ function ActiveConnectionTab() {
 /* ── Main Page ── */
 
 export default function MarketplacesPage() {
+  const router = useRouter()
   const [tab, setTab] = useState<Tab>('proposals')
+  const [connectedMarketplaces, setConnectedMarketplaces] = useState<ConnectedMarketplace[]>(initialConnectedMarketplaces)
+  const [proposals, setProposals] = useState<MarketplaceProposal[]>(initialProposals)
+
+  const handleMessage = (partnerName: string) => {
+    router.push(`/marketplaces/active-connection?partner=${encodeURIComponent(partnerName)}`)
+  }
+
+  const handleAccept = (partnerName: string) => {
+    setProposals((current) => current.filter((proposal) => proposal.name !== partnerName))
+    setConnectedMarketplaces((current) => {
+      if (current.some((marketplace) => marketplace.name === partnerName)) return current
+      return [
+        ...current,
+        {
+          name: partnerName,
+          revenue: 'Pending sync',
+          change: 'New',
+          status: 'PENDING' as const,
+          icon: partnerName.slice(0, 3).toUpperCase(),
+        },
+      ]
+    })
+  }
+
+  const handleDecline = (partnerName: string) => {
+    setProposals((current) => current.filter((proposal) => proposal.name !== partnerName))
+  }
+
+  const handleExplore = (suggestion: MarketplaceSuggestion) => {
+    setProposals((current) => {
+      if (current.some((proposal) => proposal.name === suggestion.name)) return current
+      return [
+        ...current,
+        {
+          name: suggestion.name,
+          category: 'Suggested match',
+          dailyUsers: 'Opportunity',
+          revenue: 'Pending review',
+        },
+      ]
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -361,7 +452,11 @@ export default function MarketplacesPage() {
           <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Marketplaces Overview</h1>
           <p className="text-[#6B7480] text-sm mt-1">Manage your active channels and discover new expansion opportunities.</p>
         </div>
-        <button className="h-9 px-4 bg-[#004bd9] text-white text-[13px] font-semibold rounded hover:bg-[#004bd9]/90 transition-colors flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => router.push('/marketplaces/active-connection')}
+          className="h-9 px-4 bg-[#004bd9] text-white text-[13px] font-semibold rounded hover:bg-[#004bd9]/90 transition-colors flex items-center gap-2"
+        >
           <span className="text-sm">+</span> New Channel
         </button>
       </div>
@@ -395,7 +490,16 @@ export default function MarketplacesPage() {
       </div>
 
       {/* Tab content */}
-      {tab === 'proposals' && <ProposalsTab />}
+      {tab === 'proposals' && (
+        <ProposalsTab
+          connectedMarketplaces={connectedMarketplaces}
+          proposals={proposals}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+          onExplore={handleExplore}
+          onMessage={handleMessage}
+        />
+      )}
       {tab === 'active' && <ActiveConnectionTab />}
     </div>
   )

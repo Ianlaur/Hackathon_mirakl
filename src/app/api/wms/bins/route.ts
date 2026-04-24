@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const parsed = binSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Données invalides' },
+        { error: parsed.error.errors[0]?.message || 'Invalid data' },
         { status: 400 }
       )
     }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!zone) {
-      return NextResponse.json({ error: 'Zone non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Zone not found' }, { status: 404 })
     }
 
     // Check if code already exists
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     })
     
     if (existing) {
-      return NextResponse.json({ error: 'Ce code d\'emplacement existe déjà' }, { status: 400 })
+      return NextResponse.json({ error: 'This bin code already exists' }, { status: 400 })
     }
 
     const bin = await prisma.warehouseBin.create({

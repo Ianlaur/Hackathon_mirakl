@@ -21,6 +21,7 @@ export interface NavPlugin {
   description: string
   items: NavItem[]
   position: number
+  surfaceLabel?: string
 }
 
 export interface NavigationConfig {

@@ -1,6 +1,8 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { canDeleteCalendarEvent, getCalendarEventDeleteTarget } from '@/lib/calendar-events'
+import { getCalendarSyncNotice } from '@/lib/demo-feedback'
 
 type CalendarView = 'month' | 'week' | 'day'
 type EventKind = 'holiday' | 'celebration' | 'peak' | 'leave'
@@ -77,31 +79,39 @@ const impactLabels: Record<EventImpact, { label: string; chip: string }> = {
 const today = new Date()
 const todayKey = toDateKey(today)
 const monthNames: Record<string, number> = {
+  january: 1,
+  jan: 1,
   janvier: 1,
   janv: 1,
+  february: 2,
+  feb: 2,
   fevrier: 2,
-  février: 2,
-  fev: 2,
-  fév: 2,
+  march: 3,
   mars: 3,
+  april: 4,
   avril: 4,
   avr: 4,
+  may: 5,
   mai: 5,
+  june: 6,
   juin: 6,
+  july: 7,
   juillet: 7,
   juil: 7,
+  august: 8,
   aout: 8,
-  août: 8,
+  september: 9,
   septembre: 9,
   sept: 9,
+  october: 10,
   octobre: 10,
   oct: 10,
+  november: 11,
   novembre: 11,
   nov: 11,
+  december: 12,
   decembre: 12,
-  décembre: 12,
   dec: 12,
-  déc: 12,
 }
 const weekdayNames: Record<string, number> = {
   lundi: 1,
@@ -216,7 +226,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'peak',
     impact: 'high',
     zone: 'China / marketplaces',
-    notes: 'Major e-commerce promotional peak — useful for marketplace monitoring and cross-border ops.',
+    notes: 'Major e-commerce promotional peak: useful for marketplace monitoring and cross-border ops.',
     locked: true,
   },
   {
@@ -242,7 +252,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'France',
-    notes: 'Gift window — leverage with targeted campaigns, bundles and guaranteed delivery SLAs.',
+    notes: 'Gift window: leverage with targeted campaigns, bundles and guaranteed delivery SLAs.',
     locked: true,
   },
   {
@@ -255,7 +265,7 @@ const initialEvents: CalendarEvent[] = [
     kind: 'celebration',
     impact: 'medium',
     zone: 'International',
-    notes: 'Gift peak — time-boxed offers and strict on-time delivery expectations.',
+    notes: 'Gift peak: time-boxed offers and strict on-time delivery expectations.',
     locked: true,
   },
 ]
@@ -271,12 +281,12 @@ function toDateKeyFromParts(day: number, month: number, year = today.getFullYear
   return toDateKey(new Date(year, month - 1, day))
 }
 
-function formatDateFr(dateKey: string) {
+function formatDateEn(dateKey: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(parseDateKey(dateKey))
 }
 
-function formatDateRangeFr(startDate: string, endDate: string) {
-  return startDate === endDate ? formatDateFr(startDate) : `${formatDateFr(startDate)} — ${formatDateFr(endDate)}`
+function formatDateRangeEn(startDate: string, endDate: string) {
+  return startDate === endDate ? formatDateEn(startDate) : `${formatDateEn(startDate)} - ${formatDateEn(endDate)}`
 }
 
 function parseDateKey(dateKey: string) {
@@ -358,15 +368,15 @@ function inferImpact(text: string, kind: EventKind): EventImpact {
 }
 
 function inferZone(text: string, kind: EventKind) {
-  if (/(chine|chinois|sourcing|import)/.test(text)) return 'Chine / sourcing international'
+  if (/(chine|chinois|sourcing|import)/.test(text)) return 'China / international sourcing'
   if (/(france|ferie|soldes)/.test(text)) return 'France'
-  if (kind === 'leave') return 'Interne'
+  if (kind === 'leave') return 'Internal'
   return 'Internal'
 }
 
 function removeCommandWords(value: string) {
   return value
-    .replace(/\b(ajoute|ajouter|cree|crée|creer|créer|mets|mettre|pose|planifie|programme)\b/gi, '')
+    .replace(/\b(ajoute|ajouter|cree|creer|create|add|schedule|mets|mettre|pose|planifie|programme)\b/gi, '')
     .replace(/\b(mes|mon|ma|un|une|des|les|en)\b/gi, ' ')
     .replace(/\b(je prends|je pose|je serai|je suis|j ai|j'ai)\b/gi, ' ')
     .replace(/\s+/g, ' ')
@@ -382,7 +392,7 @@ function inferTitle(original: string, text: string, kind: EventKind) {
     .replace(/\ble\b.+$/i, '')
     .replace(/\bde\b.+$/i, '')
     .replace(/\b(demain|aujourd'hui|aujourd hui|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|prochain|prochaine)\b.+$/i, '')
-    .replace(/\btoute la journ[ée]e\b/gi, '')
+    .replace(/\btoute la journee\b/gi, '')
     .trim()
 
   if (beforeDate.length >= 3) return titleCase(beforeDate)
@@ -488,7 +498,7 @@ function parseNaturalEvent(input: string, fallbackDate: string): ParsedNaturalEv
   const dates = parseNaturalDates(text, fallbackDate)
   const times = parseNaturalTimes(text)
   const endDate = dates.endDate >= dates.startDate ? dates.endDate : dates.startDate
-  const hasExplicitDate = /(du|le|demain|aujourd|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|\d{1,2}[\/.-]\d{1,2}|\d{1,2}\s+(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre))/.test(text)
+  const hasExplicitDate = /(du|le|demain|aujourd|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|\d{1,2}[\/.-]\d{1,2}|\d{1,2}\s+(janvier|february|mars|avril|mai|juin|juillet|august|septembre|octobre|novembre|december))/.test(text)
   const confidence: ParsedNaturalEvent['confidence'] = hasExplicitDate && title ? 'high' : hasExplicitDate ? 'medium' : 'low'
 
   return {
@@ -504,7 +514,7 @@ function parseNaturalEvent(input: string, fallbackDate: string): ParsedNaturalEv
       notes: `Created from natural input: "${original}"`,
     },
     confidence,
-    summary: `${title} · ${formatDateRangeFr(dates.startDate, endDate)}${times.startTime ? ` · ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' · all day'}`,
+    summary: `${title} - ${formatDateRangeEn(dates.startDate, endDate)}${times.startTime ? ` - ${times.startTime}${times.endTime ? `-${times.endTime}` : ''}` : ' - all day'}`,
   }
 }
 
@@ -581,7 +591,7 @@ const emptyForm: EventForm = {
   endTime: '',
   kind: 'leave',
   impact: 'medium',
-  zone: 'Interne',
+  zone: 'Internal',
   notes: '',
 }
 
@@ -598,6 +608,7 @@ export default function CalendarPageClient() {
   const [isLoading, setIsLoading] = useState(true)
   const [savingIds, setSavingIds] = useState<string[]>([])
   const [syncError, setSyncError] = useState<string | null>(null)
+  const [syncNotice, setSyncNotice] = useState<string | null>(null)
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [naturalInput, setNaturalInput] = useState('')
   const [tlRange, setTlRange] = useState(90)
@@ -606,6 +617,7 @@ export default function CalendarPageClient() {
   const [eventChatError, setEventChatError] = useState<string | null>(null)
   const [eventChatSessionId, setEventChatSessionId] = useState<string | null>(null)
   const [eventChatSending, setEventChatSending] = useState(false)
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null)
 
   useEffect(() => {
     let ignore = false
@@ -619,16 +631,16 @@ export default function CalendarPageClient() {
 
         if (data.length > 0) {
           setEvents(data)
-          setSelectedEventId(data.find((event) => event.title === 'Nouvel An chinois')?.id || data[0].id)
-          setSelectedDate(data.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
+          setSelectedEventId(data.find((event) => event.title === 'Chinese New Year')?.id || data[0].id)
+          setSelectedDate(data.find((event) => event.title === 'Chinese New Year')?.startDate || todayKey)
           return
         }
 
         const seeded = await Promise.all(initialEvents.map((event) => createCalendarEvent(event)))
         if (ignore) return
         setEvents(seeded)
-        setSelectedEventId(seeded.find((event) => event.title === 'Nouvel An chinois')?.id || seeded[0]?.id || null)
-        setSelectedDate(seeded.find((event) => event.title === 'Nouvel An chinois')?.startDate || todayKey)
+        setSelectedEventId(seeded.find((event) => event.title === 'Chinese New Year')?.id || seeded[0]?.id || null)
+        setSelectedDate(seeded.find((event) => event.title === 'Chinese New Year')?.startDate || todayKey)
       } catch (error) {
         if (!ignore) {
           setSyncError(error instanceof Error ? error.message : 'Unable to sync calendar')
@@ -655,6 +667,12 @@ export default function CalendarPageClient() {
     setEventChatSending(false)
   }, [detailEventId])
 
+  useEffect(() => {
+    if (!syncNotice) return
+    const timer = setTimeout(() => setSyncNotice(null), 4500)
+    return () => clearTimeout(timer)
+  }, [syncNotice])
+
   const monthDays = useMemo(() => buildMonthDays(activeMonth), [activeMonth])
   const selectedEvent = useMemo(
     () => events.find((event) => event.id === selectedEventId) || null,
@@ -664,6 +682,7 @@ export default function CalendarPageClient() {
     () => (detailEventId ? events.find((event) => event.id === detailEventId) || null : null),
     [events, detailEventId]
   )
+  const canDeleteDetailEvent = canDeleteCalendarEvent(detailEvent)
   const selectedDateEvents = events
     .filter((event) => isDateInRange(selectedDate, event))
     .sort((a, b) => `${a.startDate}${a.startTime}${a.title}`.localeCompare(`${b.startDate}${b.startTime}${b.title}`))
@@ -696,6 +715,7 @@ export default function CalendarPageClient() {
       setEvents((current) => [...current, newEvent])
       setSelectedDate(newEvent.startDate)
       setSelectedEventId(newEvent.id)
+      setSyncNotice(getCalendarSyncNotice('created', newEvent.title))
       setForm(emptyForm)
       setNaturalInput('')
       setIsCreatingFromDate(false)
@@ -707,7 +727,7 @@ export default function CalendarPageClient() {
   const createEvent = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!parsedNaturalEvent) {
-      setSyncError('Describe an event — e.g. "time off from May 5 to May 10, all day"')
+      setSyncError('Describe an event - e.g. "time off from May 5 to May 10, all day"')
       return
     }
     await saveDraftEvent(parsedNaturalEvent.event)
@@ -736,6 +756,7 @@ export default function CalendarPageClient() {
     updateCalendarEvent(selectedEvent.id, patch)
       .then((savedEvent) => {
         setEvents((current) => current.map((event) => (event.id === savedEvent.id ? savedEvent : event)))
+        setSyncNotice(getCalendarSyncNotice('updated', savedEvent.title))
       })
       .catch((error) => {
         setEvents((current) => current.map((event) => (event.id === previousEvent.id ? previousEvent : event)))
@@ -839,18 +860,32 @@ export default function CalendarPageClient() {
   }
 
   const deleteSelectedEvent = async () => {
-    if (!selectedEvent) return
-    const eventToDelete = selectedEvent
+    const eventToDelete = getCalendarEventDeleteTarget(detailEvent, selectedEvent)
+    if (!eventToDelete || !canDeleteCalendarEvent(eventToDelete) || deletingEventId) return
+
+    const existingIndex = events.findIndex((event) => event.id === eventToDelete.id)
+
+    setDeletingEventId(eventToDelete.id)
     setEvents((current) => current.filter((event) => event.id !== eventToDelete.id))
-    setSelectedEventId(null)
+    setSelectedEventId((current) => (current === eventToDelete.id ? null : current))
+    setDetailEventId((current) => (current === eventToDelete.id ? null : current))
 
     try {
       setSyncError(null)
       await deleteCalendarEvent(eventToDelete.id)
+      setSyncNotice(getCalendarSyncNotice('deleted', eventToDelete.title))
     } catch (error) {
-      setEvents((current) => [...current, eventToDelete])
+      setEvents((current) => {
+        const next = [...current]
+        const insertAt = existingIndex >= 0 ? Math.min(existingIndex, next.length) : next.length
+        next.splice(insertAt, 0, eventToDelete)
+        return next
+      })
       setSelectedEventId(eventToDelete.id)
+      setDetailEventId(eventToDelete.id)
       setSyncError(error instanceof Error ? error.message : 'Unable to delete event')
+    } finally {
+      setDeletingEventId(null)
     }
   }
 
@@ -870,7 +905,7 @@ export default function CalendarPageClient() {
     const eventContext = [
       'Calendar event context:',
       `Title: ${detailEvent.title}`,
-      `Date range: ${formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}`,
+      `Date range: ${formatDateRangeEn(detailEvent.startDate, detailEvent.endDate)}`,
       `Impact: ${impactLabels[detailEvent.impact].label}`,
       `Type: ${getKindStyle(detailEvent.kind).label}`,
       `Zone: ${detailEvent.zone}`,
@@ -941,12 +976,12 @@ export default function CalendarPageClient() {
           <div className="mt-3 flex flex-wrap gap-2">
             {isLoading && (
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-[#6B7480]">
-                Loading from Supabase…
+                Loading from Supabase...
               </span>
             )}
             {savingIds.length > 0 && (
               <span className="rounded-full bg-[#2764FF]/10 px-3 py-1 text-xs font-semibold text-[#004bd9]">
-                Saving…
+                Saving...
               </span>
             )}
             {syncError && (
@@ -954,17 +989,22 @@ export default function CalendarPageClient() {
                 {syncError}
               </span>
             )}
+            {syncNotice && (
+              <span className="rounded-full bg-[#3FA46A]/10 px-3 py-1 text-xs font-semibold text-[#1E6B42]">
+                {syncNotice}
+              </span>
+            )}
           </div>
         </div>
       </section>
 
       <section className="dashboard-card p-5 sm:p-7">
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <p className="font-serif text-base font-bold text-[#03182F]">Upcoming events</p>
-          <div className="inline-flex rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
+          <div className="inline-flex max-w-full rounded-lg border border-[#DDE5EE] bg-slate-50 p-0.5">
             {[{ v: 30, l: '30 days' }, { v: 90, l: '3 months' }, { v: 180, l: '6 months' }].map((o) => (
               <button key={o.v} type="button" onClick={() => setTlRange(o.v)}
-                className={`rounded-md px-3 py-1 font-serif text-[13px] font-medium transition ${tlRange === o.v ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
+                className={`rounded-md px-3 py-1 font-serif text-[12px] font-medium transition sm:text-[13px] ${tlRange === o.v ? 'bg-white text-[#03182F] shadow-sm' : 'text-[#6B7480] hover:text-[#30373E]'}`}
               >{o.l}</button>
             ))}
           </div>
@@ -980,7 +1020,7 @@ export default function CalendarPageClient() {
             return Math.max(0, Math.min(100, (Math.round((d.getTime() - rs.getTime()) / 86400000) / td) * 100))
           }
           const sd = (dk: string) => new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' }).format(parseDateKey(dk))
-          // Fewer events + wider breathing room on longer ranges (30j: 5 · 3mo: 6 · 6mo: 7)
+          // Fewer events + wider breathing room on longer ranges (30 days: 5, 3 months: 6, 6 months: 7)
           const mx = tlRange <= 30 ? 5 : tlRange <= 90 ? 6 : 7
           const vis = tl.slice(0, mx)
           // Keep points spaced while preserving order.
@@ -995,26 +1035,66 @@ export default function CalendarPageClient() {
             pos.push(Math.min(100, p))
           })
           const trackX = (pct: number) => `clamp(48px, ${pct}%, calc(100% - 48px))`
+          const openEvent = (event: CalendarEvent) => {
+            const date = parseDateKey(event.startDate)
+            setDetailEventId(event.id)
+            setSelectedDate(event.startDate)
+            setActiveMonth(new Date(date.getFullYear(), date.getMonth(), 1))
+          }
           if (vis.length === 0) return <p className="text-sm text-[#6B7480]">No events in this period.</p>
           return (
-            <div className="relative px-4 sm:px-6">
-              <div className="absolute left-12 right-12 top-3 h-px bg-slate-200" />
-              <div className="absolute top-0" style={{ left: trackX(0) }}>
-                <p className="absolute -top-4 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider text-[#6B7480] whitespace-nowrap">Today</p>
-                <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
+            <>
+              <div className="space-y-2 sm:hidden">
+                {vis.map((evt) => {
+                  const k = getKindStyle(evt.kind)
+                  return (
+                    <button
+                      key={evt.id}
+                      type="button"
+                      onClick={() => openEvent(evt)}
+                      className="flex w-full items-center gap-3 rounded-lg border border-[#DDE5EE] bg-white px-3 py-2.5 text-left shadow-sm transition hover:border-[#2764FF]/40"
+                    >
+                      <span className={`h-3 w-3 shrink-0 rounded-full ${k.color}`} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-serif text-[13px] font-bold text-[#03182F]">{evt.title}</span>
+                        <span className="block font-serif text-[11px] capitalize text-[#6B7480]">{sd(evt.startDate)}</span>
+                      </span>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 font-serif text-[10px] font-bold ${impactLabels[evt.impact].chip}`}>
+                        {impactLabels[evt.impact].label}
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
-              {vis.map((evt, i) => { const k = getKindStyle(evt.kind); return (
-                <div key={evt.id} className="absolute cursor-pointer group" style={{ left: trackX(pos[i]) }}
-                  onClick={() => { setDetailEventId(evt.id); setSelectedDate(evt.startDate); setActiveMonth(new Date(parseDateKey(evt.startDate).getFullYear(), parseDateKey(evt.startDate).getMonth(), 1)) }}>
-                  <div className="h-6 w-6 -translate-x-1/2 flex items-center justify-center"><div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} /></div>
-                  <div className="mt-2 -translate-x-1/2 w-24 text-center">
-                    <p className="font-serif text-[12px] font-bold text-[#03182F] truncate leading-tight">{evt.title}</p>
-                    <p className="font-serif text-[11px] text-[#6B7480] capitalize mt-0.5">{sd(evt.startDate)}</p>
-                  </div>
+
+              <div className="relative hidden px-6 sm:block">
+                <div className="absolute left-12 right-12 top-3 h-px bg-slate-200" />
+                <div className="absolute top-0" style={{ left: trackX(0) }}>
+                  <p className="absolute -top-4 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider text-[#6B7480]">Today</p>
+                  <div className="flex h-6 w-6 -translate-x-1/2 items-center justify-center"><div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400 bg-white" /></div>
                 </div>
-              ) })}
-              <div className="h-20" />
-            </div>
+                {vis.map((evt, i) => {
+                  const k = getKindStyle(evt.kind)
+                  return (
+                    <div
+                      key={evt.id}
+                      className="group absolute cursor-pointer"
+                      style={{ left: trackX(pos[i]) }}
+                      onClick={() => openEvent(evt)}
+                    >
+                      <div className="flex h-6 w-6 -translate-x-1/2 items-center justify-center">
+                        <div className={`h-3 w-3 rounded-full ${k.color} ring-2 ring-white transition group-hover:scale-125`} />
+                      </div>
+                      <div className="mt-2 w-24 -translate-x-1/2 text-center">
+                        <p className="truncate font-serif text-[12px] font-bold leading-tight text-[#03182F]">{evt.title}</p>
+                        <p className="mt-0.5 font-serif text-[11px] capitalize text-[#6B7480]">{sd(evt.startDate)}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+                <div className="h-20" />
+              </div>
+            </>
           )
         })()}
       </section>
@@ -1092,7 +1172,7 @@ export default function CalendarPageClient() {
                       onDoubleClick={() => startCreateFromDate(day.key)}
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={() => dropEvent(day.key)}
-                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-[#2764FF]/10/60 ${
+                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-[#2764FF]/10 ${
                         day.inMonth ? 'bg-white' : 'bg-slate-50 text-slate-300'
                       } ${isSelected ? 'ring-2 ring-inset ring-blue-500' : ''}`}
                     >
@@ -1123,7 +1203,7 @@ export default function CalendarPageClient() {
                               } ${isRangeEnd ? 'rounded-r-lg' : 'rounded-r-sm'} ${
                                 event.impact === 'critical' ? 'ring-1 ring-red-300' : ''
                               }`}
-                              title={`${event.title} · ${event.zone}`}
+                              title={`${event.title} - ${event.zone}`}
                             >
                               {event.startTime && isRangeStart ? `${event.startTime} ` : ''}
                               {event.title}
@@ -1218,12 +1298,12 @@ export default function CalendarPageClient() {
                           return (
                             <div
                               key={wd.key}
-                              className={`min-h-10 border-r border-slate-100 px-1 py-0.5 last:border-r-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer ${
-                                selectedDate === wd.key ? 'bg-[#2764FF]/10/20' : ''
+                              className={`min-h-10 cursor-pointer border-r border-slate-100 px-1 py-0.5 transition hover:bg-[#2764FF]/10 last:border-r-0 ${
+                                selectedDate === wd.key ? 'bg-[#2764FF]/10' : ''
                               }`}
                               onClick={() => chooseDate(wd.key)}
                               onDoubleClick={() => {
-                                setNaturalInput(`le ${formatDateFr(wd.key).replaceAll('-', '/')} de ${hour}h à ${hour + 1}h `)
+                                setNaturalInput(`on ${formatDateEn(wd.key).replaceAll('-', '/')} from ${hour}:00 to ${hour + 1}:00 `)
                                 startCreateFromDate(wd.key)
                               }}
                             >
@@ -1234,7 +1314,7 @@ export default function CalendarPageClient() {
                                     key={event.id}
                                     onClick={(e) => { e.stopPropagation(); setDetailEventId(event.id); setSelectedDate(wd.key) }}
                                     className={`mb-0.5 cursor-pointer truncate rounded border px-1.5 py-0.5 text-[11px] font-semibold ${kind.chip} ${kind.border}`}
-                                    title={`${event.title} · ${event.startTime}${event.endTime ? `-${event.endTime}` : ''}`}
+                                    title={`${event.title} - ${event.startTime}${event.endTime ? `-${event.endTime}` : ''}`}
                                   >
                                     {event.startTime} {event.title}
                                   </div>
@@ -1304,9 +1384,9 @@ export default function CalendarPageClient() {
                   return (
                     <div
                       key={hour}
-                      className="group flex border-b border-slate-100 last:border-b-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer"
+                      className="group flex cursor-pointer border-b border-slate-100 transition hover:bg-[#2764FF]/10 last:border-b-0"
                       onDoubleClick={() => {
-                        setNaturalInput(`le ${formatDateFr(selectedDate).replaceAll('-', '/')} de ${hour}h à ${hour + 1}h `)
+                        setNaturalInput(`on ${formatDateEn(selectedDate).replaceAll('-', '/')} from ${hour}:00 to ${hour + 1}:00 `)
                         startCreateFromDate(selectedDate)
                       }}
                     >
@@ -1376,7 +1456,7 @@ export default function CalendarPageClient() {
             <div className="mt-4 space-y-3">
               <div className="flex items-center gap-2 font-serif text-sm text-[#30373E]">
                 <svg className="h-4 w-4 text-[#6B7480]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <span>{formatDateRangeFr(detailEvent.startDate, detailEvent.endDate)}</span>
+                <span>{formatDateRangeEn(detailEvent.startDate, detailEvent.endDate)}</span>
                 {detailEvent.startTime && (
                   <span className="text-[#6B7480]">{detailEvent.startTime}{detailEvent.endTime ? ` - ${detailEvent.endTime}` : ''}</span>
                 )}
@@ -1448,6 +1528,26 @@ export default function CalendarPageClient() {
                   {eventChatSending ? 'Sending...' : 'Send'}
                 </button>
               </form>
+
+              {canDeleteDetailEvent && (
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#DDE5EE] pt-4">
+                  <p className="font-serif text-[12px] text-[#6B7480]">
+                    Remove this time off from the calendar.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={deleteSelectedEvent}
+                    disabled={deletingEventId === detailEvent.id}
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-[#F22E75]/20 px-4 font-serif text-[13px] font-bold text-[#F22E75] transition hover:bg-[#F22E75]/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deletingEventId === detailEvent.id
+                      ? 'Deleting...'
+                      : detailEvent.kind === 'leave'
+                        ? 'Delete vacation'
+                        : 'Delete event'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

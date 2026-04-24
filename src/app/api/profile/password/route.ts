@@ -6,7 +6,7 @@ import { getCurrentUserId } from '@/lib/session'
 
 const passwordSchema = z.object({
   current_password: z.string().min(1, 'Mot de passe actuel requis'),
-  new_password: z.string().min(8, 'Le nouveau mot de passe doit contenir au moins 8 caractères'),
+  new_password: z.string().min(8, 'The new password must contain at least 8 characters'),
 })
 
 export async function PUT(request: NextRequest) {
@@ -39,7 +39,7 @@ export async function PUT(request: NextRequest) {
       WHERE \"userId\" = ${userId}::uuid AND \"providerId\" = 'credential'
     `
 
-    return NextResponse.json({ message: 'Mot de passe mis à jour' })
+    return NextResponse.json({ message: 'Password updated' })
   } catch (error) {
     console.error('Error updating password:', error)
 
@@ -47,6 +47,6 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
     }
 
-    return NextResponse.json({ error: 'Impossible de mettre à jour le mot de passe' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to update password' }, { status: 500 })
   }
 }

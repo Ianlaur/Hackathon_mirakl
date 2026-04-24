@@ -18,6 +18,8 @@ import {
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useAudioRecorder } from './useAudioRecorder'
+import { LeiaChatMessageBubble } from './LeiaChatMessageBubble'
+import { LEIA_QUICK_PROMPTS } from '@/lib/leia-prompts'
 
 const STORAGE_KEY = 'iris_chat_history_v1'
 
@@ -111,6 +113,7 @@ export default function MascotChatDrawer({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hydrated, setHydrated] = useState(false)
+  const [inputLanguage, setInputLanguage] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -180,7 +183,6 @@ export default function MascotChatDrawer({
         const form = new FormData()
         const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
         form.append('file', blob, `iris-${Date.now()}.${ext}`)
-        form.append('language', 'en')
         const resp = await fetch('/api/mascot/transcribe', {
           method: 'POST',
           body: form,
@@ -188,8 +190,10 @@ export default function MascotChatDrawer({
         const data = await resp.json()
         if (!resp.ok) throw new Error(data?.error ?? 'Transcription failed')
         const text = String(data?.text ?? '').trim()
+        const language = typeof data?.language === 'string' ? data.language : null
         if (text) {
           setInput((prev) => (prev ? `${prev} ${text}` : text))
+          if (language) setInputLanguage(language)
           setTimeout(() => inputRef.current?.focus(), 40)
         }
       } catch (err) {
@@ -250,7 +254,10 @@ export default function MascotChatDrawer({
       const resp = await fetch('/api/mascot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({
+          messages: apiMessages,
+          language: inputLanguage || undefined,
+        }),
       })
       const data = await resp.json()
       if (!resp.ok) {
@@ -264,6 +271,7 @@ export default function MascotChatDrawer({
           tool_calls: data.tool_calls,
         },
       ])
+      setInputLanguage(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
@@ -299,6 +307,49 @@ export default function MascotChatDrawer({
         role="dialog"
         aria-label="Leia"
       >
+        <div ref={scrollRef} className="iris-conversation iris-conversation--panel">
+          {!hasConversation && !busy && !error ? (
+            <div className="iris-conversation__empty">
+              <div className="iris-conversation__empty-header">
+                <div className="iris-searchbar__glyph" aria-hidden>
+                  <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+                  <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+                  <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+                </div>
+                <p className="iris-conversation__empty-title font-serif">Leia is ready</p>
+              </div>
+              <p className="iris-conversation__empty-copy font-serif">
+                Ask about stock, leave planning, or pending actions.
+              </p>
+              <div className="iris-conversation__suggestions">
+                {LEIA_QUICK_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt.label}
+                    type="button"
+                    onClick={() => void sendMessage(prompt.message)}
+                    className="iris-conversation__suggestion"
+                  >
+                    {prompt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {messages.map((message, index) => (
+            <LeiaChatMessageBubble key={index} message={message} onNavigate={onClose} />
+          ))}
+
+          {busy && (
+            <div className="iris-conversation__thinking">
+              <span className="iris-conversation__thinking-dot" />
+              <span className="iris-conversation__thinking-dot" />
+              <span className="iris-conversation__thinking-dot" />
+            </div>
+          )}
+          {error && <div className="iris-conversation__error">{error}</div>}
+        </div>
+
         <form onSubmit={handleSubmit} className="iris-searchbar">
           <div className="iris-searchbar__glyph">
             <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
@@ -365,22 +416,6 @@ export default function MascotChatDrawer({
             </button>
           )}
         </form>
-
-        {(hasConversation || busy || error) && (
-          <div ref={scrollRef} className="iris-conversation">
-            {messages.map((m, idx) => (
-              <MessageBubble key={idx} message={m} onNavigate={onClose} />
-            ))}
-            {busy && (
-              <div className="iris-conversation__thinking">
-                <span className="iris-conversation__thinking-dot" />
-                <span className="iris-conversation__thinking-dot" />
-                <span className="iris-conversation__thinking-dot" />
-              </div>
-            )}
-            {error && <div className="iris-conversation__error">{error}</div>}
-          </div>
-        )}
       </div>
     </div>
   )

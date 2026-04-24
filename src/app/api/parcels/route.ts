@@ -149,7 +149,7 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: 'Colis non trouvé' }, { status: 404 });
+      return NextResponse.json({ error: 'Parcel not found' }, { status: 404 });
     }
 
     // Generate carrier URL if carrier or tracking changed
@@ -218,7 +218,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: 'Colis non trouvé' }, { status: 404 });
+      return NextResponse.json({ error: 'Parcel not found' }, { status: 404 });
     }
 
     await prisma.parcel.delete({

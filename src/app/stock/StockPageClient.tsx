@@ -88,6 +88,7 @@ export default function StockPageClient({
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [productsCollapsed, setProductsCollapsed] = useState(false)
   const [showAllProducts, setShowAllProducts] = useState(false)
+  const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
 
   // Delete product handler
   const handleDeleteProduct = async (productId: string, productName: string) => {
@@ -246,8 +247,15 @@ export default function StockPageClient({
             </div>
             <div className="flex items-center gap-2">
               {/* Import/Export Dropdown */}
-              <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 text-[#30373E] hover:bg-[#F2F8FF] rounded-xl transition-colors">
+              <div
+                className="relative group"
+                onMouseLeave={() => setIsImportMenuOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsImportMenuOpen((value) => !value)}
+                  className="flex items-center gap-2 px-3 py-2 text-[#30373E] hover:bg-[#F2F8FF] rounded-xl transition-colors outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+                >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
@@ -256,9 +264,18 @@ export default function StockPageClient({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-[#DDE5EE] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div
+                  className={`absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-[#DDE5EE] transition-all z-50 ${
+                    isImportMenuOpen
+                      ? 'opacity-100 visible'
+                      : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'
+                  }`}
+                >
                   <button
-                    onClick={() => setShowImportModal(true)}
+                    onClick={() => {
+                      setShowImportModal(true)
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF] rounded-t-xl"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -267,7 +284,10 @@ export default function StockPageClient({
                     Import (CSV/JSON)
                   </button>
                   <button
-                    onClick={handleExportCSV}
+                    onClick={() => {
+                      handleExportCSV()
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF]"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,7 +296,10 @@ export default function StockPageClient({
                     Export CSV
                   </button>
                   <button
-                    onClick={handleExportJSON}
+                    onClick={() => {
+                      handleExportJSON()
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#30373E] hover:bg-[#F2F8FF]"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -286,7 +309,10 @@ export default function StockPageClient({
                   </button>
                   <div className="border-t border-[#DDE5EE]"></div>
                   <button
-                    onClick={handleDeleteAll}
+                    onClick={() => {
+                      handleDeleteAll()
+                      setIsImportMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#F22E75] hover:bg-[#FFE7EC] rounded-b-xl"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -537,7 +563,7 @@ export default function StockPageClient({
                           </div>
                           <div className="flex items-center gap-4 text-sm text-[#6B7480]">
                             {product.sku && <span>SKU: {product.sku}</span>}
-                            <span>{product.selling_price.toLocaleString('en-US')}€/{product.unit}</span>
+                            <span>€{product.selling_price.toLocaleString('en-US')}/{product.unit}</span>
                           </div>
                         </div>
 
@@ -551,7 +577,7 @@ export default function StockPageClient({
                             {product.quantity}
                           </div>
                           <div className="text-xs text-[#6B7480]">
-                            {product.unit}s in stock
+                            {product.unit} in stock
                           </div>
                           {product.quantity <= product.min_quantity && product.quantity > 0 && (
                             <span className="text-xs text-[#E0A93A] font-medium">Low stock</span>
@@ -701,7 +727,7 @@ function NewProductModal({
     selling_price: '',
     quantity: '0',
     min_quantity: '5',
-    unit: 'piece',
+        unit: 'piece',
     location: '',
     supplier: '',
   })
@@ -1136,25 +1162,25 @@ function ImportModal({
     headerList.forEach((header, index) => {
       const h = header.toLowerCase().trim()
       
-      if (h === 'nom' || h === 'name' || h === 'produit' || h === 'product' || h === 'libellé' || h === 'libelle' || h === 'désignation' || h === 'designation') {
+      if (h === 'nom' || h === 'name' || h === 'produit' || h === 'product' || h === 'label' || h === 'label' || h === 'designation' || h === 'designation') {
         mapping.name = index
-      } else if (h === 'sku' || h === 'référence' || h === 'reference' || h === 'ref' || h === 'code') {
+      } else if (h === 'sku' || h === 'reference' || h === 'reference' || h === 'ref' || h === 'code') {
         mapping.sku = index
       } else if (h === 'code-barres' || h === 'barcode' || h === 'ean' || h === 'code barre' || h === 'codebarre' || h === 'gtin') {
         mapping.barcode = index
-      } else if (h === 'description' || h === 'desc' || h === 'détail' || h === 'detail') {
+      } else if (h === 'description' || h === 'desc' || h === 'detail' || h === 'detail') {
         mapping.description = index
-      } else if (h === 'catégorie' || h === 'category' || h === 'categorie' || h === 'cat' || h === 'famille' || h === 'type') {
+      } else if (h === 'category' || h === 'category' || h === 'category' || h === 'cat' || h === 'famille' || h === 'type') {
         mapping.category = index
-      } else if (h === 'prix achat' || h === 'purchase_price' || h === 'prix_achat' || h === 'cout' || h === 'coût' || h === 'cost' || h === 'pa' || h === 'prix d\'achat') {
+      } else if (h === 'prix achat' || h === 'purchase_price' || h === 'prix_achat' || h === 'cost' || h === 'cost' || h === 'cost' || h === 'pa' || h === 'prix d\'achat') {
         mapping.purchase_price = index
       } else if (h === 'prix vente' || h === 'selling_price' || h === 'prix_vente' || h === 'prix' || h === 'price' || h === 'pv' || h === 'prix de vente' || h === 'tarif') {
         mapping.selling_price = index
-      } else if (h === 'quantité' || h === 'quantity' || h === 'qté' || h === 'qte' || h === 'stock' || h === 'qty' || h === 'en stock') {
+      } else if (h === 'quantity' || h === 'quantity' || h === 'qty' || h === 'qty' || h === 'stock' || h === 'qty' || h === 'en stock') {
         mapping.quantity = index
       } else if (h === 'stock min' || h === 'min_quantity' || h === 'stock_min' || h === 'min' || h === 'seuil' || h === 'alerte') {
         mapping.min_quantity = index
-      } else if (h === 'unité' || h === 'unit' || h === 'unite' || h === 'u') {
+      } else if (h === 'unit' || h === 'unite' || h === 'u') {
         mapping.unit = index
       } else if (h === 'emplacement' || h === 'location' || h === 'lieu' || h === 'place' || h === 'rayon') {
         mapping.location = index
@@ -1187,12 +1213,12 @@ function ImportModal({
           setColumnMapping(autoDetectMapping(jsonHeaders))
           setStep('mapping')
         } else {
-          setError('The JSON file must contain a non-empty array of products')
+          setError('The JSON file must costain a non-empty array of products')
         }
       } else if (selectedFile.name.endsWith('.csv')) {
         const lines = text.split(/\r?\n/).filter(line => line.trim())
         if (lines.length < 2) {
-          setError('The CSV file is empty or contains no data')
+          setError('The CSV file is empty or costains no data')
           return
         }
         

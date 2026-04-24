@@ -14,7 +14,7 @@ export function RecommendationDetailPanel({
   onStatusChange,
 }: {
   recommendation: RecommendationDTO
-  onStatusChange: (next: RecommendationDTO) => void
+  onStatusChange: (next: RecommendationDTO, action: 'approve' | 'reject') => void
 }) {
   const payload = recommendation.action_payload
   const isPending = recommendation.status === 'pending_approval'
@@ -69,7 +69,7 @@ export function RecommendationDetailPanel({
         throw new Error(data?.error ?? 'Request failed')
       }
       const data = await resp.json()
-      onStatusChange({ ...recommendation, status: data.recommendation.status })
+      onStatusChange({ ...recommendation, status: data.recommendation.status }, action)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
@@ -115,6 +115,18 @@ export function RecommendationDetailPanel({
             {recommendation.expected_impact}
           </p>
         )}
+        {(payload.commercial_events?.length ?? 0) > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {payload.commercial_events?.map((event) => (
+              <span
+                key={`${event.title}-${event.start}`}
+                className="rounded-full border border-[#E0A93A]/30 bg-[#E0A93A]/10 px-2.5 py-1 font-serif text-[11px] font-bold text-amber-700"
+              >
+                Peak: {event.title}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </header>
 
       {(payload.supplementary_notes?.length ?? 0) > 0 && (

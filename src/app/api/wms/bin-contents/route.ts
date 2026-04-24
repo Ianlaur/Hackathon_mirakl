@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
 
 const createSchema = z.object({
   bin_id: z.string().uuid('ID emplacement invalide'),
-  product_id: z.string().uuid('ID produit invalide'),
-  quantity: z.number().int().min(0, 'La quantité doit être positive')
+  product_id: z.string().uuid('Invalid product ID'),
+  quantity: z.number().int().min(0, 'Quantity must be positive')
 })
 
 // POST - Add or update product in bin

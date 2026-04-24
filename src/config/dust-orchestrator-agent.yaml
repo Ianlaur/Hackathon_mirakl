@@ -6,7 +6,7 @@ agent:
   description: "Orchestrate stock, transport, calendar, and external context signals into approval-ready operational decisions."
   model:
     provider: "openai"
-    name: "gpt-4.1"
+    name: "gpt-5.4-mini"
     temperature: 0.15
   system_prompt: "You are a merchant operations orchestrator. Return JSON only. Use only provided data. Produce one primary approval-ready action and 1-2 alternatives. Never assume autonomous execution."
 triggers:

@@ -82,39 +82,34 @@ function mapToStage(description: string, status: string): TrackingEvent['stage']
   const stat = status.toLowerCase()
   
   // Delivered
-  if (desc.includes('delivered') || desc.includes('livré') || desc.includes('remis') || 
-      stat.includes('delivered') || desc.includes('签收') || desc.includes('已签收')) {
+  if (desc.includes('delivered') || desc.includes('handed over') ||
+      stat.includes('delivered') || desc.includes('signed')) {
     return 'delivered'
   }
   
   // Out for delivery
-  if (desc.includes('out for delivery') || desc.includes('en cours de livraison') || 
-      desc.includes('en livraison') || desc.includes('派送中') || desc.includes('正在派送')) {
+  if (desc.includes('out for delivery') || desc.includes('delivery attempt')) {
     return 'out_for_delivery'
   }
   
   // Customs
-  if (desc.includes('customs') || desc.includes('douane') || desc.includes('dédouanement') ||
-      desc.includes('clearance') || desc.includes('海关') || desc.includes('清关')) {
+  if (desc.includes('customs') || desc.includes('clearance')) {
     return 'customs'
   }
   
   // In transit
   if (desc.includes('transit') || desc.includes('departed') || desc.includes('arrived') ||
-      desc.includes('en route') || desc.includes('acheminé') || desc.includes('tri') ||
-      desc.includes('运输中') || desc.includes('已发出') || desc.includes('到达')) {
+      desc.includes('en route') || desc.includes('sorting')) {
     return 'in_transit'
   }
   
   // Picked up
-  if (desc.includes('picked up') || desc.includes('collected') || desc.includes('pris en charge') ||
-      desc.includes('collecté') || desc.includes('accepted') || desc.includes('已揽收')) {
+  if (desc.includes('picked up') || desc.includes('collected') || desc.includes('accepted')) {
     return 'picked_up'
   }
   
   // Returned
-  if (desc.includes('returned') || desc.includes('retour') || desc.includes('undeliverable') ||
-      desc.includes('退回') || desc.includes('退件')) {
+  if (desc.includes('returned') || desc.includes('undeliverable')) {
     return 'returned'
   }
   
@@ -374,12 +369,12 @@ function generateMockTracking(trackingNumber: string, carrier: string | null): T
   
   // Generate events up to current stage
   const eventTemplates = [
-    { stage: 'pending', desc: 'Colis préparé pour expédition', descIn: 'Commande expédiée par le fournisseur', days: 5 },
-    { stage: 'picked_up', desc: 'Colis collecté par le transporteur', descIn: 'Colis pris en charge', days: 4 },
-    { stage: 'in_transit', desc: 'En transit - Centre de tri Paris', descIn: 'Arrivé au centre de tri international', days: 3 },
-    { stage: 'customs', desc: 'Dédouanement en cours', descIn: 'En cours de dédouanement', days: 2 },
-    { stage: 'out_for_delivery', desc: 'En cours de livraison', descIn: 'En cours de livraison', days: 1 },
-    { stage: 'delivered', desc: 'Livré - Signé par le destinataire', descIn: 'Colis reçu', days: 0 },
+    { stage: 'pending', desc: 'Parcel prepared for shipment', descIn: 'Order shipped by supplier', days: 5 },
+    { stage: 'picked_up', desc: 'Parcel collected by carrier', descIn: 'Parcel accepted by carrier', days: 4 },
+    { stage: 'in_transit', desc: 'In transit - Paris sorting center', descIn: 'Arrived at international sorting center', days: 3 },
+    { stage: 'customs', desc: 'Customs clearance in progress', descIn: 'Customs clearance in progress', days: 2 },
+    { stage: 'out_for_delivery', desc: 'Out for delivery', descIn: 'Out for delivery', days: 1 },
+    { stage: 'delivered', desc: 'Delivered - Signed by recipient', descIn: 'Parcel received', days: 0 },
   ]
   
   for (let i = 0; i <= stageIndex; i++) {
@@ -416,7 +411,7 @@ function generateMockTracking(trackingNumber: string, carrier: string | null): T
   return {
     success: true,
     carrier,
-    carrierName: carrier ? CARRIER_NAMES[carrier] || carrier : 'Transporteur inconnu',
+    carrierName: carrier ? CARRIER_NAMES[carrier] || carrier : 'Unknown carrier',
     trackingNumber,
     status: statusMap[currentStage] || 'in_transit',
     currentStage,
@@ -462,7 +457,7 @@ export async function GET(
   if (!trackingNumber || trackingNumber.length < 5) {
     return NextResponse.json({ 
       success: false, 
-      error: 'Numéro de suivi invalide' 
+      error: 'Invalid tracking number'
     }, { status: 400 })
   }
   

@@ -1,226 +1,172 @@
-# Feature Calendrier
+# Calendar
 
-Route :
+The calendar centralizes events that can affect operations, stock, logistics, marketing, or commercial posture.
 
-```text
-/calendar
-```
+## Purpose
 
-Objectif : centraliser les événements qui peuvent impacter les opérations, le stock, la logistique ou le commerce.
+The feature tracks:
 
-La feature sert à suivre :
+- public holidays
+- commercial periods
+- sensitive logistics windows
+- user leave and vacation periods
+- internal events
+- events created manually from the UI
 
-- jours fériés
-- temps forts commerce
-- périodes sensibles logistiques
-- congés / vacances utilisateur
-- événements internes
-- événements créés manuellement depuis l'interface
+## Entry Points
 
-## Fichiers
+Navigation entries:
 
-```text
-src/app/calendar/page.tsx
-src/app/calendar/CalendarPageClient.tsx
-src/app/api/calendar-events/route.ts
-src/app/api/calendar-events/[id]/route.ts
-```
+- Sidebar: Calendar
+- URL: `/calendar`
+- API: `/api/calendar-events`
 
-Entrées navigation :
+## Data Model
 
-```text
-src/components/Sidebar.tsx
-src/app/dashboard/page.tsx
-```
+Table used:
 
-## Table Supabase
+`public.calendar_events`
 
-Table utilisée :
+Important columns:
 
-```text
-public.calendar_events
-```
+- `id`
+- `user_id`
+- `title`
+- `start_at`
+- `end_at`
+- `kind`
+- `impact`
+- `zone`
+- `notes`
+- `locked`
+- `created_at`
+- `updated_at`
 
-Colonnes principales :
+Dates are stored as Supabase timestamps:
 
-```text
-id uuid
-user_id uuid
-title text
-start_at timestamptz
-end_at timestamptz
-kind text
-impact text
-zone text
-notes text
-locked boolean
-created_at timestamptz
-updated_at timestamptz
-```
+- `start_at`: event start
+- `end_at`: event end
+- `created_at`: creation timestamp
+- `updated_at`: last update timestamp
 
-Les dates sont stockées en timestamp Supabase :
-
-- `start_at` : début de l'événement
-- `end_at` : fin de l'événement
-- `created_at` : création
-- `updated_at` : dernière modification
-
-Pour les événements sans heure, l'API utilise `12:00` comme valeur technique afin d'éviter les décalages de date liés aux fuseaux horaires. Côté UI, ces événements restent affichés comme des événements sans heure.
+For all-day events, the API stores `12:00` as a technical value to avoid timezone date shifts. In the UI, those events still render as all-day events.
 
 ## API
 
-Lister les événements :
+List events:
 
-```http
-GET /api/calendar-events
-```
+`GET /api/calendar-events`
 
-Créer un événement :
+Create an event:
 
-```http
-POST /api/calendar-events
-```
+`POST /api/calendar-events`
 
-Mettre à jour un événement :
+Update an event:
 
-```http
-PATCH /api/calendar-events/:id
-```
+`PATCH /api/calendar-events/[id]`
 
-Supprimer un événement :
+Delete an event:
 
-```http
-DELETE /api/calendar-events/:id
-```
+`DELETE /api/calendar-events/[id]`
 
-Les routes API utilisent :
+The API uses:
 
-- `getCurrentUserId()` pour isoler les données utilisateur
-- Zod pour valider les inputs
-- Prisma avec requêtes SQL paramétrées vers `public.calendar_events`
+- `getCurrentUserId()` to isolate user data
+- Zod input validation
+- Prisma parameterized SQL queries against `public.calendar_events`
 
-Note importante : l'API utilise volontairement des requêtes SQL via `prisma.$queryRaw` / `prisma.$executeRaw` au lieu du delegate typé `prisma.calendarEvent`. Cela évite qu'un collègue doive régénérer le client Prisma immédiatement après un simple pull pour que l'API compile et fonctionne.
+The API intentionally uses `prisma.$queryRaw` and `prisma.$executeRaw` instead of the typed `prisma.calendarEvent` delegate. This avoids requiring every teammate to regenerate the Prisma client immediately after pulling a calendar-only change.
 
-## Types D'Événements
+## Event Types
 
-Valeurs possibles pour `kind` :
+Supported event kinds:
 
-```text
-commerce
-holiday
-leave
-logistics
-marketing
-internal
-```
+- `holiday`
+- `commerce`
+- `logistics`
+- `leave`
+- `internal`
 
-Valeurs possibles pour `impact` :
+Supported impact levels:
 
-```text
-low
-medium
-high
-critical
-```
+- `low`
+- `medium`
+- `high`
+- `critical`
 
-## Événements Préchargés
+## Seeded Events
 
-Si la table Supabase est vide pour l'utilisateur courant, le client seed automatiquement des événements initiaux.
+If the Supabase table is empty for the current user, the client seeds initial demo events.
 
-Exemples inclus :
+Seeded coverage includes:
 
-- jours fériés France 2026
-- Soldes d'hiver
-- Saint-Valentin
-- Nouvel An chinois
-- Ramadan + Aïd el-Fitr
-- Fête des Mères / Fête des Pères
-- Rentrée / Back to School
-- Singles Day 11.11
-- Black Friday / Cyber Monday
-- Noël + retours post-Noël
+- France 2026 public holidays
+- Black Friday
+- Cyber Monday
+- Chinese New Year
+- Ramadan and Eid al-Fitr
+- Mother's Day and Father's Day
+- Back to School
+- summer sales
+- Christmas and post-Christmas returns
 
-Ces événements servent de base de démonstration pour anticiper les impacts commerce, stock, transport et support client.
+These events support demo scenarios where Leia anticipates commercial, stock, transport, and support impacts.
 
-## Interactions UI
+## UI Behavior
 
-La page Calendrier permet :
+The UI supports:
 
-- naviguer par mois
-- sélectionner un jour
-- double-cliquer sur un jour pour préremplir la création d'événement
-- créer un événement
-- modifier l'événement sélectionné
-- supprimer un événement
-- déplacer un événement par drag and drop
-- afficher les événements multi-jours sur chaque journée concernée
-- filtrer visuellement par type d'événement via les couleurs
+- selecting a day
+- double-clicking a day to prefill event creation
+- creating an event
+- editing the selected event
+- deleting an event
+- moving an event with drag and drop
+- showing multi-day events on each affected day
+- visually filtering event type through color
 
-Chaque action utilisateur persistante écrit immédiatement en base :
+Every persistent user action writes immediately to the database:
 
-- création : `POST`
-- édition : `PATCH`
-- déplacement drag and drop : `PATCH`
-- suppression : `DELETE`
+- creation: `POST`
+- edit: `PATCH`
+- drag and drop move: `PATCH`
+- deletion: `DELETE`
 
-En cas d'erreur API, l'UI affiche une erreur et tente de revenir à l'état précédent pour les actions optimistes.
+If an API call fails, the UI shows an error and attempts to return optimistic changes to the previous state.
 
-## Format De Date
+## Display Rules
 
-Affichage demandé côté UI :
+The requested UI date display is:
 
-```text
-jj-mm-aaaa
-```
+`31/12/2026`
 
-Les inputs HTML de type date restent techniquement au format navigateur :
+Dates sent to the API use the same technical format before the API converts them to Supabase timestamps.
 
-```text
-yyyy-mm-dd
-```
+## Leia Integration
 
-Les dates envoyées à l'API suivent aussi ce format technique, puis l'API les convertit en timestamp Supabase.
+The calendar acts as a context layer for Leia.
 
-## Pourquoi Cette Feature Compte
+Potential agent use cases:
 
-Le calendrier est pensé comme une couche de contexte pour les futurs agents.
+- read upcoming events
+- detect risky logistics periods
+- connect loss spikes to Black Friday or Christmas
+- anticipate supplier disruption around Chinese New Year
+- propose stock or transport adjustments based on events
+- create operational events automatically
 
-Un agent pourra par exemple :
+## Safety Notes
 
-- lire les événements à venir
-- détecter une période à risque logistique
-- relier une hausse de pertes à Black Friday ou Noël
-- anticiper une rupture fournisseur autour du Nouvel An chinois
-- proposer des ajustements de stock ou de transport selon les événements
-- créer automatiquement un événement opérationnel
+- Do not modify existing seed event IDs without a reason.
+- Do not delete `calendar_events` during database push operations.
+- Locked events (`locked = true`) are reference events, but agents can still read them.
+- The calendar table is shared in Supabase: local UI changes write to the real database.
+- The calendar no longer depends on an external calendar package. It is custom React/CSS to avoid adding another package requirement.
 
-## Points D'Attention
+## Quick Verification
 
-- Ne pas modifier les IDs des événements seed déjà présents en base sans raison.
-- Ne pas supprimer `calendar_events` lors d'un `db push`.
-- Les événements verrouillés (`locked = true`) sont des événements de référence, mais ils peuvent toujours être lus par les agents.
-- La table est partagée dans Supabase : une modification locale via l'UI écrit réellement en base.
-- Le calendrier n'utilise plus de dépendance calendrier externe. Il est custom React/CSS afin d'éviter d'imposer une installation de package supplémentaire.
-
-## Vérification Rapide
-
-Depuis `src/` :
-
-```bash
-npm run dev
-```
-
-Puis ouvrir :
-
-```text
-http://localhost:3000/calendar
-```
-
-Tester :
-
-1. Double-cliquer sur un jour.
-2. Créer un événement.
-3. Vérifier qu'il apparaît dans Supabase, table `calendar_events`.
-4. Le déplacer par drag and drop.
-5. Vérifier que `start_at` et `end_at` changent en base.
-
+1. Open `/calendar`.
+2. Create an event.
+3. Confirm it appears in Supabase table `calendar_events`.
+4. Move it with drag and drop.
+5. Confirm `start_at` and `end_at` change in the database.

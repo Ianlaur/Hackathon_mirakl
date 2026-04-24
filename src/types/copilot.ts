@@ -19,10 +19,10 @@ export interface DayBriefingData {
 }
 
 export type QuickActionId =
-  | 'resume_semaine'
-  | 'etat_stock'
-  | 'statut_commandes'
-  | 'quoi_faire'
+  | 'weekly_summary'
+  | 'stock_status'
+  | 'order_status'
+  | 'next_steps'
 
 export type CardState = 'idle' | 'loading' | 'result' | 'error'
 

@@ -1,10 +1,20 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { ArrowUp, Mic, Loader2, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowUp, Loader2, Mic, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import { LeiaChatMessageBubble, type LeiaToolCall } from '@/components/LeiaChatMessageBubble'
 import { useAudioRecorder } from '@/components/useAudioRecorder'
 import { usePluginContext } from '@/contexts/PluginContext'
+import { LEIA_QUICK_PROMPTS } from '@/lib/leia-prompts'
+import { getRecommendationSyncNotice } from '@/lib/demo-feedback'
+import {
+  buildDashboardHistoryMessage,
+  getDashboardPrimaryActionLabel,
+  getDashboardSecondaryActionLabel,
+  selectDashboardRecommendations,
+} from '@/lib/dashboard'
 
 const GlobalShipmentTracker = dynamic(
   () => import('@/components/map/GlobalShipmentTracker'),
@@ -14,35 +24,263 @@ const GlobalShipmentTracker = dynamic(
   }
 )
 
-const orders = [
-  { id: 'MK-8829-X', marketplace: 'Amazon US', icon: '🛒', value: '$249.00', status: 'FULFILLED', statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10', time: '14:22:05' },
-  { id: 'MK-8830-L', marketplace: 'Maison du Monde', icon: '🏠', value: '$1,120.45', status: 'PROCESSING', statusStyle: 'text-[#2764FF] bg-[#2764FF]/10', time: '14:18:12' },
-  { id: 'MK-8831-Z', marketplace: 'Zalando EU', icon: '🌍', value: '$89.99', status: 'RISK ATTACHED', statusStyle: 'text-[#F22E75] bg-[#FFE7EC]', time: '14:05:44' },
-  { id: 'MK-8832-P', marketplace: 'Carrefour', icon: '🛍️', value: '$42.50', status: 'FULFILLED', statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10', time: '13:59:30' },
-]
+type DashboardOrderRow = {
+  id: string
+  marketplace: string
+  icon: string
+  value: string
+  status: string
+  statusStyle: string
+  time: string
+}
+
+type DashboardRecommendationRow = {
+  id: string
+  title: string
+  scenario_type: string
+  status: string
+  reasoning_summary: string
+  created_at: string
+}
 
 type DashboardChatMessage = {
   id: string
   role: 'user' | 'assistant'
   content: string
   reasoningSummary?: string
+  tool_calls?: LeiaToolCall[]
+}
+
+type RadarProfitRecovery = {
+  supplier_recovery_potential_eur: number
+  carrier_audit_savings_eur: number
+  total_eur: number
+}
+
+const fallbackOrders: DashboardOrderRow[] = [
+  {
+    id: 'MK-8829-X',
+    marketplace: 'Amazon US',
+    icon: 'AMZ',
+    value: '€249.00',
+    status: 'FULFILLED',
+    statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10',
+    time: '14:22:05',
+  },
+  {
+    id: 'MK-8830-L',
+    marketplace: 'Maison du Monde',
+    icon: 'MDM',
+    value: '€1,120.45',
+    status: 'PROCESSING',
+    statusStyle: 'text-[#2764FF] bg-[#2764FF]/10',
+    time: '14:18:12',
+  },
+  {
+    id: 'MK-8831-Z',
+    marketplace: 'Zalando EU',
+    icon: 'ZLD',
+    value: '€89.99',
+    status: 'RISK ATTACHED',
+    statusStyle: 'text-[#F22E75] bg-[#FFE7EC]',
+    time: '14:05:44',
+  },
+  {
+    id: 'MK-8832-P',
+    marketplace: 'Carrefour',
+    icon: 'CRF',
+    value: '€42.50',
+    status: 'FULFILLED',
+    statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10',
+    time: '13:59:30',
+  },
+]
+
+function formatOrderValue(totalPrice: string | null | undefined, currency: string | null | undefined) {
+  if (!totalPrice) return '-'
+
+  const amount = Number(totalPrice)
+  if (Number.isNaN(amount)) return totalPrice
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'EUR',
+    maximumFractionDigits: 2,
+  }).format(amount)
+}
+
+function formatOrderTime(value: string | null | undefined) {
+  if (!value) return '-'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
+
+function formatDashboardMoney(value: number | null | undefined) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(Number(value ?? 0))
+}
+
+function getOrderStatusPresentation(
+  financialStatus: string | null | undefined,
+  fulfillmentStatus: string | null | undefined
+) {
+  if (financialStatus === 'pending') {
+    return {
+      status: 'PAYMENT PENDING',
+      statusStyle: 'text-[#F22E75] bg-[#FFE7EC]',
+    }
+  }
+
+  if (!fulfillmentStatus) {
+    return {
+      status: 'PROCESSING',
+      statusStyle: 'text-[#2764FF] bg-[#2764FF]/10',
+    }
+  }
+
+  if (fulfillmentStatus === 'fulfilled') {
+    return {
+      status: 'FULFILLED',
+      statusStyle: 'text-[#3FA46A] bg-[#3FA46A]/10',
+    }
+  }
+
+  return {
+    status: fulfillmentStatus.toUpperCase(),
+    statusStyle: 'text-[#2764FF] bg-[#2764FF]/10',
+  }
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [mapTheme, setMapTheme] = useState<'dark' | 'light'>('dark')
   const [sending, setSending] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [inputLanguage, setInputLanguage] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<DashboardChatMessage[]>([])
   const [chatOpen, setChatOpen] = useState(false)
+  const [recommendations, setRecommendations] = useState<DashboardRecommendationRow[]>([])
+  const [recommendationsLoading, setRecommendationsLoading] = useState(true)
+  const [ordersData, setOrdersData] = useState<DashboardOrderRow[]>(fallbackOrders)
+  const [profitRecovery, setProfitRecovery] = useState<RadarProfitRecovery | null>(null)
+  const [busyRecommendationId, setBusyRecommendationId] = useState<string | null>(null)
+  const [actionNotice, setActionNotice] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const recorder = useAudioRecorder()
-  const { isProPluginActive } = usePluginContext()
+  const { isPluginActive } = usePluginContext()
+  const showShipmentPlugin = isPluginActive('plugin_operations')
   const recording = recorder.state === 'recording'
   const starting = recorder.state === 'requesting'
+
+  const dashboardRecommendations = useMemo(
+    () => selectDashboardRecommendations(recommendations, 2),
+    [recommendations]
+  )
+
+  async function loadRecommendations() {
+    try {
+      const response = await fetch('/api/copilot/recommendations?status=pending_approval', {
+        cache: 'no-store',
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to load actions.')
+      }
+
+      setRecommendations(
+        Array.isArray(payload?.recommendations)
+          ? payload.recommendations.map((item: DashboardRecommendationRow) => ({
+              id: item.id,
+              title: item.title,
+              scenario_type: item.scenario_type,
+              status: item.status,
+              reasoning_summary: item.reasoning_summary,
+              created_at: item.created_at,
+            }))
+          : []
+      )
+    } catch (error) {
+      console.error('Dashboard recommendations error:', error)
+      setRecommendations([])
+    } finally {
+      setRecommendationsLoading(false)
+    }
+  }
+
+  async function loadOrders() {
+    try {
+      const response = await fetch('/api/orders/shopify?limit=4', { cache: 'no-store' })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok || !Array.isArray(payload?.orders) || payload.orders.length === 0) {
+        setOrdersData(fallbackOrders)
+        return
+      }
+
+      setOrdersData(
+        payload.orders.map(
+          (order: {
+            id: string
+            source: string | null
+            totalPrice: string | null
+            currency: string | null
+            financialStatus: string | null
+            fulfillmentStatus: string | null
+            createdAt: string | null
+          }) => {
+            const presentation = getOrderStatusPresentation(
+              order.financialStatus,
+              order.fulfillmentStatus
+            )
+
+            return {
+              id: order.id.slice(0, 8).toUpperCase(),
+              marketplace: order.source || 'Shopify',
+              icon: (order.source || 'SHP').slice(0, 3).toUpperCase(),
+              value: formatOrderValue(order.totalPrice, order.currency),
+              status: presentation.status,
+              statusStyle: presentation.statusStyle,
+              time: formatOrderTime(order.createdAt),
+            }
+          }
+        )
+      )
+    } catch (error) {
+      console.error('Dashboard orders error:', error)
+      setOrdersData(fallbackOrders)
+    }
+  }
+
+  async function loadProfitRecovery() {
+    try {
+      const response = await fetch('/api/radar', { cache: 'no-store' })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok || !payload?.profit_recovery) return
+
+      setProfitRecovery({
+        supplier_recovery_potential_eur: Number(
+          payload.profit_recovery.supplier_recovery_potential_eur ?? 0
+        ),
+        carrier_audit_savings_eur: Number(payload.profit_recovery.carrier_audit_savings_eur ?? 0),
+        total_eur: Number(payload.profit_recovery.total_eur ?? 0),
+      })
+    } catch {
+      setProfitRecovery(null)
+    }
+  }
 
   async function handleMicClick() {
     if (recording) {
@@ -51,14 +289,15 @@ export default function DashboardPage() {
       setTranscribing(true)
       try {
         const fd = new FormData()
-        fd.append('audio', blob, 'prompt.webm')
+        fd.append('file', blob, 'prompt.webm')
         const res = await fetch('/api/mascot/transcribe', { method: 'POST', body: fd })
         if (res.ok) {
-          const { text } = await res.json()
-          if (text) setQuery((prev) => (prev ? prev + ' ' + text : text))
+          const { text, language } = await res.json()
+          if (text) setQuery((prev) => (prev ? `${prev} ${text}` : text))
+          if (typeof language === 'string' && language) setInputLanguage(language)
         }
       } catch {
-        /* swallow — user can retry */
+        // Let the user retry without extra noise.
       } finally {
         setTranscribing(false)
       }
@@ -69,8 +308,69 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleRecommendationAction(
+    recommendation: DashboardRecommendationRow,
+    action: 'approve' | 'reject'
+  ) {
+    setBusyRecommendationId(recommendation.id)
+    setChatError(null)
+
+    try {
+      const response = await fetch(
+        `/api/copilot/recommendations/${recommendation.id}/${action}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        }
+      )
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to update action.')
+      }
+
+      const nextStatus =
+        typeof payload?.recommendation?.status === 'string'
+          ? payload.recommendation.status
+          : action === 'approve'
+            ? 'approved'
+            : 'rejected'
+
+      setRecommendations((current) =>
+        current
+          .map((item) =>
+            item.id === recommendation.id ? { ...item, status: nextStatus } : item
+          )
+          .filter((item) => item.status === 'pending_approval')
+      )
+
+      const historyMessage = buildDashboardHistoryMessage(recommendation, action)
+      setChatMessages((current) => [
+        ...current,
+        {
+          id: `decision-${recommendation.id}-${Date.now()}`,
+          role: 'assistant',
+          content: historyMessage.content,
+          reasoningSummary: historyMessage.reasoningSummary,
+          tool_calls: undefined,
+        },
+      ])
+      setActionNotice(getRecommendationSyncNotice(action, recommendation.title))
+    } catch (error) {
+      setChatError(error instanceof Error ? error.message : 'Failed to update action.')
+    } finally {
+      setBusyRecommendationId(null)
+    }
+  }
+
   const micBusy = starting || transcribing
   const sendDisabled = sending || !query.trim()
+
+  useEffect(() => {
+    void loadRecommendations()
+    void loadOrders()
+    void loadProfitRecovery()
+  }, [])
 
   useEffect(() => {
     const el = inputRef.current
@@ -104,18 +404,31 @@ export default function DashboardPage() {
     }
   }, [chatOpen])
 
+  useEffect(() => {
+    if (!actionNotice) return
+    const timer = setTimeout(() => setActionNotice(null), 4500)
+    return () => clearTimeout(timer)
+  }, [actionNotice])
+
   async function handleSend() {
-    const message = query.trim()
+    return handleSendMessage(query.trim())
+  }
+
+  async function handleSendMessage(rawMessage: string) {
+    const message = rawMessage.trim()
     if (!message || sending) return
 
     setSending(true)
     setChatError(null)
-    const userMessage: DashboardChatMessage = {
-      id: `u-${Date.now()}`,
-      role: 'user',
-      content: message,
-    }
-    setChatMessages((current) => [...current, userMessage])
+      setChatMessages((current) => [
+        ...current,
+        {
+          id: `u-${Date.now()}`,
+          role: 'user',
+          content: message,
+          tool_calls: undefined,
+        },
+      ])
 
     try {
       const response = await fetch('/api/copilot/chat', {
@@ -124,6 +437,7 @@ export default function DashboardPage() {
         body: JSON.stringify({
           sessionId: sessionId || undefined,
           message,
+          language: inputLanguage || undefined,
         }),
       })
 
@@ -152,9 +466,12 @@ export default function DashboardPage() {
           role: 'assistant',
           content: assistantContent,
           reasoningSummary,
+          tool_calls: Array.isArray(payload?.tool_calls) ? payload.tool_calls : undefined,
         },
       ])
       setQuery('')
+      setInputLanguage(null)
+      void loadRecommendations()
     } catch (error) {
       setChatError(error instanceof Error ? error.message : 'Failed to contact Leia.')
     } finally {
@@ -164,13 +481,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-end">
         <h1 className="font-serif text-[22px] font-bold tracking-tight text-[#03182F]">Dashboard</h1>
         <div className="font-serif text-[12px] text-[#6B7480]">Last sync: 2 minutes ago</div>
       </div>
 
-      {/* Leia launcher */}
       <div className="relative mx-auto w-full max-w-3xl">
         <button
           type="button"
@@ -184,7 +499,7 @@ export default function DashboardPage() {
             <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
           </div>
           <span className="iris-searchbar__input font-serif text-[#6B7480]">
-            {sending ? 'Leia is responding…' : 'Ask Leia for operational insights…'}
+            {sending ? 'Leia is responding...' : 'Ask Leia for operational insights...'}
           </span>
           <span className="iris-searchbar__mic" aria-hidden>
             <Mic className="h-4 w-4" />
@@ -195,93 +510,65 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      <div
-        className={`iris-overlay ${chatOpen ? 'iris-overlay--open' : 'iris-overlay--closed'}`}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) setChatOpen(false)
-        }}
-        aria-hidden={!chatOpen}
-      >
-        <div className={`iris-panel ${chatOpen ? 'iris-panel--open' : 'iris-panel--closed'}`}>
-          <form
-            className="iris-searchbar"
-            onSubmit={(event) => {
-              event.preventDefault()
-              void handleSend()
-            }}
+      {actionNotice ? (
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 rounded-lg border border-[#3FA46A]/20 bg-[#3FA46A]/10 px-4 py-3 text-sm text-[#03182F] shadow-[0_1px_4px_rgba(3,24,47,0.08)]">
+          <p className="font-serif">{actionNotice}</p>
+          <button
+            type="button"
+            onClick={() => router.push('/actions')}
+            className="shrink-0 rounded border border-[#BFCBDA] bg-white px-3 py-1.5 font-serif text-[12px] font-bold text-[#30373E] transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
           >
-            <div className="iris-searchbar__glyph" aria-hidden>
-              <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
-              <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
-              <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
-            </div>
-            <textarea
-              ref={inputRef}
-              className="iris-searchbar__input font-serif"
-              placeholder={
-                recording
-                  ? 'Recording… click mic again to stop'
-                  : sending
-                    ? 'Leia is responding…'
-                    : 'Ask Leia for operational insights…'
-              }
-              rows={1}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  void handleSend()
-                }
-              }}
-              disabled={sending || transcribing || recording}
-            />
-            {recorder.isSupported ? (
-              <button
-                type="button"
-                onClick={() => void handleMicClick()}
-                disabled={micBusy || sending}
-                aria-label={recording ? 'Stop recording' : 'Start voice input'}
-                className={`iris-searchbar__mic ${
-                  recording ? 'iris-searchbar__mic--recording' : ''
-                } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
-              >
-                {micBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
-              </button>
-            ) : null}
-            <button
-              type="submit"
-              aria-label="Send"
-              disabled={sendDisabled}
-              className="iris-searchbar__submit"
-            >
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setChatOpen(false)}
-              aria-label="Close Leia conversation"
-              className="iris-searchbar__clear"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </form>
+            Open Actions
+          </button>
+        </div>
+      ) : null}
 
-          {(chatMessages.length > 0 || chatError || sending) && (
-            <div ref={scrollRef} className="iris-conversation">
-              {chatMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`iris-msg ${message.role === 'assistant' ? 'iris-msg--assistant' : 'iris-msg--user'}`}
-                >
-                  <div className="iris-msg__bubble font-serif whitespace-pre-wrap">{message.content}</div>
-                  {message.role === 'assistant' && message.reasoningSummary ? (
-                    <p className="mt-1 rounded border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2 font-serif text-[12px] text-[#30373E]">
-                      {message.reasoningSummary}
-                    </p>
-                  ) : null}
+      {chatOpen ? (
+        <div
+          className="iris-overlay iris-overlay--open"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setChatOpen(false)
+          }}
+          aria-hidden={!chatOpen}
+        >
+          <div className="iris-panel iris-panel--open">
+            <div ref={scrollRef} className="iris-conversation iris-conversation--panel">
+              {chatMessages.length === 0 && !sending && !chatError ? (
+                <div className="iris-conversation__empty">
+                  <div className="iris-conversation__empty-header">
+                    <div className="iris-searchbar__glyph" aria-hidden>
+                      <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+                      <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+                      <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+                    </div>
+                    <p className="iris-conversation__empty-title font-serif">Leia is ready</p>
+                  </div>
+                  <p className="iris-conversation__empty-copy font-serif">
+                    Ask about stock, leave planning, or pending actions.
+                  </p>
+                  <div className="iris-conversation__suggestions">
+                    {LEIA_QUICK_PROMPTS.map((prompt) => (
+                      <button
+                        key={prompt.label}
+                        type="button"
+                        onClick={() => void handleSendMessage(prompt.message)}
+                        className="iris-conversation__suggestion"
+                      >
+                        {prompt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              ) : null}
+
+              {chatMessages.map((message) => (
+                <LeiaChatMessageBubble
+                  key={message.id}
+                  message={message}
+                  onNavigate={() => setChatOpen(false)}
+                />
               ))}
+
               {sending ? (
                 <div className="iris-conversation__thinking">
                   <span className="iris-conversation__thinking-dot" />
@@ -289,15 +576,78 @@ export default function DashboardPage() {
                   <span className="iris-conversation__thinking-dot" />
                 </div>
               ) : null}
+
               {chatError ? <div className="iris-conversation__error">{chatError}</div> : null}
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Total Orders Today */}
+            <form
+              className="iris-searchbar"
+              onSubmit={(event) => {
+                event.preventDefault()
+                void handleSend()
+              }}
+            >
+              <div className="iris-searchbar__glyph" aria-hidden>
+                <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+                <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+                <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+              </div>
+              <textarea
+                ref={inputRef}
+                className="iris-searchbar__input font-serif"
+                placeholder={
+                  recording
+                    ? 'Recording... click mic again to stop'
+                    : sending
+                      ? 'Leia is responding...'
+                      : 'Ask Leia for operational insights...'
+                }
+                rows={1}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void handleSend()
+                  }
+                }}
+                disabled={sending || transcribing || recording}
+              />
+              {recorder.isSupported ? (
+                <button
+                  type="button"
+                  onClick={() => void handleMicClick()}
+                  disabled={micBusy || sending}
+                  aria-label={recording ? 'Stop recording' : 'Start voice input'}
+                  className={`iris-searchbar__mic ${
+                    recording ? 'iris-searchbar__mic--recording' : ''
+                  } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
+                >
+                  {micBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+                </button>
+              ) : null}
+              <button
+                type="submit"
+                aria-label="Send"
+                disabled={sendDisabled}
+                className="iris-searchbar__submit"
+              >
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setChatOpen(false)}
+                aria-label="Close Leia conversation"
+                className="iris-searchbar__clear"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
           <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">TOTAL ORDERS TODAY</div>
           <div className="flex items-baseline justify-between">
@@ -314,7 +664,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Active SKUs */}
         <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
           <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">ACTIVE SKUS</div>
           <div className="flex items-baseline justify-between">
@@ -327,7 +676,6 @@ export default function DashboardPage() {
           <div className="font-serif text-[12px] text-[#6B7480] mt-2">Capacity optimization at 93%</div>
         </div>
 
-        {/* Stock Health */}
         <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
           <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">STOCK HEALTH</div>
           <div className="flex items-baseline justify-between">
@@ -343,9 +691,29 @@ export default function DashboardPage() {
             <div className="flex-1 bg-[#3FA46A] h-10 rounded-sm" />
           </div>
         </div>
+
+        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">
+          <div className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">PROFIT RECOVERY</div>
+          <div className="flex items-baseline justify-between">
+            <div className="font-serif text-[38px] font-bold leading-none tracking-tight text-[#03182F]">
+              {formatDashboardMoney(profitRecovery?.total_eur)}
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/radar')}
+              className="rounded text-[#2764FF] font-serif text-sm font-medium transition-all duration-150 ease-out hover:underline focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+            >
+              Radar
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-serif text-[#6B7480]">
+            <span>Carrier {formatDashboardMoney(profitRecovery?.carrier_audit_savings_eur)}</span>
+            <span>Supplier {formatDashboardMoney(profitRecovery?.supplier_recovery_potential_eur)}</span>
+          </div>
+        </div>
       </div>
 
-      {isProPluginActive && (
+      {showShipmentPlugin && (
         <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
           <div className="p-6 border-b border-[#DDE5EE] flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -387,74 +755,144 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Orders Table */}
       <div className="bg-white border border-[#DDE5EE] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
         <div className="p-6 border-b border-[#DDE5EE] flex items-center justify-between">
           <h2 className="font-serif text-lg font-bold text-[#03182F]">Recent Operational Orders</h2>
-          <button className="text-[#2764FF] font-serif text-sm font-medium hover:underline">View all orders</button>
+          <button
+            type="button"
+            onClick={() => router.push('/orders')}
+            className="text-[#2764FF] font-serif text-sm font-medium transition-all duration-150 ease-out hover:underline focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 rounded"
+          >
+            View all orders
+          </button>
         </div>
         <table className="w-full text-left">
           <thead>
             <tr className="bg-[#f3f2ff]">
-              {['ORDER ID', 'MARKETPLACE', 'VALUE', 'STATUS', 'TIMESTAMP'].map((h) => (
-                <th key={h} className="px-6 py-3 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">{h}</th>
+              {['ORDER ID', 'MARKETPLACE', 'VALUE', 'STATUS', 'TIMESTAMP'].map((heading) => (
+                <th
+                  key={heading}
+                  className="px-6 py-3 font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase"
+                >
+                  {heading}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-[#DDE5EE]">
-            {orders.map((o) => (
-              <tr key={o.id} className="hover:bg-white transition-colors">
-                <td className="px-6 py-4 font-mono text-[14px] text-[#03182F]">{o.id}</td>
+            {ordersData.map((order) => (
+              <tr key={order.id} className="hover:bg-white transition-colors">
+                <td className="px-6 py-4 font-mono text-[14px] text-[#03182F]">{order.id}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-[#F2F8FF] flex items-center justify-center text-sm">{o.icon}</div>
-                    <span className="font-serif text-sm">{o.marketplace}</span>
+                    <div className="w-6 h-6 rounded bg-[#F2F8FF] flex items-center justify-center text-[10px] font-bold text-[#03182F]">
+                      {order.icon}
+                    </div>
+                    <span className="font-serif text-sm">{order.marketplace}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 font-serif text-sm font-bold">{o.value}</td>
+                <td className="px-6 py-4 font-serif text-sm font-bold">{order.value}</td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold font-serif ${o.statusStyle}`}>{o.status}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold font-serif ${order.statusStyle}`}>
+                    {order.status}
+                  </span>
                 </td>
-                <td className="px-6 py-4 font-mono text-[10px] text-[#6B7480]">{o.time}</td>
+                <td className="px-6 py-4 font-mono text-[10px] text-[#6B7480]">{order.time}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Decision Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
-        {/* Stock Out Risk */}
-        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#F22E75] uppercase">STOCK OUT RISK</span>
-            <span className="text-[#F22E75]">&#9888;</span>
-          </div>
-          <div>
-            <h3 className="font-serif text-base font-bold text-[#03182F]">Linum Cushion (Blue)</h3>
-            <p className="font-serif text-[13px] text-[#6B7480] mt-1">Inventory will deplete in 48 hours at current velocity. Suggested restock: 45 units.</p>
-          </div>
-          <div className="mt-auto pt-4 flex gap-3">
-            <button className="bg-[#2764FF] text-white px-4 py-2 rounded font-serif text-sm hover:bg-[#004bd9] transition-colors flex-1">Approve Restock</button>
-            <button className="border border-[#BFCBDA] text-[#30373E] px-4 py-2 rounded font-serif text-sm hover:bg-[#F2F8FF] transition-colors">Ignore</button>
-          </div>
-        </div>
+        {recommendationsLoading ? (
+          <>
+            <div className="h-[220px] rounded-lg border border-[#DDE5EE] bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,0.1)] animate-pulse" />
+            <div className="h-[220px] rounded-lg border border-[#DDE5EE] bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,0.1)] animate-pulse" />
+          </>
+        ) : dashboardRecommendations.length > 0 ? (
+          dashboardRecommendations.map((recommendation) => {
+            const isPricing = recommendation.scenario_type.includes('price')
+            const primaryLabel = getDashboardPrimaryActionLabel(recommendation.scenario_type)
+            const secondaryLabel = getDashboardSecondaryActionLabel(recommendation.scenario_type)
+            const busy = busyRecommendationId === recommendation.id
 
-        {/* Marketplace Insight */}
-        <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <span className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#2764FF] uppercase">LEIA INSIGHT</span>
-            <span className="text-[#2764FF]">&#9733;</span>
+            return (
+              <div
+                key={recommendation.id}
+                className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-4"
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`font-serif text-[10px] font-bold tracking-[0.1em] uppercase ${
+                      isPricing ? 'text-[#2764FF]' : 'text-[#F22E75]'
+                    }`}
+                  >
+                    {recommendation.scenario_type.replaceAll('_', ' ')}
+                  </span>
+                  <span className={isPricing ? 'text-[#2764FF]' : 'text-[#F22E75]'}>
+                    {isPricing ? '*' : '!'}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-serif text-base font-bold text-[#03182F]">{recommendation.title}</h3>
+                  <p className="font-serif text-[13px] text-[#6B7480] mt-1">{recommendation.reasoning_summary}</p>
+                </div>
+                <div className="mt-auto pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void handleRecommendationAction(recommendation, 'approve')}
+                    className="bg-[#2764FF] text-white px-4 py-2 rounded font-serif text-sm transition-all duration-150 ease-out hover:bg-[#004bd9] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 disabled:opacity-50 flex-1"
+                  >
+                    {busy ? 'Working...' : primaryLabel}
+                  </button>
+                  {isPricing ? (
+                    <button
+                      type="button"
+                      onClick={() => router.push('/actions')}
+                      className="border border-[#BFCBDA] text-[#30373E] px-4 py-2 rounded font-serif text-sm transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+                    >
+                      {secondaryLabel}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void handleRecommendationAction(recommendation, 'reject')}
+                      className="border border-[#BFCBDA] text-[#30373E] px-4 py-2 rounded font-serif text-sm transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50 disabled:opacity-50"
+                    >
+                      {secondaryLabel}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className="md:col-span-2 rounded-lg border border-dashed border-[#BFCBDA] bg-white p-6 text-center shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+            <p className="font-serif text-base font-bold text-[#03182F]">No pending Leia decisions</p>
+            <p className="mt-2 font-serif text-[13px] text-[#6B7480]">
+              Ask Leia for an operational recommendation or review the full ledger in Actions.
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setChatOpen(true)}
+                className="rounded bg-[#2764FF] px-4 py-2 font-serif text-sm text-white transition-all duration-150 ease-out hover:bg-[#004bd9] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+              >
+                Ask Leia
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push('/actions')}
+                className="rounded border border-[#BFCBDA] px-4 py-2 font-serif text-sm text-[#30373E] transition-all duration-150 ease-out hover:bg-[#F2F8FF] focus:outline-none focus:ring-2 focus:ring-[#2764FF]/50"
+              >
+                Open Actions
+              </button>
+            </div>
           </div>
-          <div>
-            <h3 className="font-serif text-base font-bold text-[#03182F]">Optimized Pricing on Zalando</h3>
-            <p className="font-serif text-[13px] text-[#6B7480] mt-1">Competitors have adjusted prices in Home &amp; Decor. Dropping price by $2.00 could increase volume by 15%.</p>
-          </div>
-          <div className="mt-auto pt-4 flex gap-3">
-            <button className="bg-[#2764FF] text-white px-4 py-2 rounded font-serif text-sm hover:bg-[#004bd9] transition-colors flex-1">Apply Price Change</button>
-            <button className="border border-[#BFCBDA] text-[#30373E] px-4 py-2 rounded font-serif text-sm hover:bg-[#F2F8FF] transition-colors">Review Details</button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )
