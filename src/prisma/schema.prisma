@@ -521,3 +521,113 @@ model ShopifyOrder {
   @@map("shopify_orders")
   @@schema("public")
 }
+
+model DecisionTemplate {
+  id          String   @id
+  description String?
+  created_at  DateTime @default(now())
+
+  @@map("decision_templates")
+  @@schema("public")
+}
+
+model DecisionLedger {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String    @db.Uuid
+  sku                 String?
+  channel             String?
+  action_type         String
+  template_id         String
+  logical_inference   String
+  raw_payload         Json?
+  status              String
+  reversible          Boolean   @default(false)
+  source_agent        String?
+  triggered_by        String?
+  created_at          DateTime  @default(now())
+  executed_at         DateTime?
+  founder_decision_at DateTime?
+  trigger_event_id    String?
+
+  @@index([user_id, created_at])
+  @@index([user_id, status, created_at])
+  @@index([template_id])
+  @@map("decision_ledger")
+  @@schema("public")
+}
+
+model OverrideRecord {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @db.Uuid
+  decision_id     String   @db.Uuid
+  reason          String?
+  previous_status String?
+  created_at      DateTime @default(now())
+
+  @@index([user_id, created_at])
+  @@index([decision_id])
+  @@map("override_records")
+  @@schema("public")
+}
+
+model FounderState {
+  user_id    String   @id @db.Uuid
+  state      String
+  until      DateTime?
+  notes      String?
+  updated_at DateTime @updatedAt
+
+  @@map("founder_state")
+  @@schema("public")
+}
+
+model AutonomyConfig {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  action_type String
+  mode        String
+  updated_at  DateTime @updatedAt
+
+  @@unique([user_id, action_type])
+  @@index([user_id])
+  @@map("autonomy_config")
+  @@schema("public")
+}
+
+model OperationalObject {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.Uuid
+  source_channel String
+  kind           String
+  external_id    String?
+  sku            String?
+  status         String?
+  quantity       Int?
+  amount_cents   Int?
+  currency       String?
+  occurred_at    DateTime?
+  ingested_at    DateTime?
+  raw_payload    Json?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@index([user_id, occurred_at])
+  @@index([user_id, kind, source_channel])
+  @@map("operational_objects")
+  @@schema("public")
+}
+
+model CommercialCalendar {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  region         String
+  event_name     String
+  event_date     DateTime @db.Date
+  impact_tag     String?
+  magnitude_hint String?
+  notes          String?
+  created_at     DateTime @default(now())
+
+  @@index([region, event_date])
+  @@map("commercial_calendar")
+  @@schema("public")
+}

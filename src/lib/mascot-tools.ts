@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { buildPlanItems, summarizePlan } from '@/lib/calendar-restock'
 import { requiresExplicitCalendarConfirmation } from '@/lib/calendar-confirmation'
+import { listDecisionLedgerRows } from '@/lib/mira/ledger'
 
 export type ToolDefinition = {
   type: 'function'
@@ -12,6 +13,26 @@ export type ToolDefinition = {
 }
 
 export const MASCOT_TOOLS: ToolDefinition[] = [
+  {
+    type: 'function',
+    function: {
+      name: 'query_decisions',
+      description:
+        'Reads governed decisions from the decision ledger. Use this when the merchant asks what happened with a SKU, why a channel was paused, what is queued, or what LEIA decided recently.',
+      parameters: {
+        type: 'object',
+        properties: {
+          sku: { type: 'string', description: 'Optional SKU filter, ex: NKS-00108' },
+          status: {
+            type: 'string',
+            description: 'Optional status filter, ex: proposed, queued, auto_executed, rejected, overridden',
+          },
+          limit: { type: 'number', description: 'Optional limit, default 5, max 20' },
+        },
+        required: [],
+      },
+    },
+  },
   {
     type: 'function',
     function: {
@@ -140,6 +161,32 @@ export async function executeTool(
   ctx: { userId: string; origin: string }
 ): Promise<unknown> {
   switch (name) {
+    case 'query_decisions': {
+      const sku = String(args.sku ?? '').trim().toLowerCase()
+      const status = String(args.status ?? '').trim().toLowerCase()
+      const limit = Math.max(1, Math.min(20, Number(args.limit ?? 5) || 5))
+      const rows = await listDecisionLedgerRows(100)
+      const filtered = rows
+        .filter((row) => row.user_id === ctx.userId)
+        .filter((row) => !sku || String(row.sku || '').toLowerCase() === sku)
+        .filter((row) => !status || String(row.status || '').toLowerCase() === status)
+        .slice(0, limit)
+
+      return {
+        count: filtered.length,
+        decisions: filtered.map((row) => ({
+          id: row.id,
+          sku: row.sku,
+          channel: row.channel,
+          action_type: row.action_type,
+          template_id: row.template_id,
+          logical_inference: row.logical_inference,
+          status: row.status,
+          created_at: row.created_at.toISOString(),
+        })),
+      }
+    }
+
     case 'get_stock_summary': {
       const products = await prisma.product.findMany({
         where: { user_id: ctx.userId, active: true },

@@ -1,6 +1,11 @@
 import { MASCOT_TOOLS, executeTool } from '@/lib/mascot-tools'
-
-export type ConversationLanguage = 'fr' | 'en'
+import {
+  buildLeiaSystemPrompt,
+  buildPromptInjectionRefusal,
+  looksLikePromptInjection,
+  resolveConversationLanguage,
+  type ConversationLanguage,
+} from '@/lib/mira/conversation'
 
 export type LeiaChatMessage = {
   role: 'user' | 'assistant' | 'system' | 'tool'
@@ -20,137 +25,12 @@ export type LeiaToolTrace = {
   result: unknown
 }
 
-function normalizeText(value: string) {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
-
-export function normalizeConversationLanguage(
-  value: string | null | undefined
-): ConversationLanguage | null {
-  const normalized = String(value || '').trim().toLowerCase()
-
-  if (!normalized) return null
-  if (normalized === 'fr' || normalized.startsWith('fr-') || normalized === 'french') return 'fr'
-  if (normalized === 'en' || normalized.startsWith('en-') || normalized === 'english') return 'en'
-
-  return null
-}
-
-export function detectConversationLanguage(text: string): ConversationLanguage {
-  const normalized = normalizeText(text)
-
-  if (!normalized.trim()) return 'fr'
-
-  const frenchHints = [
-    ' quel ',
-    ' quelle ',
-    ' quels ',
-    ' quelles ',
-    ' quoi ',
-    ' comment ',
-    ' pourquoi ',
-    " aujourd'hui ",
-    ' mon ',
-    ' ma ',
-    ' mes ',
-    ' je ',
-    ' j ',
-    ' bonjour ',
-    ' merci ',
-    ' stock ',
-    ' commande ',
-    ' commandes ',
-    ' conges ',
-    ' fournisseur ',
-    ' fournisseurs ',
-    ' peux tu ',
-    ' peux-tu ',
-  ]
-
-  const englishHints = [
-    ' what ',
-    ' how ',
-    ' why ',
-    ' today ',
-    ' my ',
-    ' hello ',
-    ' thanks ',
-    ' stock ',
-    ' order ',
-    ' orders ',
-    ' supplier ',
-    ' suppliers ',
-    ' can you ',
-    ' please ',
-  ]
-
-  const padded = ` ${normalized} `
-  let frenchScore = /[àâçéèêëîïôùûüÿœ]/i.test(text) ? 2 : 0
-  let englishScore = 0
-
-  for (const hint of frenchHints) {
-    if (padded.includes(hint)) frenchScore += 1
-  }
-
-  for (const hint of englishHints) {
-    if (padded.includes(hint)) englishScore += 1
-  }
-
-  if (frenchScore > englishScore) return 'fr'
-  if (englishScore > frenchScore) return 'en'
-
-  return /\b(the|what|how|can|could|please|today|order|orders)\b/i.test(text) ? 'en' : 'fr'
-}
-
-export function resolveConversationLanguage(args: {
-  explicitLanguage?: string | null
-  messages: LeiaChatMessage[]
-}): ConversationLanguage {
-  const explicit = normalizeConversationLanguage(args.explicitLanguage)
-  if (explicit) return explicit
-
-  for (let index = args.messages.length - 1; index >= 0; index -= 1) {
-    const message = args.messages[index]
-    if (message.role !== 'user' || !message.content) continue
-    return detectConversationLanguage(message.content)
-  }
-
-  return 'fr'
-}
-
-export function buildLeiaSystemPrompt({
-  language,
-}: {
-  language: ConversationLanguage
-}) {
-  if (language === 'fr') {
-    return [
-      'Tu es LEIA.',
-      'Tu aides Marie à piloter les opérations quotidiennes de Nordika Studio.',
-      'Réponds en français.',
-      'Style: factuel, calme, direct, sans emoji.',
-      'N invente jamais un chiffre. Utilise les tools dès qu une donnée est nécessaire.',
-      'Pour un congé ou une absence, ne crée jamais l événement directement: propose les dates, demande une validation explicite, puis appelle create_calendar_event avec confirmed=true seulement après un oui clair.',
-      'Quand une action est effectuée ou préparée, indique toujours comment la retrouver ou l annuler depuis Actions.',
-      'Si la demande est ambiguë, pose une seule question de clarification.',
-      'Reste concise, sauf si un tableau ou une liste apporte plus de clarté.',
-    ].join(' ')
-  }
-
-  return [
-    'You are LEIA.',
-    'You help Marie run the daily operations of Nordika Studio.',
-    'Respond in English.',
-    'Style: factual, calm, direct, no emoji.',
-    'Never invent a number. Use tools whenever data is needed.',
-    'For leave or vacation requests, never create the event immediately: propose the dates, ask for explicit confirmation, then call create_calendar_event with confirmed=true only after a clear yes.',
-    'When an action is completed or prepared, always explain how to find it or undo it from Actions.',
-    'If the request is ambiguous, ask one clarifying question.',
-    'Stay concise unless a table or list adds clarity.',
-  ].join(' ')
+const TOOL_TRACE_LABEL: Record<ConversationLanguage, string> = {
+  en: 'Tools used',
+  fr: 'Outils utilises',
+  it: 'Strumenti usati',
+  de: 'Verwendete Tools',
+  es: 'Herramientas usadas',
 }
 
 export function summarizeToolTrace(
@@ -160,7 +40,7 @@ export function summarizeToolTrace(
   if (toolCalls.length === 0) return undefined
 
   const names = toolCalls.map((call) => call.name).join(', ')
-  return language === 'fr' ? `Outils utilisés : ${names}` : `Tools used: ${names}`
+  return `${TOOL_TRACE_LABEL[language]}: ${names}`
 }
 
 export function extractRecommendationIds(toolCalls: LeiaToolTrace[]) {
@@ -229,6 +109,22 @@ export async function runLeiaToolCallingConversation({
     explicitLanguage,
     messages,
   })
+
+  const latestUserMessage = [...messages]
+    .reverse()
+    .find((message) => message.role === 'user' && message.content?.trim())
+
+  if (latestUserMessage?.content && looksLikePromptInjection(latestUserMessage.content)) {
+    return {
+      language,
+      message: {
+        role: 'assistant' as const,
+        content: buildPromptInjectionRefusal(language),
+      },
+      toolCallsTrace: [] as LeiaToolTrace[],
+    }
+  }
+
   const systemPrompt = buildLeiaSystemPrompt({ language })
   const today = new Date().toISOString().slice(0, 10)
   const workingMessages: LeiaChatMessage[] = [

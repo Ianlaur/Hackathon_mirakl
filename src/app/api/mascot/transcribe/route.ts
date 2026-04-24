@@ -7,7 +7,7 @@ export const maxDuration = 60
 
 const WHISPER_ENDPOINT = 'https://api.openai.com/v1/audio/transcriptions'
 const DEFAULT_MODEL = 'whisper-1'
-const MAX_SIZE_BYTES = 25 * 1024 * 1024 // 25 MB = limite OpenAI
+const MAX_SIZE_BYTES = 25 * 1024 * 1024 // 25 MB OpenAI limit
 
 function normalizeLanguage(value: string | null | undefined) {
   const normalized = String(value || '').trim().toLowerCase()
@@ -15,6 +15,17 @@ function normalizeLanguage(value: string | null | undefined) {
   if (!normalized) return null
   if (normalized === 'fr' || normalized.startsWith('fr-') || normalized === 'french') return 'fr'
   if (normalized === 'en' || normalized.startsWith('en-') || normalized === 'english') return 'en'
+  if (normalized === 'it' || normalized.startsWith('it-') || normalized === 'italian') return 'it'
+  if (normalized === 'de' || normalized.startsWith('de-') || normalized === 'german') return 'de'
+  if (
+    normalized === 'es' ||
+    normalized.startsWith('es-') ||
+    normalized === 'spanish' ||
+    normalized === 'espanol' ||
+    normalized === 'español'
+  ) {
+    return 'es'
+  }
 
   return normalized
 }
@@ -49,15 +60,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const language = normalizeLanguage(formData.get('language') as string | null)
     const model = (formData.get('model') as string | null) || DEFAULT_MODEL
 
     const upstream = new FormData()
     upstream.append('file', file, file.name || 'audio.webm')
     upstream.append('model', model)
-    if (language) {
-      upstream.append('language', language)
-    }
     upstream.append('response_format', 'verbose_json')
 
     const response = await fetch(WHISPER_ENDPOINT, {
@@ -80,7 +87,7 @@ export async function POST(request: NextRequest) {
     const data = (await response.json()) as { text?: string; language?: string }
     return NextResponse.json({
       text: (data.text ?? '').trim(),
-      language: normalizeLanguage(data.language) || language,
+      language: normalizeLanguage(data.language),
       model,
     })
   } catch (error) {

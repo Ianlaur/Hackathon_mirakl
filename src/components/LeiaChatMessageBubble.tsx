@@ -231,7 +231,7 @@ function PendingCalendarCard({ pending }: { pending: PendingCalendarConfirmation
         </div>
       </div>
       <div className="rounded-lg border border-[#DDE5EE] bg-[#F2F8FF] px-3 py-2 font-serif text-[12px] text-[#30373E]">
-        Reply with a clear "yes" or "oui" to add this leave to the calendar.
+        Reply with a clear &quot;yes&quot; or &quot;oui&quot; to add this leave to the calendar.
       </div>
     </div>
   )

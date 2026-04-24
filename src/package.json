@@ -18,13 +18,17 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:mira-math": "vitest run tests/mira-math.test.ts",
+    "test:mira-invariant": "vitest run tests/mira-invariant.test.ts",
+    "test:leia-multilingual": "vitest run tests/leia-chat.test.ts tests/mira-briefing.test.ts",
     "lint": "next lint",
     "postinstall": "prisma generate",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "prisma:studio": "prisma studio",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
+    "prisma:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
+    "mira:backfill-ledger-en": "node -r ts-node/register/transpile-only scripts/backfill-mira-ledger-english.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.25",

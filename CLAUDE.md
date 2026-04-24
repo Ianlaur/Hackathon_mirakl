@@ -6,15 +6,17 @@ Projet Nathan (rôle CTO) sur la branche `nathan-calendar-advisor` (mirror équi
 
 | Aspect | Status |
 |---|---|
-| Mascotte **Mira** (orbe flottant + chat Spotlight) | ✅ Intégrée sur toutes les pages |
-| Chat tool-using (`/api/mascot/chat`, gpt-4o) | ✅ 7 tools branchés (stock + calendar + restock + emails) |
+| Mascotte **LEIA** (orbe flottant + chat Spotlight) | ✅ Intégrée sur toutes les pages |
+| Chat tool-using (`/api/mascot/chat`, `gpt-5.4-mini`) | ✅ Tool calling OpenAI branché |
+| Réponses multilingues (EN/FR/IT/DE/ES) | ✅ Détection auto + réponse dans la langue du user |
+| Traces internes des décisions | ✅ Templates anglais dans `decision_ledger.logical_inference` |
 | **Calendar-Aware Restock Advisor** | ✅ Endpoint + logique + UI `/actions` |
 | Inbox `/actions` (approve/reject + tableau SKU) | ✅ Défensif vs anciennes recos |
-| Input vocal Whisper (`/api/mascot/transcribe`) | ✅ MediaRecorder + OpenAI whisper-1 |
+| Input vocal Whisper (`/api/mascot/transcribe`) | ✅ MediaRecorder + `whisper-1` en auto-détection |
 | Rendu markdown dans bulles assistant | ✅ react-markdown + remark-gfm |
 | Workflow n8n (`workflows/calendar-advisor.json`) | ✅ Fichier exportable (non déployé) |
 | Merge avec `ianlaur/dev` | ✅ Module `/copilot` équipier coexiste avec Mira |
-| Tests vitest (`src/tests/`) | ✅ 15/15 verts (lib calendar-restock) |
+| Tests vitest (`src/tests/`) | ✅ Couverture étendue (calendar + LEIA multilingual + templates/math/invariant) |
 | Build Next.js | ✅ OK en dernière vérif |
 | Clé `OPENAI_API_KEY` dans `src/.env` | ✅ Configurée (gitignored) |
 | BDD Supabase (produits, recos, events) | ✅ 200 products Nordika importés, BDD nettoyée |
@@ -22,9 +24,17 @@ Projet Nathan (rôle CTO) sur la branche `nathan-calendar-advisor` (mirror équi
 | n8n VPS branché en live | ❌ JSON prêt, à importer + configurer `APP_BASE_URL` |
 | Loom / deck / doc tech | ❌ À faire avant VEN 8h |
 
+## Language Model Rules
+
+- LEIA detecte la langue du dernier message user automatiquement.
+- Langues supportees: anglais, francais, italien, allemand, espagnol.
+- Reponse dans la meme langue que le user. Si ambigu, fallback anglais.
+- Les traces internes `decision_ledger.logical_inference` restent en anglais.
+- Whisper n'impose plus de langue: auto-detection uniquement.
+
 ## Next Immediate Action
 
-**Relancer le dev server pour démo** :
+**Relancer le dev server pour demo** :
 ```bash
 cd "C:/Users/skwar/Desktop/hackaton/hackaton-mirakl/src"
 npm run dev
@@ -46,8 +56,8 @@ Dashboard/ Stock/ Actions/ Calendar
             └─ <MascotOrb /> (fixed bottom-right, visible partout)
                  └─ click → <MascotChatDrawer /> (overlay Spotlight, backdrop-blur)
                       ├─ textarea auto-grow + placeholder typing animé
-                      ├─ bouton micro → POST /api/mascot/transcribe (Whisper)
-                      ├─ submit → POST /api/mascot/chat (gpt-4o tool use)
+                      ├─ bouton micro → POST /api/mascot/transcribe (Whisper auto-detect)
+                      ├─ submit → POST /api/mascot/chat (`gpt-5.4-mini` tool use)
                       │    ├─ get_stock_summary / get_product_by_sku / search_products
                       │    ├─ list_pending_actions
                       │    ├─ create_calendar_event (leave → trigger advisor)
@@ -74,11 +84,17 @@ Dashboard/ Stock/ Actions/ Calendar
 | `src/components/MascotChatDrawer.tsx` | Overlay Spotlight + chat + markdown + cards |
 | `src/components/useAudioRecorder.ts` | Hook MediaRecorder + cleanup |
 | `src/lib/mascot-tools.ts` | 7 tool definitions + executors (Prisma) |
-| `src/app/api/mascot/chat/route.ts` | gpt-4o loop tool use + SYSTEM_PROMPT XML |
-| `src/app/api/mascot/transcribe/route.ts` | Relay multipart vers OpenAI Whisper |
+| `src/app/api/mascot/chat/route.ts` | Route chat LEIA partagée |
+| `src/lib/leia-chat.ts` | Boucle tool calling OpenAI partagée |
+| `src/lib/mira/conversation.ts` | Détection de langue + prompt system multilingue |
+| `src/lib/mira/templates.ts` | 14 templates internes anglais |
+| `src/lib/mira/tools-math.ts` | Fonctions math déterministes |
+| `src/lib/mira/ledger.ts` | Helpers raw SQL `decision_ledger` / `override_records` |
+| `src/app/api/mascot/transcribe/route.ts` | Relay multipart vers Whisper auto-detect |
+| `src/app/api/mira/briefing/route.ts` | Morning briefing multilingue |
 | `src/app/api/agent/calendar-advisor/route.ts` | Agent restock (lecture BDD + reco) |
 | `src/app/actions/*` | Inbox page + card + detail panel avec approve/reject |
-| `src/app/globals.css` | Tous les styles `iris-*` (nom CSS historique, visible = Mira) |
+| `src/app/globals.css` | Tous les styles `iris-*` (nom CSS historique, visible = LEIA) |
 | `src/lib/calendar-restock.ts` | Logique pure projection (testée) |
 | `src/scripts/cleanup-level-1.ts` | Purge BDD des artefacts de test (100 rows) |
 | `workflows/calendar-advisor.json` | Workflow n8n exportable |
@@ -130,7 +146,7 @@ cd src && npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"
 DATABASE_URL=postgresql://...supabase.com:5432/postgres
 DIRECT_URL=postgresql://...supabase.co:5432/postgres
 HACKATHON_USER_ID=00000000-0000-0000-0000-000000000001
-OPENAI_API_KEY=sk-proj-...            # Mira chat + Whisper
+OPENAI_API_KEY=sk-proj-...            # LEIA chat + Whisper
 N8N_WEBHOOK_URL=                      # optionnel, seulement si n8n actif
 DUST_ORCHESTRATOR_AGENT_ID=           # utilisé par le module /copilot de l'équipe
 DUST_ORCHESTRATOR_API_KEY=
@@ -139,7 +155,7 @@ DUST_ORCHESTRATOR_API_KEY=
 ## Points d'attention
 
 - **Cache `.next` se corrompt** quand dev server tourne pendant un `next build` ou gros refactor. Réflexe : `taskkill //F //IM node.exe && rm -rf src/.next && npm run dev`.
-- **Classes CSS `.iris-*`** sont historiques (nom initial Iris). Elles ne sont PAS renommées en `.mira-*` — détail interne non visible.
+- **Classes CSS `.iris-*`** sont historiques. Elles ne sont pas renommees en `.leia-*` pour garder le diff stable.
 - **Module `/copilot` équipe coexiste** avec Mira depuis le merge du 22/04. La sidebar n'a pas de lien vers `/copilot` (retiré par moi). Si l'équipe veut le remettre : 1 ligne dans `src/components/Sidebar.tsx`.
 - **Workflow n8n n'est PAS actif par défaut** — le JSON est livré comme asset (livrable Rendu #2). Pour l'activer en réel : voir `docs/n8n-setup.md`.
 - **Démo locale sans n8n** : l'appel direct à `/api/agent/calendar-advisor` est fait via `fetch` dans `create_calendar_event` (côté `lib/mascot-tools.ts`) — donc la chaîne leave → reco fonctionne même sans n8n. Si `N8N_WEBHOOK_URL` vide, le webhook est skippé mais Mira déclenche quand même l'advisor.
