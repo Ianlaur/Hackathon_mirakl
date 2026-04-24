@@ -1172,7 +1172,7 @@ export default function CalendarPageClient() {
                       onDoubleClick={() => startCreateFromDate(day.key)}
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={() => dropEvent(day.key)}
-                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-[#2764FF]/10/60 ${
+                      className={`min-h-32 border-b border-r border-slate-200 p-2 text-left transition hover:bg-[#2764FF]/10 ${
                         day.inMonth ? 'bg-white' : 'bg-slate-50 text-slate-300'
                       } ${isSelected ? 'ring-2 ring-inset ring-blue-500' : ''}`}
                     >
@@ -1298,8 +1298,8 @@ export default function CalendarPageClient() {
                           return (
                             <div
                               key={wd.key}
-                              className={`min-h-10 border-r border-slate-100 px-1 py-0.5 last:border-r-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer ${
-                                selectedDate === wd.key ? 'bg-[#2764FF]/10/20' : ''
+                              className={`min-h-10 cursor-pointer border-r border-slate-100 px-1 py-0.5 transition hover:bg-[#2764FF]/10 last:border-r-0 ${
+                                selectedDate === wd.key ? 'bg-[#2764FF]/10' : ''
                               }`}
                               onClick={() => chooseDate(wd.key)}
                               onDoubleClick={() => {
@@ -1384,7 +1384,7 @@ export default function CalendarPageClient() {
                   return (
                     <div
                       key={hour}
-                      className="group flex border-b border-slate-100 last:border-b-0 transition hover:bg-[#2764FF]/10/40 cursor-pointer"
+                      className="group flex cursor-pointer border-b border-slate-100 transition hover:bg-[#2764FF]/10 last:border-b-0"
                       onDoubleClick={() => {
                         setNaturalInput(`on ${formatDateEn(selectedDate).replaceAll('-', '/')} from ${hour}:00 to ${hour + 1}:00 `)
                         startCreateFromDate(selectedDate)

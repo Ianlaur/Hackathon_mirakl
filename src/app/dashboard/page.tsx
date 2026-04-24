@@ -523,127 +523,129 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
-      <div
-        className={`iris-overlay ${chatOpen ? 'iris-overlay--open' : 'iris-overlay--closed'}`}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) setChatOpen(false)
-        }}
-        aria-hidden={!chatOpen}
-      >
-        <div className={`iris-panel ${chatOpen ? 'iris-panel--open' : 'iris-panel--closed'}`}>
-          <div ref={scrollRef} className="iris-conversation iris-conversation--panel">
-            {chatMessages.length === 0 && !sending && !chatError ? (
-              <div className="iris-conversation__empty">
-                <div className="iris-conversation__empty-header">
-                  <div className="iris-searchbar__glyph" aria-hidden>
-                    <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
-                    <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
-                    <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+      {chatOpen ? (
+        <div
+          className="iris-overlay iris-overlay--open"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setChatOpen(false)
+          }}
+          aria-hidden={!chatOpen}
+        >
+          <div className="iris-panel iris-panel--open">
+            <div ref={scrollRef} className="iris-conversation iris-conversation--panel">
+              {chatMessages.length === 0 && !sending && !chatError ? (
+                <div className="iris-conversation__empty">
+                  <div className="iris-conversation__empty-header">
+                    <div className="iris-searchbar__glyph" aria-hidden>
+                      <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+                      <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+                      <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+                    </div>
+                    <p className="iris-conversation__empty-title font-serif">Leia is ready</p>
                   </div>
-                  <p className="iris-conversation__empty-title font-serif">Leia is ready</p>
+                  <p className="iris-conversation__empty-copy font-serif">
+                    Ask about stock, leave planning, or pending actions.
+                  </p>
+                  <div className="iris-conversation__suggestions">
+                    {LEIA_QUICK_PROMPTS.map((prompt) => (
+                      <button
+                        key={prompt.label}
+                        type="button"
+                        onClick={() => void handleSendMessage(prompt.message)}
+                        className="iris-conversation__suggestion"
+                      >
+                        {prompt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <p className="iris-conversation__empty-copy font-serif">
-                  Ask about stock, leave planning, or pending actions.
-                </p>
-                <div className="iris-conversation__suggestions">
-                  {LEIA_QUICK_PROMPTS.map((prompt) => (
-                    <button
-                      key={prompt.label}
-                      type="button"
-                      onClick={() => void handleSendMessage(prompt.message)}
-                      className="iris-conversation__suggestion"
-                    >
-                      {prompt.label}
-                    </button>
-                  ))}
+              ) : null}
+
+              {chatMessages.map((message) => (
+                <LeiaChatMessageBubble
+                  key={message.id}
+                  message={message}
+                  onNavigate={() => setChatOpen(false)}
+                />
+              ))}
+
+              {sending ? (
+                <div className="iris-conversation__thinking">
+                  <span className="iris-conversation__thinking-dot" />
+                  <span className="iris-conversation__thinking-dot" />
+                  <span className="iris-conversation__thinking-dot" />
                 </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            {chatMessages.map((message) => (
-              <LeiaChatMessageBubble
-                key={message.id}
-                message={message}
-                onNavigate={() => setChatOpen(false)}
-              />
-            ))}
-
-            {sending ? (
-              <div className="iris-conversation__thinking">
-                <span className="iris-conversation__thinking-dot" />
-                <span className="iris-conversation__thinking-dot" />
-                <span className="iris-conversation__thinking-dot" />
-              </div>
-            ) : null}
-
-            {chatError ? <div className="iris-conversation__error">{chatError}</div> : null}
-          </div>
-
-          <form
-            className="iris-searchbar"
-            onSubmit={(event) => {
-              event.preventDefault()
-              void handleSend()
-            }}
-          >
-            <div className="iris-searchbar__glyph" aria-hidden>
-              <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
-              <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
-              <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+              {chatError ? <div className="iris-conversation__error">{chatError}</div> : null}
             </div>
-            <textarea
-              ref={inputRef}
-              className="iris-searchbar__input font-serif"
-              placeholder={
-                recording
-                  ? 'Recording... click mic again to stop'
-                  : sending
-                    ? 'Leia is responding...'
-                    : 'Ask Leia for operational insights...'
-              }
-              rows={1}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  void handleSend()
-                }
+
+            <form
+              className="iris-searchbar"
+              onSubmit={(event) => {
+                event.preventDefault()
+                void handleSend()
               }}
-              disabled={sending || transcribing || recording}
-            />
-            {recorder.isSupported ? (
+            >
+              <div className="iris-searchbar__glyph" aria-hidden>
+                <span className="iris-searchbar__dot iris-searchbar__dot--pink" />
+                <span className="iris-searchbar__dot iris-searchbar__dot--blue" />
+                <span className="iris-searchbar__dot iris-searchbar__dot--violet" />
+              </div>
+              <textarea
+                ref={inputRef}
+                className="iris-searchbar__input font-serif"
+                placeholder={
+                  recording
+                    ? 'Recording... click mic again to stop'
+                    : sending
+                      ? 'Leia is responding...'
+                      : 'Ask Leia for operational insights...'
+                }
+                rows={1}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void handleSend()
+                  }
+                }}
+                disabled={sending || transcribing || recording}
+              />
+              {recorder.isSupported ? (
+                <button
+                  type="button"
+                  onClick={() => void handleMicClick()}
+                  disabled={micBusy || sending}
+                  aria-label={recording ? 'Stop recording' : 'Start voice input'}
+                  className={`iris-searchbar__mic ${
+                    recording ? 'iris-searchbar__mic--recording' : ''
+                  } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
+                >
+                  {micBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+                </button>
+              ) : null}
+              <button
+                type="submit"
+                aria-label="Send"
+                disabled={sendDisabled}
+                className="iris-searchbar__submit"
+              >
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+              </button>
               <button
                 type="button"
-                onClick={() => void handleMicClick()}
-                disabled={micBusy || sending}
-                aria-label={recording ? 'Stop recording' : 'Start voice input'}
-                className={`iris-searchbar__mic ${
-                  recording ? 'iris-searchbar__mic--recording' : ''
-                } ${transcribing ? 'iris-searchbar__mic--transcribing' : ''}`}
+                onClick={() => setChatOpen(false)}
+                aria-label="Close Leia conversation"
+                className="iris-searchbar__clear"
               >
-                {micBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+                <X className="h-4 w-4" />
               </button>
-            ) : null}
-            <button
-              type="submit"
-              aria-label="Send"
-              disabled={sendDisabled}
-              className="iris-searchbar__submit"
-            >
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setChatOpen(false)}
-              aria-label="Close Leia conversation"
-              className="iris-searchbar__clear"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className="bg-white border border-[#DDE5EE] p-6 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-col gap-2">

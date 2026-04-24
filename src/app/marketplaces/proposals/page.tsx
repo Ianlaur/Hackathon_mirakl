@@ -69,7 +69,6 @@ export default function IntegrationProposalsPage() {
           {statusMessage}
         </div>
       ) : null}
-
       <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-serif text-[10px] font-bold tracking-[0.1em] text-[#6B7480] uppercase">Connected Marketplaces</h3>

@@ -4,7 +4,20 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
 import { normalizeCalendarDisplayEvent } from '@/lib/calendar-events'
 
-const eventKinds = ['commerce', 'holiday', 'leave', 'logistics', 'marketing', 'internal', 'peak', 'celebration'] as const
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+const eventKinds = [
+  'holiday',
+  'celebration',
+  'peak',
+  'leave',
+  // legacy kinds kept for backward compatibility
+  'commerce',
+  'logistics',
+  'marketing',
+  'internal',
+] as const
 const eventImpacts = ['low', 'medium', 'high', 'critical'] as const
 
 type DbCalendarEvent = {

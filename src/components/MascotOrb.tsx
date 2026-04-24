@@ -78,7 +78,7 @@ export default function MascotOrb() {
         </button>
       </div>
 
-      <MascotChatDrawer open={open} onClose={() => setOpen(false)} />
+      {open ? <MascotChatDrawer open={open} onClose={() => setOpen(false)} /> : null}
     </>
   )
 }
