@@ -3,8 +3,32 @@ function round(value: number, digits = 2) {
   return Math.round(value * factor) / factor
 }
 
-export function calculateVelocity(units: number, days: number) {
-  if (!Number.isFinite(units) || !Number.isFinite(days) || days <= 0) return 0
+export type VelocityOrder = {
+  quantity?: number | null
+  qty?: number | null
+  units?: number | null
+}
+
+function unitsFromOrder(order: VelocityOrder) {
+  const value = order.quantity ?? order.qty ?? order.units ?? 0
+  return Number.isFinite(Number(value)) ? Number(value) : 0
+}
+
+export function calculateVelocity(
+  ordersOrUnits: number | VelocityOrder[],
+  window: number,
+  unit: 'days' | 'hours' = 'days'
+) {
+  if (!Number.isFinite(window) || window <= 0) return 0
+  const units = Array.isArray(ordersOrUnits)
+    ? ordersOrUnits.reduce((sum, order) => sum + unitsFromOrder(order), 0)
+    : ordersOrUnits
+
+  if (!Number.isFinite(units)) return 0
+
+  const days = unit === 'hours' ? window / 24 : window
+  if (days <= 0) return 0
+
   return round(units / days, 4)
 }
 
@@ -14,9 +38,21 @@ export function calculateStockoutDays(onHand: number, velocityPerDay: number) {
   return round(onHand / velocityPerDay, 2)
 }
 
-export function calculateReorderQty(predictedNeed: number, safetyBuffer: number, onHand: number) {
-  if (![predictedNeed, safetyBuffer, onHand].every(Number.isFinite)) return 0
-  return Math.max(0, Math.ceil(predictedNeed + safetyBuffer - onHand))
+export function calculateReorderQty(
+  velocityOrPredictedNeed: number,
+  leadTimeOrSafetyBuffer: number,
+  bufferOrOnHand: number,
+  onHand?: number
+) {
+  const hasVelocitySignature = onHand !== undefined
+  const predictedNeed = hasVelocitySignature
+    ? velocityOrPredictedNeed * leadTimeOrSafetyBuffer
+    : velocityOrPredictedNeed
+  const safetyBuffer = hasVelocitySignature ? bufferOrOnHand : leadTimeOrSafetyBuffer
+  const available = hasVelocitySignature ? onHand : bufferOrOnHand
+
+  if (![predictedNeed, safetyBuffer, available].every(Number.isFinite)) return 0
+  return Math.max(0, Math.ceil(predictedNeed + safetyBuffer - available))
 }
 
 export function calculateGrowthFactor(baselineValue: number, nextValue: number) {
@@ -41,4 +77,26 @@ export function calculateMargin(revenue: number, cost: number) {
   }
 
   return round(((revenue - cost) / revenue) * 100, 2)
+}
+
+export function calculateHoursOfStock(onHand: number, velocityPerHour: number) {
+  if (!Number.isFinite(onHand) || onHand < 0) return null
+  if (!Number.isFinite(velocityPerHour) || velocityPerHour <= 0) return null
+  return round(onHand / velocityPerHour, 2)
+}
+
+export function calculateChannelShares(channelTotals: Record<string, number>) {
+  const entries = Object.entries(channelTotals)
+  const total = entries.reduce((sum, [, value]) => {
+    const numeric = Number(value)
+    return sum + (Number.isFinite(numeric) && numeric > 0 ? numeric : 0)
+  }, 0)
+
+  return Object.fromEntries(
+    entries.map(([channel, value]) => {
+      const numeric = Number(value)
+      const safeValue = Number.isFinite(numeric) && numeric > 0 ? numeric : 0
+      return [channel, total > 0 ? round((safeValue / total) * 100, 2) : 0]
+    })
+  )
 }

@@ -291,7 +291,7 @@ model MerchantAiSettings {
   user_id           String   @db.Uuid
   encrypted_api_key String?
   api_key_hint      String?
-  preferred_model   String   @default("gpt-4.1-mini")
+  preferred_model   String   @default("gpt-5.4-mini")
   autonomy_mode     String   @default("approval_required")
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt

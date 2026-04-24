@@ -67,7 +67,7 @@ export function decisionToRecommendation(d: DecisionRecordInput): Recommendation
     evidence_payload: buildEvidence(d),
     action_payload: null,
     approval_required: d.status === 'proposed' || d.status === 'queued',
-    source: d.source_agent ?? 'mira',
+    source: d.source_agent ?? 'leia',
     created_at: toIso(d.created_at)!,
     updated_at: updatedAt,
   }

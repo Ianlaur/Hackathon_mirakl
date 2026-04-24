@@ -1,8 +1,8 @@
 import { MASCOT_TOOLS, executeTool } from '@/lib/mascot-tools'
 import {
   buildLeiaSystemPrompt,
-  buildPromptInjectionRefusal,
-  looksLikePromptInjection,
+  buildGuardrailRefusal,
+  classifyGuardrailViolation,
   resolveConversationLanguage,
   type ConversationLanguage,
 } from '@/lib/mira/conversation'
@@ -114,12 +114,16 @@ export async function runLeiaToolCallingConversation({
     .reverse()
     .find((message) => message.role === 'user' && message.content?.trim())
 
-  if (latestUserMessage?.content && looksLikePromptInjection(latestUserMessage.content)) {
+  const guardrailViolation = latestUserMessage?.content
+    ? classifyGuardrailViolation(latestUserMessage.content)
+    : null
+
+  if (guardrailViolation) {
     return {
-      language,
+      language: guardrailViolation.language,
       message: {
         role: 'assistant' as const,
-        content: buildPromptInjectionRefusal(language),
+        content: buildGuardrailRefusal(guardrailViolation.kind, guardrailViolation.language),
       },
       toolCallsTrace: [] as LeiaToolTrace[],
     }

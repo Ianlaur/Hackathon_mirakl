@@ -8,6 +8,7 @@ import {
   summarizeToolTrace,
   type LeiaChatMessage,
 } from '@/lib/leia-chat'
+import { checkRateLimit } from '@/lib/mira/rate-limit'
 import { getOpenAISettingsForUser } from '@/lib/openai-settings'
 import { prismaWithRetry } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/session'
@@ -68,6 +69,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserId()
+    const rateLimit = checkRateLimit(`copilot-chat:${userId}`, {
+      limit: 30,
+      windowMs: 60_000,
+    })
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many Leia chat requests. Try again in a moment.' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
     const payload = chatSchema.parse(body)
     const origin = new URL(request.url).origin
@@ -103,7 +115,7 @@ export async function POST(request: NextRequest) {
       db.copilotChatMessage.findMany({
         where: { session_id: activeSession.id },
         orderBy: { created_at: 'asc' },
-        take: 12,
+        take: 20,
       })
     )
 

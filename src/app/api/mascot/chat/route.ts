@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getOpenAISettingsForUser } from '@/lib/openai-settings'
+import { checkRateLimit } from '@/lib/mira/rate-limit'
 import { getCurrentUserId } from '@/lib/session'
 import {
   type LeiaChatMessage,
@@ -35,6 +36,17 @@ const bodySchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserId()
+    const rateLimit = checkRateLimit(`mascot-chat:${userId}`, {
+      limit: 30,
+      windowMs: 60_000,
+    })
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many Leia chat requests. Try again in a moment.' },
+        { status: 429 }
+      )
+    }
+
     const { apiKey, model } = await getOpenAISettingsForUser(userId)
     if (!apiKey) {
       return NextResponse.json(

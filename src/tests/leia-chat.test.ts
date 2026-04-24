@@ -46,7 +46,7 @@ describe('buildLeiaSystemPrompt', () => {
   it('builds a French prompt when the conversation is French', () => {
     const prompt = buildLeiaSystemPrompt({ language: 'fr' })
 
-    expect(prompt).toContain('Tu es LEIA')
+    expect(prompt).toContain('Tu es Leia')
     expect(prompt).toContain('Respond in French')
     expect(prompt).toContain('confirmed=true')
     expect(prompt).not.toContain('Respond in English')
@@ -55,7 +55,7 @@ describe('buildLeiaSystemPrompt', () => {
   it('builds an English prompt when the conversation is English', () => {
     const prompt = buildLeiaSystemPrompt({ language: 'en' })
 
-    expect(prompt).toContain('You are LEIA')
+    expect(prompt).toContain('You are Leia')
     expect(prompt).toContain('Respond in English')
     expect(prompt).toContain('confirmed=true')
   })

@@ -15,7 +15,7 @@ Projet Nathan (rôle CTO) sur la branche `nathan-calendar-advisor` (mirror équi
 | Input vocal Whisper (`/api/mascot/transcribe`) | ✅ MediaRecorder + `whisper-1` en auto-détection |
 | Rendu markdown dans bulles assistant | ✅ react-markdown + remark-gfm |
 | Workflow n8n (`workflows/calendar-advisor.json`) | ✅ Fichier exportable (non déployé) |
-| Merge avec `ianlaur/dev` | ✅ Module `/copilot` équipier coexiste avec Mira |
+| Merge avec `ianlaur/dev` | ✅ Module `/copilot` équipier coexiste avec Leia |
 | Tests vitest (`src/tests/`) | ✅ Couverture étendue (calendar + LEIA multilingual + templates/math/invariant) |
 | Build Next.js | ✅ OK en dernière vérif |
 | Clé `OPENAI_API_KEY` dans `src/.env` | ✅ Configurée (gitignored) |
@@ -39,7 +39,7 @@ Projet Nathan (rôle CTO) sur la branche `nathan-calendar-advisor` (mirror équi
 cd "C:/Users/skwar/Desktop/hackaton/hackaton-mirakl/src"
 npm run dev
 ```
-Puis tester : ouvrir `http://localhost:3000/dashboard`, cliquer sur l'orbe (bas-droite), vérifier que Mira répond (placeholder animé visible → *"combien de stock j'ai"* → appel tool `get_stock_summary`).
+Puis tester : ouvrir `http://localhost:3000/dashboard`, cliquer sur l'orbe (bas-droite), vérifier que Leia répond (placeholder animé visible → *"combien de stock j'ai"* → appel tool `get_stock_summary`).
 
 **Si l'erreur `Cannot find module './9276.js'` revient** :
 ```bash
@@ -156,9 +156,9 @@ DUST_ORCHESTRATOR_API_KEY=
 
 - **Cache `.next` se corrompt** quand dev server tourne pendant un `next build` ou gros refactor. Réflexe : `taskkill //F //IM node.exe && rm -rf src/.next && npm run dev`.
 - **Classes CSS `.iris-*`** sont historiques. Elles ne sont pas renommees en `.leia-*` pour garder le diff stable.
-- **Module `/copilot` équipe coexiste** avec Mira depuis le merge du 22/04. La sidebar n'a pas de lien vers `/copilot` (retiré par moi). Si l'équipe veut le remettre : 1 ligne dans `src/components/Sidebar.tsx`.
+- **Module `/copilot` équipe coexiste** avec Leia depuis le merge du 22/04. La sidebar n'a pas de lien vers `/copilot` (retiré par moi). Si l'équipe veut le remettre : 1 ligne dans `src/components/Sidebar.tsx`.
 - **Workflow n8n n'est PAS actif par défaut** — le JSON est livré comme asset (livrable Rendu #2). Pour l'activer en réel : voir `docs/n8n-setup.md`.
-- **Démo locale sans n8n** : l'appel direct à `/api/agent/calendar-advisor` est fait via `fetch` dans `create_calendar_event` (côté `lib/mascot-tools.ts`) — donc la chaîne leave → reco fonctionne même sans n8n. Si `N8N_WEBHOOK_URL` vide, le webhook est skippé mais Mira déclenche quand même l'advisor.
+- **Démo locale sans n8n** : l'appel direct à `/api/agent/calendar-advisor` est fait via `fetch` dans `create_calendar_event` (côté `lib/mascot-tools.ts`) — donc la chaîne leave → reco fonctionne même sans n8n. Si `N8N_WEBHOOK_URL` vide, le webhook est skippé mais Leia déclenche quand même l'advisor.
 
 ## Reprise rapide (30 secondes)
 

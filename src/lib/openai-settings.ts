@@ -1,6 +1,13 @@
 import { decryptSecret } from '@/lib/crypto'
 import { prismaWithRetry } from '@/lib/prisma'
 
+const DEFAULT_OPENAI_MODEL = 'gpt-5.4-mini'
+
+function resolveOpenAIChatModel(value: string | null | undefined) {
+  const model = value?.trim()
+  return model && model.startsWith('gpt-5') ? model : DEFAULT_OPENAI_MODEL
+}
+
 export async function getOpenAISettingsForUser(userId: string) {
   const settings = await prismaWithRetry((db) =>
     db.merchantAiSettings.findUnique({
@@ -22,7 +29,7 @@ export async function getOpenAISettingsForUser(userId: string) {
   const model =
     preferredModel && preferredModel.startsWith('gpt-5')
       ? preferredModel
-      : process.env.OPENAI_CHAT_MODEL?.trim() || 'gpt-5.4-mini'
+      : resolveOpenAIChatModel(process.env.OPENAI_CHAT_MODEL)
 
   return {
     apiKey,
