@@ -1,103 +1,124 @@
 # Hackathon Mirakl x Eugenia — UC1 Agent Led Merchant Company
 
-Projet Nathan (rôle CTO) sur la branche `nathan-calendar-advisor` (mirror équipe : `ianlaur/nathan-iris`). Pitch final **VEN 24 avril 2026, 14h** dans les locaux Mirakl.
+Projet Nathan (rôle CTO). Pitch final **VEN 24 avril 2026, 14h** dans les locaux Mirakl — **livré et présenté**. État actuel : post-pitch, deck prêt à partager, code stable.
 
 ## Current Project State
 
 | Aspect | Status |
 |---|---|
-| Mascotte **Mira** (orbe flottant + chat Spotlight) | ✅ Intégrée sur toutes les pages |
-| Chat tool-using (`/api/mascot/chat`, gpt-4o) | ✅ 7 tools branchés (stock + calendar + restock + emails) |
-| **Calendar-Aware Restock Advisor** | ✅ Endpoint + logique + UI `/actions` |
-| Inbox `/actions` (approve/reject + tableau SKU) | ✅ Défensif vs anciennes recos |
-| Input vocal Whisper (`/api/mascot/transcribe`) | ✅ MediaRecorder + OpenAI whisper-1 |
-| Rendu markdown dans bulles assistant | ✅ react-markdown + remark-gfm |
-| Workflow n8n (`workflows/calendar-advisor.json`) | ✅ Fichier exportable (non déployé) |
-| Merge avec `ianlaur/dev` | ✅ Module `/copilot` équipier coexiste avec Mira |
-| Tests vitest (`src/tests/`) | ✅ 15/15 verts (lib calendar-restock) |
-| Build Next.js | ✅ OK en dernière vérif |
-| Clé `OPENAI_API_KEY` dans `src/.env` | ✅ Configurée (gitignored) |
-| BDD Supabase (produits, recos, events) | ✅ 200 products Nordika importés, BDD nettoyée |
-| Déploiement Vercel | ❌ Pas encore fait |
-| n8n VPS branché en live | ❌ JSON prêt, à importer + configurer `APP_BASE_URL` |
-| Loom / deck / doc tech | ❌ À faire avant VEN 8h |
+| Pitch oral du 24/04 14h | ✅ Présenté |
+| **Leia** (anciennement Mira) — orbe + chat + nom unifié EN partout | ✅ |
+| Modèle OpenAI standardisé sur **gpt-4.1** (Leia + calendar advisor + mascot) | ✅ Migré depuis gpt-4o + gpt-4.1-mini |
+| Leia répond toujours en **anglais** (system prompt + suggestions UI) | ✅ |
+| Calendar-Aware Restock Advisor | ✅ Endpoint + logique + UI `/actions` |
+| Inbox `/actions` (approve/reject + tableau SKU) | ✅ |
+| Input vocal Whisper | ✅ |
+| Workflow n8n (`workflows/calendar-advisor.json`) | ✅ Fichier exportable |
+| Tests vitest (lib calendar-restock) | ✅ 15/15 verts |
+| BDD Supabase (200 produits Nordika) | ✅ |
+| **Pitch deck éditorial 11 slides** (`docs/pitch/`) | ✅ EN + FR |
+| Pitch deck — version standalone autoportante (images base64) | ✅ EN + FR |
+| Photos Jean-Charles base + Pro Max (Nano Banana) | ✅ Intégrées |
+| Branche `feat/leia-unify-english` ouverte sur PR ianlaur#9 | ✅ |
+| Déploiement Vercel | ❌ Pas fait |
+| n8n VPS branché en live | ❌ JSON prêt, non déployé |
 
 ## Next Immediate Action
 
-**Relancer le dev server pour démo** :
+**Si modif du pitch deck** :
 ```bash
-cd "C:/Users/skwar/Desktop/hackaton/hackaton-mirakl/src"
-npm run dev
-```
-Puis tester : ouvrir `http://localhost:3000/dashboard`, cliquer sur l'orbe (bas-droite), vérifier que Mira répond (placeholder animé visible → *"combien de stock j'ai"* → appel tool `get_stock_summary`).
+# 1. Éditer la version de travail FR ou EN
+code docs/pitch/pitch-leia.html       # version anglaise
+code docs/pitch/pitch-leia-fr.html    # version française
 
-**Si l'erreur `Cannot find module './9276.js'` revient** :
+# 2. Regénérer les standalone (images inline base64)
+python docs/pitch/_inline-images.py
+```
+Output : `pitch-leia-standalone.html` + `pitch-leia-fr-standalone.html` (5,6 Mo chacun, autoportants — un seul fichier à envoyer).
+
+**Si reprise du dev applicatif** :
 ```bash
-taskkill //F //IM node.exe && rm -rf "C:/Users/skwar/Desktop/hackaton/hackaton-mirakl/src/.next" && cd src && npm run dev
+cd "C:/Users/skwar/Desktop/hackaton/hackaton-mirakl/src" && npm run dev
 ```
+Tester Leia sur `http://localhost:3000/dashboard` (orbe bas-droite → chat anglais).
 
-**Prochaine feature possible** (si demandée) : déploiement Vercel + branchement n8n VPS en live (voir `docs/n8n-setup.md`).
+**Si erreur cache `.next`** :
+```bash
+taskkill //F //IM node.exe && rm -rf src/.next && cd src && npm run dev
+```
 
 ## Architecture
 
 ```
-Dashboard/ Stock/ Actions/ Calendar
+Dashboard / Stock / Actions / Calendar
        └─ [AppShell]
-            └─ <MascotOrb /> (fixed bottom-right, visible partout)
-                 └─ click → <MascotChatDrawer /> (overlay Spotlight, backdrop-blur)
-                      ├─ textarea auto-grow + placeholder typing animé
-                      ├─ bouton micro → POST /api/mascot/transcribe (Whisper)
-                      ├─ submit → POST /api/mascot/chat (gpt-4o tool use)
+            └─ <MascotOrb /> (fixed bottom-right) — connue sous Leia
+                 └─ click → <MascotChatDrawer />
+                      ├─ textarea + placeholder typing animé
+                      ├─ micro → POST /api/mascot/transcribe (Whisper)
+                      ├─ submit → POST /api/mascot/chat (gpt-4.1, EN)
                       │    ├─ get_stock_summary / get_product_by_sku / search_products
                       │    ├─ list_pending_actions
                       │    ├─ create_calendar_event (leave → trigger advisor)
                       │    ├─ propose_restock_plan
                       │    └─ draft_supplier_emails
-                      ├─ ReactMarkdown sur bulles assistant
-                      └─ Cards récap : EventRecapCard, RestockPlanCard, EmailDraftCard
+                      └─ Cards : EventRecapCard, RestockPlanCard, EmailDraftCard
 
 [calendar_events INSERT kind=leave]
-    └─ notifyN8n (fire-and-forget, non-blocking)
-         └─ webhook n8n (si N8N_WEBHOOK_URL défini)
-              └─ POST /api/agent/calendar-advisor {event_id, user_id}
-                   ├─ lib/calendar-restock.ts (projection déterministe)
-                   ├─ lib/calendar-restock-llm.ts (enrichissement + fallback)
-                   └─ INSERT agent_recommendations (scenario=calendar_restock_plan)
-                        └─ visible dans /actions
+    └─ notifyN8n (fire-and-forget)
+         └─ POST /api/agent/calendar-advisor (gpt-4.1)
+              └─ INSERT agent_recommendations (scenario=calendar_restock_plan)
+                   └─ visible dans /actions
 ```
 
 ## Fichiers clés
 
 | Fichier | Rôle |
 |---|---|
-| `src/components/MascotOrb.tsx` | Orbe flottant + animations fumée |
-| `src/components/MascotChatDrawer.tsx` | Overlay Spotlight + chat + markdown + cards |
-| `src/components/useAudioRecorder.ts` | Hook MediaRecorder + cleanup |
-| `src/lib/mascot-tools.ts` | 7 tool definitions + executors (Prisma) |
-| `src/app/api/mascot/chat/route.ts` | gpt-4o loop tool use + SYSTEM_PROMPT XML |
-| `src/app/api/mascot/transcribe/route.ts` | Relay multipart vers OpenAI Whisper |
-| `src/app/api/agent/calendar-advisor/route.ts` | Agent restock (lecture BDD + reco) |
-| `src/app/actions/*` | Inbox page + card + detail panel avec approve/reject |
-| `src/app/globals.css` | Tous les styles `iris-*` (nom CSS historique, visible = Mira) |
-| `src/lib/calendar-restock.ts` | Logique pure projection (testée) |
-| `src/scripts/cleanup-level-1.ts` | Purge BDD des artefacts de test (100 rows) |
+| `src/components/MascotOrb.tsx` | Orbe flottant Leia |
+| `src/components/MascotChatDrawer.tsx` | Overlay Spotlight + chat + cards |
+| `src/lib/mascot-tools.ts` | 7 tools Prisma |
+| `src/app/api/mascot/chat/route.ts` | gpt-4.1 tool use + system prompt EN |
+| `src/app/api/mascot/transcribe/route.ts` | Relay Whisper |
+| `src/app/api/agent/calendar-advisor/route.ts` | Agent restock |
+| `src/lib/copilot.ts` | Module copilot (Leia ChatBar dashboard, gpt-4.1) |
+| `src/components/copilot/SmartChat.tsx` | UI Leia ChatBar |
+| `src/app/actions/*` | Inbox + approve/reject |
+| `src/lib/calendar-restock.ts` | Logique pure projection (15 tests) |
+| **`docs/pitch/pitch-leia.html`** | **Pitch deck EN — version travail (chemins relatifs)** |
+| **`docs/pitch/pitch-leia-fr.html`** | **Pitch deck FR — version travail** |
+| **`docs/pitch/_inline-images.py`** | **Script qui génère les standalone autoportants** |
+| `docs/pitch/jean-charles.png` | Portrait JC base (Nano Banana) |
+| `docs/pitch/jean-charles-pro-max.png` | Portrait JC Pro Max (Nano Banana) |
+| `docs/pitch/dashboard.png` | Screenshot dashboard pour slide 7 |
 | `workflows/calendar-advisor.json` | Workflow n8n exportable |
-| `docs/superpowers/specs/2026-04-21-calendar-aware-restock-advisor-design.md` | Spec complet |
-| `docs/superpowers/plans/2026-04-21-calendar-aware-restock-advisor.md` | Plan 11 tâches |
-| `docs/demo-script.md` | Script Loom shot-by-shot 90s |
-| `docs/n8n-setup.md` | Guide d'activation n8n en prod |
+
+## Pitch deck — récap structure (11 slides)
+
+1. **Title** — *Jean-Charles didn't ask for AI. He asked for a breath.*
+2. **Jean-Charles (base)** — portrait + 6 facts + douleur (3.5h/day, €12k/quarter)
+3. **Jean-Charles Pro Max** — portrait + 6 facts + douleur (40h/week team, €180k/year)
+4. **The truth** — *Jean-Charles doesn't want AI.*
+5. **The original question** — recall : *How to automate marketplace operations without losing control?*
+6. **Leia, the invisible agent** — schema before/after workflow
+7. **What Jean-Charles sees** — dashboard screenshot
+8. **A conversation** — 2 chat exchanges (leave + stock check)
+9. **The rule** — *Leia proposes. Jean-Charles decides.*
+10. **What changes** — before/after metrics
+11. **Thank you, Mirakl.**
+
+**Design** : palette papier crème (`#F5F0E6`) + encre navy (`#03182F`), typographie Fraunces serif + Instrument Sans + Instrument Serif italic, zéro card boxy, aération éditoriale.
+
+**Mode édition inline** : touche `E` pour activer, `Ctrl+S` pour exporter, `Ctrl+R` pour reset, auto-save localStorage par version (clé bumpée `v10-en-noadapt` / `v10-fr`).
 
 ## Git
 
-- **Branche locale** : `nathan-calendar-advisor`
-- **Remote origin** : fork perso `solanathouu/hackathon-mirakl-nordika`
-- **Remote ianlaur** : repo équipe `Ianlaur/Hackathon_mirakl` (branche `nathan-iris`)
-- **PR équipe** : https://github.com/Ianlaur/Hackathon_mirakl/pull/4
-- Pour push sur les 2 remotes en même temps :
-  ```bash
-  git push origin nathan-calendar-advisor && \
-    git push ianlaur nathan-calendar-advisor:nathan-iris
-  ```
+- **Branche locale** : `feat/leia-unify-english`
+- **Remote ianlaur** : `Ianlaur/Hackathon_mirakl`
+- **PR équipe** : https://github.com/Ianlaur/Hackathon_mirakl/pull/9 (Leia unification + EN + gpt-4.1)
+- **PR antérieure** (Mira/n8n) : https://github.com/Ianlaur/Hackathon_mirakl/pull/4
+
+Push direct sur `dev` bloqué par le harness — toujours passer par feature branch + PR.
 
 ## Commandes utiles
 
@@ -108,45 +129,44 @@ cd src && npm run dev
 # Tests
 cd src && npm test
 
-# Type-check (sans toucher .next, safe même avec dev server qui tourne)
+# Type-check
 cd src && npx tsc --noEmit --pretty
 
-# Build prod (⚠️ kill le dev server avant sinon EPERM Prisma + chunks périmés)
+# Build prod (kill dev server avant)
 cd src && npx next build
 
-# Dry-run BDD (compte les rows par table)
-cd src && npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/dryrun-cleanup.ts
-
-# Cleanup BDD niveau 1 (supprime recos + alertes + events leave tests)
-cd src && npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/cleanup-level-1.ts
-
-# Seed démo (reset stock + crée event leave)
-cd src && npx ts-node --compiler-options "{\"module\":\"CommonJS\",\"target\":\"es2017\"}" scripts/seed-demo-scenario.ts
+# Générer les pitch standalones (images inline)
+python docs/pitch/_inline-images.py
 ```
 
-## Env vars requises (`src/.env`)
+## Env vars (`src/.env`)
 
 ```
 DATABASE_URL=postgresql://...supabase.com:5432/postgres
 DIRECT_URL=postgresql://...supabase.co:5432/postgres
 HACKATHON_USER_ID=00000000-0000-0000-0000-000000000001
-OPENAI_API_KEY=sk-proj-...            # Mira chat + Whisper
-N8N_WEBHOOK_URL=                      # optionnel, seulement si n8n actif
-DUST_ORCHESTRATOR_AGENT_ID=           # utilisé par le module /copilot de l'équipe
+OPENAI_API_KEY=sk-proj-...
+OPENAI_MODEL=                         # optionnel — défaut gpt-4.1
+N8N_WEBHOOK_URL=                      # optionnel
+DUST_ORCHESTRATOR_AGENT_ID=
 DUST_ORCHESTRATOR_API_KEY=
 ```
 
 ## Points d'attention
 
-- **Cache `.next` se corrompt** quand dev server tourne pendant un `next build` ou gros refactor. Réflexe : `taskkill //F //IM node.exe && rm -rf src/.next && npm run dev`.
-- **Classes CSS `.iris-*`** sont historiques (nom initial Iris). Elles ne sont PAS renommées en `.mira-*` — détail interne non visible.
-- **Module `/copilot` équipe coexiste** avec Mira depuis le merge du 22/04. La sidebar n'a pas de lien vers `/copilot` (retiré par moi). Si l'équipe veut le remettre : 1 ligne dans `src/components/Sidebar.tsx`.
-- **Workflow n8n n'est PAS actif par défaut** — le JSON est livré comme asset (livrable Rendu #2). Pour l'activer en réel : voir `docs/n8n-setup.md`.
-- **Démo locale sans n8n** : l'appel direct à `/api/agent/calendar-advisor` est fait via `fetch` dans `create_calendar_event` (côté `lib/mascot-tools.ts`) — donc la chaîne leave → reco fonctionne même sans n8n. Si `N8N_WEBHOOK_URL` vide, le webhook est skippé mais Mira déclenche quand même l'advisor.
+- **Mira → Leia** : tous les usages user-facing renommés. Les classes CSS `.iris-*` historiques restent (jamais visibles côté UI).
+- **gpt-5 testé et écarté** : c'est un reasoning model qui rejette `temperature: 0.2` et brûle des tokens en reasoning. `gpt-4.1` est le dernier flagship non-reasoning compatible avec le code existant.
+- **Override modèle** : la variable `OPENAI_MODEL` dans `.env` permet de switcher sans toucher au code (ex: `OPENAI_MODEL=gpt-4o` si besoin).
+- **Cache `.next` se corrompt** facilement → réflexe : `taskkill //F //IM node.exe && rm -rf src/.next`.
+- **Pitch deck** :
+  - Toujours éditer `pitch-leia.html` ou `pitch-leia-fr.html` (versions de travail légères, 53 Ko).
+  - Les `*-standalone.html` (5,6 Mo) sont **regénérés** par `_inline-images.py` — gitignored.
+  - localStorage clé distincte par langue pour éviter les collisions d'édition.
+- **Workflow n8n n'est PAS actif** — JSON livré comme asset. Démo locale fonctionne sans n8n grâce au fetch direct dans `lib/mascot-tools.ts`.
 
 ## Reprise rapide (30 secondes)
 
-1. Lire cette section "Current Project State"
-2. Exécuter "Next Immediate Action"
-3. Si questionnement sur une feature → ouvrir le spec dans `docs/superpowers/specs/`
-4. Si bug UI → `tsc --noEmit` d'abord, puis inspecter le log dev server
+1. Lire "Current Project State" + "Next Immediate Action".
+2. Si modification deck : `python docs/pitch/_inline-images.py` après édition.
+3. Si dev applicatif : `cd src && npm run dev` puis `localhost:3000/dashboard`.
+4. Si bug UI : `tsc --noEmit` puis log dev server.

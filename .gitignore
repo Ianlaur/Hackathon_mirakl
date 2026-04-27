@@ -53,3 +53,9 @@ coverage/
 HACKATHON MIRAKL X EUGENIA.pdf
 hackathon-brief.txt
 Infos_supplémentaire/
+
+# Pitch deck — only commit source HTML + script + images.
+# Standalone (base64-inlined) files are 5+ MB and can be regenerated.
+docs/pitch/*-standalone.html
+docs/pitch/pitch-leia-v*.html
+
